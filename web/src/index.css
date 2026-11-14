@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@source "../node_modules/@freeappstore/sdk/dist";
+
+@theme inline {
+  --font-sans: "Manrope", system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-panel: var(--panel);
+  --color-panel-glass: var(--panel-glass);
+  --color-popover: var(--popover);
+  --color-ink: var(--ink);
+  --color-ink-strong: var(--ink-strong);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-deep: var(--accent-deep);
+  --color-on-accent: var(--on-accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-scrim: var(--scrim);
+}
+
+:root {
+  color-scheme: light;
+  --paper: #f6f3ec;
+  --paper-deep: #eeeadf;
+  --panel: #fffefa;
+  --panel-glass: #fffefae8;
+  --popover: var(--panel);
+  --ink: #172e26;
+  --ink-strong: #12241e;
+  --muted: #53665b;
+  --line: #d7ddd0;
+  --line-strong: #9baa9b;
+  --accent: #173d30;
+  --accent-hover: #295645;
+  --accent-soft: #e6eddc;
+  --accent-deep: #173d30;
+  --on-accent: #fffefa;
+  --success: #32643d;
+  --warning: #825a24;
+  --danger: #a13035;
+  --scrim: #142c22c9;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #16221d;
+  --paper-deep: #0f1814;
+  --panel: #21322a;
+  --panel-glass: #21322ae8;
+  --ink: #edf1e8;
+  --ink-strong: #fffefa;
+  --muted: #b4c5b9;
+  --line: #415449;
+  --line-strong: #788e81;
+  --accent: #c7e3a5;
+  --accent-hover: #d9edbf;
+  --accent-soft: #344a3b;
+  --accent-deep: #d4eac0;
+  --on-accent: #172e26;
+  --success: #afdfa7;
+  --warning: #f7ce8b;
+  --danger: #f7acae;
+  --scrim: #070d0ac9;
+}
+
+@layer base {
+  body { @apply bg-paper font-sans text-ink; }
+  h1 { @apply font-display; }
+  button { @apply cursor-pointer; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-accent; }
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "id": "medical",
+    "category": "help",
+    "en": "I need medical help.",
+    "vi": "Tôi cần được hỗ trợ y tế.",
+    "zh": "我需要医疗帮助。"
+  },
+  {
+    "id": "peanuts",
+    "category": "food",
+    "en": "I’m allergic to peanuts.",
+    "vi": "Tôi bị dị ứng với đậu phộng (lạc).",
+    "zh": "我对花生过敏。"
+  },
+  {
+    "id": "train",
+    "category": "directions",
+    "en": "Where is the train station?",
+    "vi": "Ga tàu ở đâu?",
+    "zh": "火车站在哪里？"
+  },
+  {
+    "id": "help",
+    "category": "essentials",
+    "en": "Could you give me a hand?",
+    "vi": "Bạn có thể giúp tôi được không?",
+    "zh": "您能帮我一下吗？"
+  },
+  {
+    "id": "thank-you",
+    "category": "essentials",
+    "en": "Thank you very much.",
+    "vi": "Cảm ơn bạn rất nhiều.",
+    "zh": "非常感谢。"
+  },
+  {
+    "id": "slowly",
+    "category": "essentials",
+    "en": "Could you speak more slowly?",
+    "vi": "Bạn có thể nói chậm hơn được không?",
+    "zh": "您能说慢一点吗？"
+  },
+  {
+    "id": "toilet",
+    "category": "directions",
+    "en": "Where is the restroom?",
+    "vi": "Nhà vệ sinh ở đâu?",
+    "zh": "洗手间在哪里？"
+  },
+  {
+    "id": "bus",
+    "category": "directions",
+    "en": "Where is the bus stop?",
+    "vi": "Trạm xe buýt ở đâu?",
+    "zh": "公交车站在哪里？"
+  },
+  {
+    "id": "water",
+    "category": "food",
+    "en": "Could I have some water, please?",
+    "vi": "Cho tôi xin ít nước được không?",
+    "zh": "请问可以给我一些水吗？"
+  },
+  {
+    "id": "vegetarian",
+    "category": "food",
+    "en": "Do you have any vegetarian dishes?",
+    "vi": "Ở đây có món chay không?",
+    "zh": "请问有素菜吗？"
+  },
+  {
+    "id": "ambulance",
+    "category": "help",
+    "en": "Please call an ambulance.",
+    "vi": "Xin hãy gọi xe cấp cứu.",
+    "zh": "请叫救护车。"
+  },
+  {
+    "id": "lost",
+    "category": "help",
+    "en": "I’m lost.",
+    "vi": "Tôi bị lạc đường.",
+    "zh": "我迷路了。"
+  }
+]

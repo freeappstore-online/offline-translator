@@ -1,0 +1,14 @@
+{
+  "name": "offline-translator",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @offline-translator/web dev",
+    "build": "pnpm --filter @offline-translator/web build",
+    "preview": "pnpm --filter @offline-translator/web preview",
+    "typecheck": "pnpm --filter @offline-translator/web exec tsc -b"
+  }
+}
