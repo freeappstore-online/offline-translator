@@ -940,7 +940,8 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
           </div>
         )}
       </div>
-      <button disabled={busy} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 sm:w-auto sm:self-start font-bold text-on-accent disabled:opacity-60">Translate</button>
+      {/* Keep focus in the textarea: blurring it closes the suggestions and moves this button before the click lands */}
+      <button disabled={busy} onMouseDown={event => event.preventDefault()} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 sm:w-auto sm:self-start font-bold text-on-accent disabled:opacity-60">Translate</button>
       {status && <p role="status" className="mt-2 text-sm text-muted">{status}</p>}
       <div className="mt-4 flex-1 rounded-2xl bg-accent-soft p-4" role="status">
         <p className="text-sm font-semibold">{languageNames[to]} translation</p>
