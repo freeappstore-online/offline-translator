@@ -67,3 +67,7 @@ Scenario task groups initially show six cards with a Show all control. Search di
 Packs downloads the current phrase library, either OPUS-MT direction, or M2M100. A smoke translation prepares a model; saved status requires all six revision-pinned configuration, tokenizer and ONNX files in the app's model cache. Translation uses that cache and enables local-files-only loading for complete packs. A live worker retains its active model; switching model families or OPUS-MT directions prepares another session.
 
 Phrase packages use their own browser cache and load before the remote deck. Browser eviction or clearing site data can remove packs. The production service worker caches the app shell and fetched WASM binary; model-file status alone does not certify a cold airplane-mode launch. Model downloads currently run to completion or fail with a retryable error. The manager shows browser storage usage and keeps translation JSON export available below the packages.
+
+### Saved-model reload correction — 25 November 2026
+
+Cache-only loading requires `env.allowLocalModels=true` in Transformers.js. The worker now enables it when a complete saved pack is detected. Saved packs still require initialization after a page reload, which happens automatically on translation. The Check saved model action is an optional verification.

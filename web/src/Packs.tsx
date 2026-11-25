@@ -62,11 +62,11 @@ export function Packs({ cards }: { cards: Phrase[] }) {
           <button type="button" disabled={Boolean(active) || (pack.key === 'phrases' && !cards.length)}
             className="min-h-11 rounded-full bg-accent px-5 py-2 text-sm font-semibold text-on-accent disabled:opacity-50"
             onClick={() => void install(pack.key)}>
-            {active === pack.key ? 'Preparing…' : saved[pack.key] ? pack.key === 'phrases' ? 'Save library again' : 'Prepare model' : 'Download'}
+            {active === pack.key ? 'Preparing…' : saved[pack.key] ? pack.key === 'phrases' ? 'Save library again' : 'Check saved model' : 'Download'}
           </button>
         </div>
       </section>)}
     <p role="status" className="text-sm">{status || error}</p>
-    <p className="text-xs text-muted">Model sizes exclude the shared runtime. Browser storage can be cleared or evicted. Use Prepare model to check a saved download.</p>
+    <p className="text-xs text-muted">Model sizes exclude the shared runtime. Browser storage can be cleared or evicted. Use Check saved model to prepare a saved download and verify it works.</p>
   </div>
 }

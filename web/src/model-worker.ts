@@ -19,6 +19,8 @@ self.addEventListener('message', ({ data }: MessageEvent<{
       if (active?.model !== model) {
         const saved = await packSaved({ id: model, revision })
         self.postMessage({ id, status: saved ? 'Preparing saved model…' : 'Downloading model…' })
+        // Transformers.js requires local access enabled for cache-only loading.
+        env.allowLocalModels = saved
         await active?.translator.dispose()
         active = undefined
         const translator = await pipeline('translation', model, {
