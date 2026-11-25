@@ -75,3 +75,7 @@ Cache-only loading requires `env.allowLocalModels=true` in Transformers.js. The 
 ### Language pairs in Packs
 
 Packs uses English, Tiếng Việt and 简体中文 labels with flag icons. English uses the UK flag as a visual cue. Selecting a pair filters the model list. English–Vietnamese offers both OPUS-MT directions and M2M100; pairs with Chinese offer M2M100. The phrase library and multilingual model are shared downloads; selecting another pair reuses their saved status. Pair selection is disabled during a download to keep its progress associated with the selected resources.
+
+### Searchable language selection
+
+Packs has two keyboard-accessible language comboboxes. Native names appear with English secondary names because the current app interface is English. Search accepts either name, language code, or unaccented Vietnamese. Choosing the language already selected in the other field swaps the pair. Resources remain shared across reversed pairs.

@@ -1,19 +1,9 @@
+import { LanguagePicker, languageLabels } from './LanguagePicker'
 import { useEffect, useRef, useState } from 'react'
 import { translateWithModel } from './downloaded-translation'
 import { modelCache, packSaved, packs, phraseCache, phraseUrl, savePhrases } from './pack-storage'
 import type { Language } from './model-options'
 import type { Phrase } from './phrases'
-
-const languageLabels = {
-  en: { name: 'English', flag: '🇬🇧', lang: 'en' },
-  vi: { name: 'Tiếng Việt', flag: '🇻🇳', lang: 'vi' },
-  zh: { name: '简体中文', flag: '🇨🇳', lang: 'zh-Hans' },
-}
-const pairs: { id: string; from: Language; to: Language }[] = [
-  { id: 'en-vi', from: 'en', to: 'vi' },
-  { id: 'en-zh', from: 'en', to: 'zh' },
-  { id: 'vi-zh', from: 'vi', to: 'zh' },
-]
 
 function LanguageLabel({ code }: { code: Language }) {
   const language = languageLabels[code]
@@ -24,8 +14,15 @@ function LanguageLabel({ code }: { code: Language }) {
 }
 
 export function Packs({ cards }: { cards: Phrase[] }) {
-  const [pairId, setPairId] = useState('en-vi')
-  const pair = pairs.find(item => item.id === pairId)!
+  const [pair, setPair] = useState<{ from: Language; to: Language }>({ from: 'en', to: 'vi' })
+  function chooseLanguage(side: 'from' | 'to', value: Language) {
+    setPair(previous => {
+      const other = side === 'from' ? 'to' : 'from'
+      return { ...previous, [side]: value, [other]: previous[other] === value ? previous[side] : previous[other] }
+    })
+    setStatus('')
+    setError('')
+  }
   const visibleModels = packs.filter(pack => pack.key === 'multilingual' ||
     (pack.from === pair.from && pack.to === pair.to) || (pack.from === pair.to && pack.to === pair.from))
   const pairCardCount = cards.filter(card => card[pair.from]?.trim() && card[pair.to]?.trim()).length
@@ -79,22 +76,12 @@ export function Packs({ cards }: { cards: Phrase[] }) {
   }
 
   return <div className="mx-auto max-w-2xl space-y-5">
-    <fieldset>
-      <legend className="mb-3 text-sm font-semibold">Choose your languages</legend>
-      <div className="grid gap-2">
-        {pairs.map(item => <label key={item.id} className="cursor-pointer">
-          <input type="radio" name="pack-pair" value={item.id} checked={pairId === item.id}
-            className="peer sr-only" disabled={Boolean(active)}
-            onChange={() => { setPairId(item.id); setStatus(''); setError('') }} />
-          <span className="flex min-h-16 items-center justify-between gap-2 rounded-2xl border border-transparent bg-panel px-4 py-3 peer-checked:border-accent peer-checked:bg-accent-soft peer-focus-visible:outline-2 peer-focus-visible:outline-accent peer-disabled:opacity-60">
-            <span className="flex flex-wrap items-center gap-3 text-sm font-semibold">
-              <LanguageLabel code={item.from} /><span aria-hidden="true">↔</span><LanguageLabel code={item.to} />
-            </span>
-            <span aria-hidden="true" className={pairId === item.id ? 'text-accent' : 'invisible'}>✓</span>
-          </span>
-        </label>)}
-      </div>
-    </fieldset>
+    <div className="grid gap-4 sm:grid-cols-2">
+      <LanguagePicker label="First language" value={pair.from} disabled={Boolean(active)}
+        onChange={value => chooseLanguage('from', value)} />
+      <LanguagePicker label="Second language" value={pair.to} disabled={Boolean(active)}
+        onChange={value => chooseLanguage('to', value)} />
+    </div>
 
     <p className="text-sm text-muted">Download once while online. Saved resources are reused in this browser.</p>
 
