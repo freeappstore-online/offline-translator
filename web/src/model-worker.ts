@@ -1,9 +1,11 @@
+import { modelCache, packSaved } from './pack-storage'
 import { env, pipeline } from '@huggingface/transformers'
 import type { TranslationPipeline } from '@huggingface/transformers'
 import type { Language } from './model-options'
 
 env.allowLocalModels = false
 env.useBrowserCache = true
+env.cacheKey = modelCache
 if (env.backends.onnx.wasm) env.backends.onnx.wasm.numThreads = 1
 
 let active: { model: string; translator: TranslationPipeline } | undefined
@@ -15,13 +17,15 @@ self.addEventListener('message', ({ data }: MessageEvent<{
     const { id, model, revision, input, from, to } = data
     try {
       if (active?.model !== model) {
+        const saved = await packSaved({ id: model, revision })
+        self.postMessage({ id, status: saved ? 'Preparing saved model…' : 'Downloading model…' })
         await active?.translator.dispose()
         active = undefined
         const translator = await pipeline('translation', model, {
-          revision, device: 'wasm', dtype: 'q8',
+          revision, device: 'wasm', dtype: 'q8', local_files_only: saved,
           progress_callback: event => {
             if (event.status === 'progress') {
-              self.postMessage({ id, status: `Loading ${event.file.split('/').pop()}… ${Math.round(event.progress)}%` })
+              self.postMessage({ id, status: `Downloading ${event.file.split('/').pop()}… ${Math.round(event.progress)}%` })
             }
           },
         })

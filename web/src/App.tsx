@@ -1,3 +1,5 @@
+import { Packs } from './Packs'
+import { scenarios, tasks, cardScenarios, cardTask } from './card-scenarios'
 import { approvedLabels, buildApprovedIndex, type ApprovedMatch } from './approved-phrases'
 import { buildChanges } from './build-changes'
 import { buildFingerprint, checkMeaning, exportLog, readLog, writeLog, type LogEntry } from './translation-log'
@@ -212,18 +214,11 @@ export default function App() {
 
           </>
         )}
-        {path === '/packs' && (
-          <section className={panel}>
-            <p>The phrase deck loads over the internet when you open the app.</p>
-            <p className="mt-3">To download a model, choose it in Translate and translate a phrase outside the deck while online.</p>
-            <p className="mt-2">OPUS-MT downloads each direction separately. M2M100 shares one model across all six directions.</p>
-            <ul className="mt-3 space-y-2">
-              {Object.values(languages).map(name => <li key={name}>English ↔ {name} · {cards.length} cards</li>)}
-            </ul>
-            <button type="button" className={control + ' mt-4'} disabled={!history.length}
-              onClick={() => exportLog(history)}>Export translation JSON</button>
-          </section>
-        )}
+        {path === '/packs' && <>
+          <Packs cards={cards} />
+          <button type="button" className={control + ' mt-4'} disabled={!history.length}
+            onClick={() => exportLog(history)}>Export translation JSON</button>
+        </>}
         {storageError && <p role="status" className="mt-3 text-sm text-muted">
           Browser storage is full or unavailable. Export translation JSON from Packs before closing this page.
         </p>}
@@ -242,30 +237,52 @@ function Cards({ cards, language, saved, onFavorite }: {
   onFavorite: (id: string) => void
 }) {
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState('all')
+  const [scenario, setScenario] = useState('essentials')
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(() => new Set())
   const [selected, setSelected] = useState<Phrase | null>(null)
   const dialog = useRef<HTMLDialogElement>(null)
+  const searching = Boolean(query.trim())
   const matches = cards.filter(card =>
-    (category === 'all' || category === card.category || (category === 'saved' && saved.has(card.id))) &&
+    (searching || scenario === 'all' || (scenario === 'saved' ? saved.has(card.id) : cardScenarios(card).includes(scenario as keyof typeof scenarios))) &&
     [card.en, card[language]].some(text => normalize(text).includes(normalize(query))),
   )
+  const groups = tasks.map(task => ({
+    task, cards: matches.filter(card => cardTask(card, scenario) === task),
+  })).filter(group => group.cards.length)
+
 
   return (
     <>
       <label className="sr-only" htmlFor="search">Search phrases</label>
-      <input id="search" type="search" className={control + ' w-full'} value={query} onChange={event => setQuery(event.target.value)} placeholder="Search in either language" />
-      <fieldset className="my-4 flex flex-wrap gap-2">
-        <legend className="sr-only">Category</legend>
-        {[['all', 'All phrases'], ...Object.entries(categories), ['saved', 'Saved']].map(([id, name]) => (
-          <label key={id} className="cursor-pointer">
-            <input className="peer sr-only" type="radio" name="category" checked={category === id} onChange={() => setCategory(id)} />
-            <span className="inline-block rounded-full border border-line bg-panel px-3 py-2 text-sm peer-checked:border-accent peer-checked:bg-accent-soft peer-focus-visible:outline-2">{name}</span>
-          </label>
+      <input id="search" type="search" className={control + ' w-full'} value={query} onChange={event => setQuery(event.target.value)} placeholder="Search all scenarios" />
+      <div className="my-4 flex gap-2 overflow-x-auto pb-2" role="tablist" aria-label="Scenarios">
+        {[...Object.entries(scenarios), ['saved', 'Saved'], ['all', 'All phrases']].map(([id, name]) => (
+          <button key={id} type="button" role="tab" id={'scenario-' + id}
+            aria-selected={scenario === id} aria-controls="scenario-cards"
+            tabIndex={scenario === id ? 0 : -1}
+            className={`min-h-11 shrink-0 rounded-full px-4 text-sm font-semibold ${scenario === id ? 'bg-accent text-on-accent' : 'bg-panel text-ink'}`}
+            onClick={() => { setScenario(id); setQuery(''); setExpandedTasks(new Set()) }}
+            onKeyDown={event => {
+              const list = Array.from(event.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>('[role=tab]'))
+              const index = list.indexOf(event.currentTarget)
+              const next = event.key === 'ArrowRight' ? (index + 1) % list.length
+                : event.key === 'ArrowLeft' ? (index - 1 + list.length) % list.length
+                : event.key === 'Home' ? 0 : event.key === 'End' ? list.length - 1 : undefined
+              if (next === undefined) return
+              event.preventDefault()
+              list[next].click()
+              list[next].focus()
+              list[next].scrollIntoView({ block: 'nearest', inline: 'nearest' })
+            }}>{name}</button>
         ))}
-      </fieldset>
+      </div>
+      {searching && <p className="mb-2 text-sm text-muted">Searching all scenarios</p>}
       <p className="mb-3 text-sm text-muted" role="status">{matches.length ? `${matches.length} ${matches.length === 1 ? 'card' : 'cards'}` : 'No matching cards.'}</p>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {matches.map(card => (
+      <div id="scenario-cards" role="tabpanel" aria-labelledby={'scenario-' + scenario}>
+      {groups.map(group => <section key={group.task} className="mb-6">
+        <h2 className="mb-3 text-base font-semibold">{group.task}</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {(searching || expandedTasks.has(group.task) ? group.cards : group.cards.slice(0, 6)).map(card => (
           <article key={card.id} className={panel}>
             <div className="mb-3 flex items-center justify-between gap-2 text-sm text-muted">
               {categories[card.category]}
@@ -284,6 +301,17 @@ function Cards({ cards, language, saved, onFavorite }: {
             </button>
           </article>
         ))}
+        </div>
+        {!searching && group.cards.length > 6 && <button type="button"
+          className="mt-3 min-h-11 text-sm font-semibold text-accent"
+          aria-expanded={expandedTasks.has(group.task)}
+          onClick={() => setExpandedTasks(previous => {
+            const next = new Set(previous)
+            if (next.has(group.task)) next.delete(group.task)
+            else next.add(group.task)
+            return next
+          })}>{expandedTasks.has(group.task) ? 'Show fewer' : `Show all ${group.cards.length} phrases`}</button>}
+      </section>)}
       </div>
       <dialog ref={dialog} aria-labelledby="card-text" onClose={() => setSelected(null)} className="m-auto w-[calc(100%-1.5rem)] max-w-2xl rounded-[1.25rem] bg-popover p-5 text-ink backdrop:bg-scrim sm:p-8">
         <div className="flex items-center justify-between gap-3">

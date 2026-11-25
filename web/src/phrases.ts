@@ -1,3 +1,5 @@
+import { phraseCache, phraseUrl } from './pack-storage'
+import { scenarios, tasks, type Scenario, type Task } from './card-scenarios'
 export const languages = { vi: 'Vietnamese', zh: 'Chinese (Simplified)' }
 export type TargetLanguage = keyof typeof languages
 
@@ -46,6 +48,8 @@ export interface Phrase {
   en: string
   vi: string
   zh: string
+  scenarios?: Scenario[]
+  task?: Task
   review?: PhraseReview
 }
 
@@ -67,6 +71,8 @@ export function needsHumanReviewWarning(card: Phrase) {
 }
 
 export async function loadPhrases(): Promise<Phrase[]> {
+  const saved = await caches.open(phraseCache).then(cache => cache.match(phraseUrl)).catch(() => undefined)
+  if (saved) return (await saved.json()) as Phrase[]
   if (import.meta.env.VITE_USE_BUNDLED_DECK === 'true' || (!datasetId && import.meta.env.DEV)) {
     return (await import('../../dataset/phrases.json')).default as Phrase[]
   }
@@ -85,6 +91,8 @@ export async function loadPhrases(): Promise<Phrase[]> {
     if (!card || !Object.hasOwn(categories, card.category) ||
       !['id', 'en', ...Object.keys(languages)].every(key => typeof card[key] === 'string' && card[key].trim()) ||
       ids.has(card.id) ||
+      (card.scenarios !== undefined && (!Array.isArray(card.scenarios) || card.scenarios.some((id: string) => !Object.hasOwn(scenarios, id)))) ||
+      (card.task !== undefined && !tasks.includes(card.task)) ||
       (card.review !== undefined && !isReview(card.review))) {
       throw new Error('The dataset contains an invalid or duplicate card.')
     }

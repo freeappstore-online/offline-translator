@@ -1,0 +1,485 @@
+{
+  "source": "llm",
+  "seeds": [
+    {
+      "id": "scenario-gaps-v1-table-two",
+      "category": "food",
+      "en": "Could we have a table for two?",
+      "vi": "Cho chúng tôi một bàn cho hai người được không?",
+      "zh": "可以给我们安排一张两人桌吗？",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Getting a table",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-outside-table",
+      "category": "food",
+      "en": "Could we sit outside?",
+      "vi": "Chúng tôi có thể ngồi bên ngoài không?",
+      "zh": "我们可以坐在外面吗？",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Getting a table",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-waiting-table",
+      "category": "food",
+      "en": "How long is the wait for a table?",
+      "vi": "Chúng tôi phải đợi bàn bao lâu?",
+      "zh": "需要等多久才有桌位？",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Getting a table",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-smaller-portion",
+      "category": "food",
+      "en": "Could I have a smaller portion?",
+      "vi": "Cho tôi một phần nhỏ hơn được không?",
+      "zh": "可以给我小份的吗？",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Ordering",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-not-spicy",
+      "category": "food",
+      "en": "Could you make this less spicy?",
+      "vi": "Bạn có thể làm món này ít cay hơn không?",
+      "zh": "这道菜可以少放点辣椒吗？",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Ordering",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-ingredients",
+      "category": "food",
+      "en": "What ingredients are in this dish?",
+      "vi": "Món này có những nguyên liệu gì?",
+      "zh": "这道菜有哪些食材？",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Ingredients",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-missing-dish",
+      "category": "food",
+      "en": "One of our dishes is still missing.",
+      "vi": "Chúng tôi vẫn còn thiếu một món.",
+      "zh": "我们还有一道菜没上。",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Changing an order",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-wrong-dish",
+      "category": "food",
+      "en": "This is not what I ordered.",
+      "vi": "Đây không phải món tôi đã gọi.",
+      "zh": "这不是我点的菜。",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Changing an order",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-split-bill",
+      "category": "food",
+      "en": "Could we pay separately?",
+      "vi": "Chúng tôi có thể thanh toán riêng không?",
+      "zh": "我们可以分开付款吗？",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Paying",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-bill-please",
+      "category": "food",
+      "en": "Could we have the bill, please?",
+      "vi": "Cho chúng tôi xin hóa đơn thanh toán.",
+      "zh": "请给我们结账单。",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Paying",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-cash-card",
+      "category": "food",
+      "en": "Can I pay by card?",
+      "vi": "Tôi có thể thanh toán bằng thẻ không?",
+      "zh": "我可以刷卡付款吗？",
+      "scenarios": [
+        "restaurant"
+      ],
+      "task": "Paying",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-booking-name",
+      "category": "essentials",
+      "en": "I have a reservation under this name.",
+      "vi": "Tôi đã đặt phòng dưới tên này.",
+      "zh": "我用这个名字预订了房间。",
+      "scenarios": [
+        "hotel"
+      ],
+      "task": "Checking in",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-quiet-room",
+      "category": "essentials",
+      "en": "Could I have a quieter room?",
+      "vi": "Tôi có thể đổi sang phòng yên tĩnh hơn không?",
+      "zh": "可以给我换一间安静一点的房间吗？",
+      "scenarios": [
+        "hotel"
+      ],
+      "task": "Checking in",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-hot-water",
+      "category": "essentials",
+      "en": "There is no hot water in my room.",
+      "vi": "Phòng tôi không có nước nóng.",
+      "zh": "我的房间没有热水。",
+      "scenarios": [
+        "hotel"
+      ],
+      "task": "During your stay",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-room-key",
+      "category": "essentials",
+      "en": "My room key is not working.",
+      "vi": "Chìa khóa phòng của tôi không dùng được.",
+      "zh": "我的房间钥匙打不开门。",
+      "scenarios": [
+        "hotel"
+      ],
+      "task": "During your stay",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-checkout-time",
+      "category": "essentials",
+      "en": "What time do I need to check out?",
+      "vi": "Tôi cần trả phòng lúc mấy giờ?",
+      "zh": "我需要几点退房？",
+      "scenarios": [
+        "hotel"
+      ],
+      "task": "Checking out",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-smaller-size",
+      "category": "essentials",
+      "en": "Do you have this in a smaller size?",
+      "vi": "Mẫu này có cỡ nhỏ hơn không?",
+      "zh": "这个有小一点的尺码吗？",
+      "scenarios": [
+        "shopping"
+      ],
+      "task": "Choosing an item",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-try-on",
+      "category": "essentials",
+      "en": "May I try this on?",
+      "vi": "Tôi có thể thử món này không?",
+      "zh": "我可以试穿这个吗？",
+      "scenarios": [
+        "shopping"
+      ],
+      "task": "Choosing an item",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-receipt-please",
+      "category": "essentials",
+      "en": "Could I have a receipt, please?",
+      "vi": "Cho tôi xin biên lai.",
+      "zh": "请给我一张收据。",
+      "scenarios": [
+        "shopping"
+      ],
+      "task": "Paying",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-lost-property",
+      "category": "essentials",
+      "en": "Where is the lost property office?",
+      "vi": "Quầy đồ thất lạc ở đâu?",
+      "zh": "失物招领处在哪里？",
+      "scenarios": [
+        "belongings"
+      ],
+      "task": "Finding your belongings",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-describe-bag",
+      "category": "essentials",
+      "en": "My bag is black with a red strap.",
+      "vi": "Túi của tôi màu đen, có dây đeo màu đỏ.",
+      "zh": "我的包是黑色的，带有一条红色背带。",
+      "scenarios": [
+        "belongings"
+      ],
+      "task": "Reporting a loss",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-change-bus",
+      "category": "directions",
+      "en": "Do I need to change buses?",
+      "vi": "Tôi có cần đổi xe buýt không?",
+      "zh": "我需要换乘公交车吗？",
+      "scenarios": [
+        "transport"
+      ],
+      "task": "Finding your way",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-correct-platform",
+      "category": "directions",
+      "en": "Which platform does my train leave from?",
+      "vi": "Tàu của tôi khởi hành ở sân ga nào?",
+      "zh": "我的火车从哪个站台出发？",
+      "scenarios": [
+        "transport"
+      ],
+      "task": "Finding your way",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    },
+    {
+      "id": "scenario-gaps-v1-step-free",
+      "category": "directions",
+      "en": "Is there a route without stairs?",
+      "vi": "Có lối đi nào không phải lên xuống cầu thang không?",
+      "zh": "有不用走楼梯的路线吗？",
+      "scenarios": [
+        "transport"
+      ],
+      "task": "Finding your way",
+      "review": {
+        "status": "pending",
+        "risk": "medium",
+        "source": "llm",
+        "flags": [
+          "uncertain_translation"
+        ],
+        "notes": "AI-authored scenario gap draft. Independent review pending."
+      }
+    }
+  ]
+}

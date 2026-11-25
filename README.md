@@ -51,3 +51,19 @@ Only complete phrases, words and explicitly listed pattern variants match. Confl
 ## Development deck deployment — 25 November 2026
 
 The app can load the bundled 1,000-card development deck with `VITE_USE_BUNDLED_DECK=true`. The 988 new entries retain pending review metadata. Hugging Face publication and independent review remain outstanding.
+
+## Scenario navigation and shared vocabulary — 25 November 2026
+
+Cards uses scenario tabs and task groups. Search spans all scenarios. Existing rows are assigned compatible scenarios by `card-scenarios.ts`; explicit `scenarios` and `task` metadata override these defaults. Lost belongings can appear in restaurant, hotel and transport scenarios. Saved remains a separate view.
+
+The deck includes 24 new pending drafts covering missing tasks such as waiting for a table, splitting the bill, room problems, shopping and transfers. These also enter the review queue. The bundled deck now has 1,024 cards; the Hugging Face deck requires a separate update.
+
+The belongings pilot shares typed vocabulary between standalone lookup and the complete `I left my {belonging} here` frame. The index materializes each allowed full sentence per language. Existing stored cards take precedence when their translations agree. Conflicting matches fall through to the model. Unknown vocabulary and extended sentences fall through. The pilot includes eight belongings; arbitrary slot input remains unsupported. These prototype translations require independent review.
+
+Scenario task groups initially show six cards with a Show all control. Search displays all matching results. Contextual lost-belongings cards are limited to relevant loss, left-behind and seen-item phrases.
+
+## Packs download manager — 25 November 2026
+
+Packs downloads the current phrase library, either OPUS-MT direction, or M2M100. A smoke translation prepares a model; saved status requires all six revision-pinned configuration, tokenizer and ONNX files in the app's model cache. Translation uses that cache and enables local-files-only loading for complete packs. A live worker retains its active model; switching model families or OPUS-MT directions prepares another session.
+
+Phrase packages use their own browser cache and load before the remote deck. Browser eviction or clearing site data can remove packs. The production service worker caches the app shell and fetched WASM binary; model-file status alone does not certify a cold airplane-mode launch. Model downloads currently run to completion or fail with a retryable error. The manager shows browser storage usage and keeps translation JSON export available below the packages.

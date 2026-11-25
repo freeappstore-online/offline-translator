@@ -1,9 +1,11 @@
+import { belongings, leftBelonging } from './shared-vocabulary'
 import type { Language } from './model-options'
 import type { Phrase } from './phrases'
 
 type Localized<T> = Record<Language, T>
 
 const vocabulary = {
+  ...belongings,
   luggage: { en: 'luggage', vi: 'hành lý', zh: '行李' },
   ticket: { en: 'ticket', vi: 'vé', zh: '票' },
 }
@@ -71,6 +73,12 @@ export function buildApprovedIndex(cards: readonly Phrase[]) {
       for (const card of cards) add(from, to, card[from], { kind: 'card', id: card.id, text: card[to] })
       for (const [id, words] of Object.entries(vocabulary)) {
         add(from, to, words[from], { kind: 'vocabulary', id, text: words[to] })
+      }
+      for (const [vocabularyId, words] of Object.entries(belongings)) {
+        const sentence = leftBelonging(words)
+        add(from, to, sentence[from], {
+          kind: 'pattern', id: 'left_belonging_here', vocabularyId, text: sentence[to],
+        })
       }
       for (const pattern of patterns) {
         for (const option of pattern.options) {

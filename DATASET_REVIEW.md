@@ -208,3 +208,7 @@ High-stakes medical, allergy, emergency and legal material was excluded from the
 ## 2026-11-25 — Authorized development publication
 
 The maintainer authorized publishing the app to continue development and testing. The 1,000-row candidate collection is now the local deck in `dataset/phrases.json`. All new cards retain pending status and remain in the review queue. Deployment selects the bundled deck with `VITE_USE_BUNDLED_DECK=true`. Hugging Face still hosts the earlier deck. Independent critic and native review remain pending.
+
+## 2026-11-25 — Scenario gap batch
+
+Added 24 AI-authored pending cards with explicit scenario/task metadata in `dataset/review/seeds/scenario-gaps-v1.json`. They cover restaurant, hotel, shopping, belongings and transport tasks. Queue rows retain needs_human state; no human approval is inferred. The local bundled deck includes these for development testing, bringing its count to 1,024.
