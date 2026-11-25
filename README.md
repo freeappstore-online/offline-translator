@@ -30,4 +30,24 @@ The static output is `web/dist/`. The project follows the [FreeAppStore guide](h
 
 ## Downloadable translation models
 
-In Translate, select OPUS-MT for English ↔ Vietnamese or M2M100 for any pair among English, Vietnamese and Simplified Chinese. Each model downloads on its first free-text translation and runs locally. OPUS-MT downloads each direction independently. The browser may evict cached assets. The built-in browser translator is the default.
+In Translate, select OPUS-MT for English ↔ Vietnamese or M2M100 for any pair among English, Vietnamese and Simplified Chinese. Each model downloads on its first free-text translation and runs locally. OPUS-MT downloads each direction independently. The browser may evict cached assets. OPUS-MT is selected by default. In Face to face mode, the lower panel stays upright and the upper panel faces the other person. Each translation appears in the panel of the person who will read it.
+
+## Translation log
+
+Use **Packs → Export translation JSON** to download the browser’s saved translation records. The export includes source, result or runtime error, language direction, timestamp, model or stored match, elapsed time, and quality flags. The log is stored locally until exported, subject to browser storage limits.
+
+The app checks identifiers, currency, negation, and recognizable times locally. These checks identify possible errors for later review. They do not perform back-translation. Historical exports can still include earlier browser translator results.
+
+### Comparing implementations
+
+Each attempt automatically records the developer-maintained change note in `web/src/build-changes.ts`, alongside its UTC submission timestamp, selected engine, execution path, and pinned model revision when available. Update this note when changing the translation or evaluation pipeline. The build fingerprint hashes the app source, Vite config and dependency lock. Restart the local dev server after source edits when comparing builds so it recomputes the fingerprint. Earlier log entries retain their original metadata.
+
+### Stored words and sentence patterns
+
+Translate builds a local lookup index from the loaded phrase cards and the bundled vocabulary and patterns. Vocabulary entries have stable IDs. A pattern references those IDs and stores its own accepted slot wording and complete translation for each supported language. For example, try `luggage`, `I need help with my luggage`, and `I need help with my bags`. The starter data covers luggage and tickets in English, Vietnamese and Simplified Chinese. The bundled entries work whenever the app shell is available. The Hugging Face deck still loads separately.
+
+Only complete phrases, words and explicitly listed pattern variants match. Conflicting translations for the same input and direction fall through to the selected model, as do unknown slot values. The log records lookup time, the matched entry ID and the vocabulary ID for pattern matches.
+
+## Development deck deployment — 25 November 2026
+
+The app can load the bundled 1,000-card development deck with `VITE_USE_BUNDLED_DECK=true`. The 988 new entries retain pending review metadata. Hugging Face publication and independent review remain outstanding.

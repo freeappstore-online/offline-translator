@@ -27,10 +27,10 @@
 
 :root {
   color-scheme: light;
-  --paper: #f6f3ec;
-  --paper-deep: #eeeadf;
-  --panel: #fffefa;
-  --panel-glass: #fffefae8;
+  --paper: #edf3f5;
+  --paper-deep: #e1eaed;
+  --panel: #ffffff;
+  --panel-glass: #ffffffe8;
   --popover: var(--panel);
   --ink: #172e26;
   --ink-strong: #12241e;
@@ -39,7 +39,7 @@
   --line-strong: #9baa9b;
   --accent: #173d30;
   --accent-hover: #295645;
-  --accent-soft: #e6eddc;
+  --accent-soft: #e1f0ea;
   --accent-deep: #173d30;
   --on-accent: #fffefa;
   --success: #32643d;
@@ -75,4 +75,8 @@
   h1 { @apply font-display; }
   button { @apply cursor-pointer; }
   :focus-visible { @apply outline-2 outline-offset-2 outline-accent; }
+}
+
+@layer components {
+  #root > div > header > div > a[href="https://freeappstore.online"] { display: none; }
 }

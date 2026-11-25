@@ -1,5 +1,4 @@
 export const engines = {
-  browser: 'Browser translator',
   opus: 'OPUS-MT · English ↔ Vietnamese',
   multilingual: 'M2M100 · English, Vietnamese, Chinese',
 }
@@ -15,5 +14,5 @@ const multilingual = { id: 'Xenova/m2m100_418M', revision: '9c374f0b7aca709787ce
 
 export function modelFor(engine: Engine, from: Language, to: Language) {
   if (engine === 'multilingual') return multilingual
-  if (engine === 'opus' && from !== 'zh' && to !== 'zh') return opus[from]
+  if (from !== to && from !== 'zh' && to !== 'zh') return opus[from]
 }

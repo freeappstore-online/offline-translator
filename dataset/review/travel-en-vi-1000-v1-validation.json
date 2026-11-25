@@ -1,0 +1,23 @@
+{
+  "batch": "travel-en-vi-1000-v1",
+  "target": 1000,
+  "existing": 12,
+  "newDrafts": 988,
+  "queueTotal": 1002,
+  "counts": {
+    "directions": 427,
+    "food": 187,
+    "essentials": 374
+  },
+  "checks": {
+    "uniqueIds": true,
+    "uniqueNormalizedEnglish": true,
+    "nonemptyEnViZh": true,
+    "allNewRowsPending": true
+  },
+  "limitations": [
+    "Pattern-generated full sentences share a limited set of constructions.",
+    "Independent critic and native review have not run.",
+    "Pending candidates are excluded from the production deck."
+  ]
+}

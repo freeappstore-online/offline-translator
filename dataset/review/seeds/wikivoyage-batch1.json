@@ -1,0 +1,66 @@
+{
+  "source": "wikivoyage",
+  "attribution": "Vietnamese phrasebook — Wikivoyage (CC BY-SA 4.0) https://en.wikivoyage.org/wiki/Vietnamese_phrasebook",
+  "seeds": [
+    {
+      "id": "speak-english",
+      "category": "essentials",
+      "en": "Do you speak English?",
+      "vi": "Biết nói tiếng Anh không?"
+    },
+    {
+      "id": "dont-understand",
+      "category": "essentials",
+      "en": "I don't understand.",
+      "vi": "Tôi không hiểu."
+    },
+    {
+      "id": "im-sorry",
+      "category": "essentials",
+      "en": "I'm sorry.",
+      "vi": "Xin lỗi."
+    },
+    {
+      "id": "show-map",
+      "category": "directions",
+      "en": "Can you show me on the map?",
+      "vi": "Bạn có thể chỉ cho tôi trên bản đồ không?"
+    },
+    {
+      "id": "atm",
+      "category": "directions",
+      "en": "Where is an ATM?",
+      "vi": "Máy rút tiền (ATM) ở đâu?"
+    },
+    {
+      "id": "rooms-available",
+      "category": "essentials",
+      "en": "Do you have any rooms available?",
+      "vi": "Còn phòng trống không?"
+    },
+    {
+      "id": "how-much",
+      "category": "essentials",
+      "en": "How much is this?",
+      "vi": "Cái này bao nhiêu tiền?"
+    },
+    {
+      "id": "see-menu",
+      "category": "food",
+      "en": "Can I look at the menu, please?",
+      "vi": "Làm ơn cho tôi xem menu?"
+    },
+    {
+      "id": "no-pork",
+      "category": "food",
+      "en": "I don't eat pork.",
+      "vi": "Tôi không ăn thịt lợn."
+    },
+    {
+      "id": "need-doctor",
+      "category": "help",
+      "en": "I need a doctor.",
+      "vi": "Tôi cần một bác sĩ."
+    }
+  ]
+}

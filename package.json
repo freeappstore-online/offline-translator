@@ -9,6 +9,11 @@
     "dev": "pnpm --filter @offline-translator/web dev",
     "build": "pnpm --filter @offline-translator/web build",
     "preview": "pnpm --filter @offline-translator/web preview",
-    "typecheck": "pnpm --filter @offline-translator/web exec tsc -b"
+    "typecheck": "pnpm --filter @offline-translator/web exec tsc -b",
+    "review:sync": "node dataset/agents/sync-pending.mjs",
+    "review:import": "node dataset/agents/import-seeds.mjs",
+    "review:draft": "node dataset/agents/draft.mjs",
+    "review:critic": "node dataset/agents/critic.mjs",
+    "review:human": "node dataset/agents/human.mjs"
   }
 }
