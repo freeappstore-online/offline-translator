@@ -79,3 +79,5 @@ Packs uses English, Tiếng Việt and 简体中文 labels with flag icons. Engl
 ### Searchable language selection
 
 Packs has two keyboard-accessible language comboboxes. Native names appear with English secondary names because the current app interface is English. Search accepts either name, language code, or unaccented Vietnamese. Choosing the language already selected in the other field swaps the pair. Resources remain shared across reversed pairs.
+
+Model observations and deferred architecture options: see [MODEL_EXPERIMENTS.md](MODEL_EXPERIMENTS.md).
