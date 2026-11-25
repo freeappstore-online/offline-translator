@@ -71,3 +71,7 @@ Phrase packages use their own browser cache and load before the remote deck. Bro
 ### Saved-model reload correction — 25 November 2026
 
 Cache-only loading requires `env.allowLocalModels=true` in Transformers.js. The worker now enables it when a complete saved pack is detected. Saved packs still require initialization after a page reload, which happens automatically on translation. The Check saved model action is an optional verification.
+
+### Language pairs in Packs
+
+Packs uses English, Tiếng Việt and 简体中文 labels with flag icons. English uses the UK flag as a visual cue. Selecting a pair filters the model list. English–Vietnamese offers both OPUS-MT directions and M2M100; pairs with Chinese offer M2M100. The phrase library and multilingual model are shared downloads; selecting another pair reuses their saved status. Pair selection is disabled during a download to keep its progress associated with the selected resources.

@@ -1,0 +1,10 @@
+---
+description: Publish completed Offline Translator updates automatically
+alwaysApply: true
+---
+
+The maintainer authorizes routine app updates to be pushed and deployed as part of completing the requested work.
+After appropriate validation, commit the requested changes and push main to the existing freeappstore-online/offline-translator repository.
+Monitor the deployment and verify the public app before reporting completion.
+A separate request to push is unnecessary. Honor explicit local-only, draft, pause, or deferred decisions.
+Keep credentials, local environment files and translation history out of commits.

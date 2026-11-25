@@ -1,2 +1,2 @@
 // Update this note when changing the translation or evaluation pipeline.
-export const buildChanges = 'Fixed saved model reload: enable local model access when requesting cache-only loading; clarified saved-pack verification.'
+export const buildChanges = 'Packs now selects language pairs using flags and native language names, and filters relevant model resources while sharing installed assets across pairs.'
