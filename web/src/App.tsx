@@ -943,7 +943,6 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
           <div className="mt-2 flex items-end justify-between gap-3">
             <span className="text-xs text-muted" aria-live="off">{draft.length} / 500</span>
             <div className="flex items-center gap-3">
-              <button type="button" onClick={() => document.getElementById(inputId)?.focus()} className={control} aria-label={t('Text')}><span aria-hidden="true">⌨</span></button>
               <button type="button" onClick={() => setStatus(t('Voice input is coming soon. Your microphone is off. Type here to translate for now.'))} aria-label={t('Voice translation')} className="flex size-14 items-center justify-center rounded-full bg-accent text-on-accent">
                 <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-7"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg>
               </button>
