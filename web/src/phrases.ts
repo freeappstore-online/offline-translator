@@ -72,9 +72,9 @@ export function needsHumanReviewWarning(card: Phrase) {
 
 export async function loadPhrases(): Promise<Phrase[]> {
   const saved = await caches.open(phraseCache).then(cache => cache.match(phraseUrl)).catch(() => undefined)
-  if (saved) return (await saved.json()) as Phrase[]
+  if (saved) { try { return validatePhrases(await saved.json()) } catch { /* Recover from an outdated or incomplete saved deck. */ } }
   if (import.meta.env.VITE_USE_BUNDLED_DECK === 'true' || (!datasetId && import.meta.env.DEV)) {
-    return (await import('../../dataset/phrases.json')).default as Phrase[]
+    return validatePhrases((await import('../../dataset/phrases.json')).default)
   }
   if (!/^[\w.-]+\/[\w.-]+$/.test(datasetId)) throw new Error('Dataset repository is missing or invalid.')
   const response = await fetch(`https://huggingface.co/datasets/${datasetId}/resolve/main/phrases.json`, {
@@ -84,7 +84,10 @@ export async function loadPhrases(): Promise<Phrase[]> {
   })
   if (!response.ok) throw new Error(`Dataset request failed (${response.status}).`)
 
-  const cards = await response.json()
+  return validatePhrases(await response.json())
+}
+
+export function validatePhrases(cards: unknown): Phrase[] {
   const ids = new Set<string>()
   if (!Array.isArray(cards) || !cards.length) throw new Error('The dataset has no cards.')
   for (const card of cards) {
@@ -101,7 +104,4 @@ export async function loadPhrases(): Promise<Phrase[]> {
   return cards.filter(card => card.review?.status !== 'rejected')
 }
 
-export function normalize(text: string) {
-  return text.normalize('NFKC').toLowerCase().replace(/[’']/g, '')
-    .replace(/\p{P}/gu, ' ').trim().replace(/\s+/g, ' ')
-}
+export { normalize } from './text-normalize'

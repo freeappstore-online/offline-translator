@@ -34,3 +34,15 @@ Actual app worker, Transformers.js 4.3.2, WASM q8, pinned multilingual Whisper T
 - Fresh worker, model-network requests blocked after caching: preparation 934.8 ms, inference 1656.4 ms. Returned the same expected sentence. The fixture was fetched before blocking model traffic; this verifies model reuse, not an entirely disconnected browser session.
 - TypeScript and production build passed. Test harnesses were temporary development files and are not shipped.
 - Not measured yet: Vietnamese and Chinese recognition accuracy, actual microphone capture on Safari/mobile, noisy speech, full offline app reload and competing ASR/translation memory costs. No accuracy scores are inferred from the English smoke tests.
+
+## 26 November 2026 — actual app worker smoke batch
+
+Raw inputs, outputs, preparation/inference timings and agent meaning reviews are in `docs/experiments/2026-11-26.json`. Five travel sentences were run directly through each available English/Vietnamese model direction, bypassing cards. Other OCR/speech jobs ran concurrently, so these timings are not a controlled architecture comparison.
+
+OPUS English→Vietnamese omitted `6:30` entirely in a time sentence. M2M100 retained the clock but lost the evening qualifier and translated restaurant “bill” as “account”. OPUS Vietnamese→English changed a card-payment question into “Can I get my cards?”. Both remain available; the earlier user observation that OPUS often performed worse remains an observation rather than a settled model-selection rule. Regression tests now flag missing clock/period information. Automatic checks still cannot detect every semantic error.
+
+Actual browser Whisper Tiny tests recognized the public English JFK fixture, but changed words in synthetic Vietnamese and Chinese samples. Chinese also used Traditional characters despite Simplified input. These are recorded failures, not silently corrected transcripts. Full MediaRecorder flow was exercised using a synthetic stream; this is not a physical microphone/Safari quality test.
+
+Tesseract recognized the synthetic EN/VI/ZH image fixtures. Cached English recognition also completed with external worker fetch blocked. The initial supplied-buffer language initialization failed; switching to the library's standard string-language/IndexedDB path fixed it. Empty system-generated audio fixtures were regenerated and excluded from quality results.
+
+Validated flows: exact-card result, save/reuse/remove/undo, same-screen voice transcription, automatic opposing-reader Conversation translation, microphone-denied recovery, camera recognition/editable handoff, persisted model preference, and 320/375-pixel mobile layouts without horizontal overflow. Remaining device validation: physical Safari microphone/camera, noisy photos, real speaker accents, memory pressure/eviction, and full cold airplane-mode launch.

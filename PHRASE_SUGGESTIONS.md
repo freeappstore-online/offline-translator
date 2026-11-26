@@ -81,3 +81,7 @@ Do **not** combine chat history with a flipped card in one screen. Avoid you/the
 - Reuse `rankSuggestions` on the Cards search grid.
 - Log `suggestionAccepted` on export entries if eval needs it.
 - Tune min score once a larger Hugging Face deck is in use.
+
+## Current implementation override — 26 November 2026
+
+Basic microphone input now transcribes into the current editable field. Conversation uses two opposing voice panels with automatic translation onto the other reader's side. Camera is a separate bottom tab with local OCR and editable handoff. Earlier preview/coming-soon descriptions are superseded. Both model families, approval-gated exact matching, explicit pattern variants and hidden JSON history remain. No arbitrary slot composition or automatic review approval was added.

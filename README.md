@@ -1,115 +1,66 @@
 # Offline Translator
 
-Offline Translator is a FreeAppStore travel phrasebook for English, Simplified Chinese, and Vietnamese. It uses the platform SDK Shell with Cards, Translate, and Packs. The first build follows the card interaction in the [original mockup](https://wayword-pack-demo.thanhvanktm2006.chatgpt.site/).
+A mobile-first FreeAppStore translator for English, Vietnamese and Simplified Chinese. The interface supports all three languages, with native language names and localized secondary labels. Purple controls, orange accents and reader-facing conversation panels follow the maintainer's design decisions.
 
-## Develop locally
+## Current features
 
-Use Node 22 or newer and the pnpm version pinned in package.json.
+- **Translate:** editable text or local multilingual voice input; approved complete card/word/pattern lookup runs before OPUS-MT or M2M100. Basic microphone input stays in the same screen. Check the transcript, then translate.
+- **Conversation:** opposing voice panels. Recognition automatically enters the same translation pipeline; the translated result appears on the other person's panel. No reversed keyboard.
+- **Camera:** take/select a photo, recognize English/Vietnamese/Simplified Chinese locally, edit the text, and send it to Translate with the selected direction. Recognition is Tesseract.js 6.0.1; images are not uploaded or retained in history.
+- **Cards:** scenario/task navigation, search, card favorites and separately saved translation results. Saved results support reuse, removal and undo. Device speech playback uses installed local voices only.
+- **Packs:** searchable language-pair selection, explicit model/phrase/OCR preparation, cancel, removal, cache checks, storage usage/protection and release of active model memory. Downloaded resources are shared across relevant pairs.
+- **Settings:** interface language, theme and translation model choice. Both OPUS-MT directions and M2M100 remain available. No account/sign-in is required.
+
+## Offline operation and preparation
+
+Open the app online once and prepare the resources you need from Packs. The service worker caches the app shell. Translation and speech use separate revision-pinned browser caches; camera language data also uses Tesseract's IndexedDB cache. Camera runtime assets are served by this app and cached on demand, rather than added to every initial installation.
+
+Reopening still creates a WASM runtime, reads/decompresses weights, allocates memory and prepares inference sessions. Saved files avoid the network download, not initialization. A shared live worker reuses its active session between attempts. Switching translation model/direction or OCR language can require another preparation. No large background model download or automatic architecture switch is performed.
+
+Storage quota, memory and eviction depend on the browser/device. Saved status checks required files; OCR also needs a successfully prepared language. Clearing site data removes resources and local records. Cached English OCR passed a worker-network-blocked test; a full cold airplane-mode launch and physical Safari microphone/camera behavior still need device validation.
+
+## Phrase library and approval
+
+Production currently uses `VITE_USE_BUNDLED_DECK=true`: the bundled development deck has **1,024 cards**, including pending drafts. Pending high-risk translations carry a warning in Cards and translation results. The development deck remains usable for testing while review is pending; stored matching does not imply human approval. No automatic match is a guarantee of linguistic accuracy. Independent review remains required, especially medical/allergy content.
+
+The public Hugging Face dataset is `van-nguyen/offline-translator-phrases`; it is separate from the bundled development deck and has not received these pending additions. Set `VITE_HF_DATASET_ID=owner/repository` to choose a public repository. With bundled mode disabled, loading prefers a saved phrase package, then the configured remote dataset, and reports a retryable error if that remote deck is unavailable. No token belongs in the client.
+
+Lookup accepts normalized exact complete phrases, words and explicitly approved pattern variants. Patterns reference stable vocabulary IDs and materialize approved full sentences. Unknown slots, conflicting matches and extended sentences fall through to the selected model. Ranked suggestions are optional user choices and never silently treated as exact matches. See [DATASET_REVIEW.md](DATASET_REVIEW.md) for AI drafting, critic and human-review workflows; generated content does not acquire approval automatically.
+
+## Models and local processing
+
+- OPUS-MT: separate `Xenova/opus-mt-en-vi` and `Xenova/opus-mt-vi-en`, q8.
+- M2M100: `Xenova/m2m100_418M`, q8; shared multilingual model.
+- Voice: multilingual `Xenova/whisper-tiny`, q8, selected spoken source language, 20-second recording maximum. Local audio decoding/downmixing/resampling to 16 kHz; raw audio discarded.
+- Camera: Tesseract LSTM with eng/vie/chi_sim trained data. Images up to 20 MB are resized to a maximum 2,400-pixel dimension before recognition.
+
+Transformers.js 4.3.2 runs model inference in single-thread WASM workers. First preparation downloads public weights, not user inputs. Microphone/camera access follows a user action. Permission errors, cancellation, timeouts and interrupted work have recoverable states.
+
+Whisper Tiny made Vietnamese and Chinese errors in synthetic fixture tests. Both translation families made meaning errors, including lost times and an incorrect bill/account translation. They remain experimental choices, not validated quality tiers. See [MODEL_EXPERIMENTS.md](MODEL_EXPERIMENTS.md) and [docs/experiments/2026-11-26.json](docs/experiments/2026-11-26.json).
+
+## Records and evaluation
+
+Packs exports **translation-history.json**, **speech-history.json** and **camera-history.json** separately. Records stay on this browser until explicitly exported; full translation history is not displayed in the product. Saved results are a separate user action.
+
+Translation attempts include UTC timestamp, original/result or error, direction, exact model revision, input method, total time, lookup path, build fingerprint and developer-maintained changes-before-run note. Model preparation and inference timings are separate. Speech/OCR records include their own timings and outcomes; no raw audio/images are logged. Automatic checks flag recognizable time/AM-PM, currency, identifier and negation changes. They are limited checks, not a semantic judge. Agent/native-speaker review of exported batches remains necessary for meaning accuracy.
+
+Update `web/src/build-changes.ts` whenever the pipeline changes. The fingerprint hashes app source, build plugin/config and dependency lock; restart the dev server before comparing builds. Old entries retain their metadata. SDK automatic capture/upload is disabled by the existing SDK logger patch.
+
+## Develop and verify
+
+Use Node 22+ and the pinned pnpm 10.30.3:
 
 ```sh
 corepack pnpm install --frozen-lockfile
 corepack pnpm dev
-```
-
-The dev server shows the checked-in 12-card sample when no dataset is configured. Favorites store stable card IDs in the browser. Translate looks up phrases in the loaded deck in either direction. The sample medical and allergy translations await independent native-speaker review.
-
-## Connect Hugging Face
-
-Create a public Hugging Face dataset repository and upload the contents of `dataset/` to the root of its `main` branch. Set `VITE_HF_DATASET_ID=owner/repository` in `web/.env.local` for local testing. For the FreeAppStore deployment, set the same public ID as a GitHub Actions repository variable. Only the dataset ID belongs in this setting.
-
-Production downloads the deck when the app opens. The service worker caches the app shell. Cards and lookup require an internet connection to load the deck. Once it loads, both features work for the rest of that visit.
-
-## Build and check
-
-```sh
+corepack pnpm typecheck
+corepack pnpm test
 corepack pnpm build
 fas check
 ```
 
-The static output is `web/dist/`. The project follows the [FreeAppStore guide](https://freeappstore.online/skills.md) and uses the same SDK logger patch as Symptom Journal to disable log capture and upload. The inherited deployment workflow requires FreeAppStore provisioning before it can deploy. See [HUGGING_FACE.md](HUGGING_FACE.md) for the free-text translation research.
+`web/tests/` contains deterministic regression tests and opt-in browser smoke pages. Microphone harnesses feed public/synthetic audio and must not be mistaken for physical device recording tests. Test pages/fixtures are not production build inputs. Local review lives at `/review` in Vite development only, passphrase-gated; it is not a public route.
 
-## Downloadable translation models
+Output is `web/dist/`. Completed, validated updates are pushed to the existing main branch and deployed through the FreeAppStore reusable GitHub workflow, per maintainer preference. Credentials, environment files and user history are excluded from commits. A new-version notice lets the user reload after their current task.
 
-In Translate, select OPUS-MT for English ↔ Vietnamese or M2M100 for any pair among English, Vietnamese and Simplified Chinese. Each model downloads on its first free-text translation and runs locally. OPUS-MT downloads each direction independently. The browser may evict cached assets. OPUS-MT is selected by default. In Face to face mode, the lower panel stays upright and the upper panel faces the other person. Each translation appears in the panel of the person who will read it.
-
-## Translation log
-
-Use **Packs → Export translation JSON** to download the browser’s saved translation records. The export includes source, result or runtime error, language direction, timestamp, model or stored match, elapsed time, and quality flags. The log is stored locally until exported, subject to browser storage limits.
-
-The app checks identifiers, currency, negation, and recognizable times locally. These checks identify possible errors for later review. They do not perform back-translation. Historical exports can still include earlier browser translator results.
-
-### Comparing implementations
-
-Each attempt automatically records the developer-maintained change note in `web/src/build-changes.ts`, alongside its UTC submission timestamp, selected engine, execution path, and pinned model revision when available. Update this note when changing the translation or evaluation pipeline. The build fingerprint hashes the app source, Vite config and dependency lock. Restart the local dev server after source edits when comparing builds so it recomputes the fingerprint. Earlier log entries retain their original metadata.
-
-### Stored words and sentence patterns
-
-Translate builds a local lookup index from the loaded phrase cards and the bundled vocabulary and patterns. Vocabulary entries have stable IDs. A pattern references those IDs and stores its own accepted slot wording and complete translation for each supported language. For example, try `luggage`, `I need help with my luggage`, and `I need help with my bags`. The starter data covers luggage and tickets in English, Vietnamese and Simplified Chinese. The bundled entries work whenever the app shell is available. The Hugging Face deck still loads separately.
-
-Only complete phrases, words and explicitly listed pattern variants match. Conflicting translations for the same input and direction fall through to the selected model, as do unknown slot values. The log records lookup time, the matched entry ID and the vocabulary ID for pattern matches.
-
-## Development deck deployment — 25 November 2026
-
-The app can load the bundled 1,000-card development deck with `VITE_USE_BUNDLED_DECK=true`. The 988 new entries retain pending review metadata. Hugging Face publication and independent review remain outstanding.
-
-## Scenario navigation and shared vocabulary — 25 November 2026
-
-Cards uses scenario tabs and task groups. Search spans all scenarios. Existing rows are assigned compatible scenarios by `card-scenarios.ts`; explicit `scenarios` and `task` metadata override these defaults. Lost belongings can appear in restaurant, hotel and transport scenarios. Saved remains a separate view.
-
-The deck includes 24 new pending drafts covering missing tasks such as waiting for a table, splitting the bill, room problems, shopping and transfers. These also enter the review queue. The bundled deck now has 1,024 cards; the Hugging Face deck requires a separate update.
-
-The belongings pilot shares typed vocabulary between standalone lookup and the complete `I left my {belonging} here` frame. The index materializes each allowed full sentence per language. Existing stored cards take precedence when their translations agree. Conflicting matches fall through to the model. Unknown vocabulary and extended sentences fall through. The pilot includes eight belongings; arbitrary slot input remains unsupported. These prototype translations require independent review.
-
-Scenario task groups initially show six cards with a Show all control. Search displays all matching results. Contextual lost-belongings cards are limited to relevant loss, left-behind and seen-item phrases.
-
-## Packs download manager — 25 November 2026
-
-Packs downloads the current phrase library, either OPUS-MT direction, or M2M100. A smoke translation prepares a model; saved status requires all six revision-pinned configuration, tokenizer and ONNX files in the app's model cache. Translation uses that cache and enables local-files-only loading for complete packs. A live worker retains its active model; switching model families or OPUS-MT directions prepares another session.
-
-Phrase packages use their own browser cache and load before the remote deck. Browser eviction or clearing site data can remove packs. The production service worker caches the app shell and fetched WASM binary; model-file status alone does not certify a cold airplane-mode launch. Model downloads currently run to completion or fail with a retryable error. The manager shows browser storage usage and keeps translation JSON export available below the packages.
-
-### Saved-model reload correction — 25 November 2026
-
-Cache-only loading requires `env.allowLocalModels=true` in Transformers.js. The worker now enables it when a complete saved pack is detected. Saved packs still require initialization after a page reload, which happens automatically on translation. The Check saved model action is an optional verification.
-
-### Language pairs in Packs
-
-Packs uses English, Tiếng Việt and 简体中文 labels with flag icons. English uses the UK flag as a visual cue. Selecting a pair filters the model list. English–Vietnamese offers both OPUS-MT directions and M2M100; pairs with Chinese offer M2M100. The phrase library and multilingual model are shared downloads; selecting another pair reuses their saved status. Pair selection is disabled during a download to keep its progress associated with the selected resources.
-
-### Searchable language selection
-
-Packs has two keyboard-accessible language comboboxes. Native names appear with English secondary names because the current app interface is English. Search accepts either name, language code, or unaccented Vietnamese. Choosing the language already selected in the other field swaps the pair. Resources remain shared across reversed pairs.
-
-Model observations and deferred architecture options: see [MODEL_EXPERIMENTS.md](MODEL_EXPERIMENTS.md).
-
-Chat input shows From and To language fields for the selected conversation pair. The middle arrow indicates left-to-right translation; Reverse exchanges the languages. Selecting either language also reverses the pair. Controls are disabled while sending.
-
-Language labels use native names with English in parentheses, for example Tiếng Việt (Vietnamese). English remains English.
-
-## Interface languages
-
-The App language selector supports English, Vietnamese and Simplified Chinese. It follows the browser language initially, remembers an explicit choice locally, and does not change the translation pair or phrase content. Language labels combine a native name with its name in the current interface language; identical names appear once. Search accepts native names, English names, localized names and codes. App controls and scenario names are translated locally with English fallback. Model identifiers and technical failure details remain unchanged.
-
-Visual palette: purple primary controls, orange secondary accents, pale lavender surfaces and warm translation results. Dark mode uses matching purple and amber tones.
-
-Translation input methods stay beside the text input in One way, Chat and Face to face. Text focuses the current field; Voice and Camera are disabled, labeled Coming soon, and request no permissions. Layout modes remain separate from input methods. Translation logs remain outside the interface.
-
-The default translation screen follows reference picture 2: a full purple input surface, source-language selector and menu at the top, camera/microphone placeholders below the input, and a white curved result panel. Layout and pair controls are behind the menu. Existing chat and face-to-face modes remain available.
-
-Face to face is now a voice-interface preview with two opposing microphone controls and reader-facing translation placeholders. No keyboard is shown. Tapping a microphone explains that the voice stack is not connected; it does not record, request microphone permission, run a model or create a translation log.
-
-Voice translation opens directly from the microphone input control in Text or Chat. The separate Face to face tab is removed; its opposing-reader layout is now the Voice translation preview. A Text back button returns to typing.
-
-The mobile home layout uses paired source/target fields and a circular swap button above a white input card, keyboard and microphone controls, a separate result card, and fixed bottom navigation. Camera has a dedicated preview tab; it requests no camera access. Bottom tabs are Translate, Cards, Camera, Packs and Settings. Copy works on translation results. History remains export-only.
-
-Translate now exposes a Translate / Conversation layout switch. The basic translator microphone stays in the current layout and displays a truthful voice-input-coming-soon message. Conversation contains the opposing-reader voice preview. Neither preview records audio.
-
-## Multilingual speech input
-
-The basic Translate microphone uses Transformers.js 4.3.2 with `Xenova/whisper-tiny` (multilingual, not the English-only `.en` checkpoint), pinned to `5332fcc35e32a33b86612b9a57a89be7906102b1`, q8 in a single-thread WASM worker. Select the spoken source language first: English, Vietnamese or Simplified Chinese. Tap to record, tap again to stop (20-second maximum). Audio is decoded, downmixed and resampled to 16 kHz locally. Whisper uses `task: transcribe`; it does not replace the existing text translation models. Check/edit the transcript and tap Translate to use the existing approved-card-first pipeline.
-
-The first recognition downloads model files from Hugging Face. Completed speech files use the separate `offline-translator-speech-v1` browser cache; complete packs load cache-only on reopening. Runtime initialization is still needed each session. Audio stays in memory and is discarded; it is not uploaded or saved in the logs. Speech text, timestamps, pinned model, build/change note, recording duration, model preparation/inference times and errors are stored locally and can be exported as `speech-history.json` from Packs. The normal translation log remains separate. Permission denial, unsupported recording, short/silent audio, decoding/inference errors, cancellation and a three-minute processing timeout are handled. No microphone permission is requested until the user taps the button. Recording stops when the page is hidden; navigating away cancels pending work and releases tracks.
-
-Conversation remains a voice-layout preview; this first integration activates speech input in the basic translator. Actual Vietnamese/Chinese recognition quality and Safari microphone recording still require device testing. Keep both translation model families available.
-
-Speech sources and licenses: [Transformers.js](https://github.com/huggingface/transformers.js) (Apache-2.0), [Whisper ONNX conversion](https://huggingface.co/Xenova/whisper-tiny) (model-card license Apache-2.0), [upstream Whisper](https://github.com/openai/whisper) (MIT). Model weights are downloaded from their source, not bundled in this repository.
+Sources/licenses: [Transformers.js](https://github.com/huggingface/transformers.js) Apache-2.0, [Whisper conversion](https://huggingface.co/Xenova/whisper-tiny) Apache-2.0 model card, [upstream Whisper](https://github.com/openai/whisper) MIT, [Tesseract.js](https://github.com/naptha/tesseract.js) Apache-2.0. Model weights are downloaded from their public source rather than committed here. Platform setup follows [FreeAppStore](https://freeappstore.online/skills.md).

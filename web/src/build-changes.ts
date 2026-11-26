@@ -1,2 +1,2 @@
-// Update this note when changing the translation or evaluation pipeline.
-export const buildChanges = 'Added multilingual Whisper Tiny q8 speech recognition in a WASM worker. Basic voice input records up to 20 seconds, transcribes locally into editable text, and uses existing card-first translation after review. Speech logs are exportable separately; raw audio is not retained.'
+// Update when changing the translation or evaluation pipeline.
+export const buildChanges = 'Connected shared multilingual Whisper voice input to basic Translate, Chat and opposing-reader Conversation; added local Tesseract camera OCR and editable handoff, saved results and local-voice playback. Added resource download/cancel/remove, runtime reuse, isolated caches, storage management and update notice. Separate preparation/inference timings and input method are logged; time checks flag missing clock/AM-PM. Both OPUS-MT directions and M2M100 remain available; card review policy unchanged.'

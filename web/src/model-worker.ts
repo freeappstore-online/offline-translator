@@ -8,15 +8,16 @@ env.useBrowserCache = true
 env.cacheKey = modelCache
 if (env.backends.onnx.wasm) env.backends.onnx.wasm.numThreads = 1
 
-let active: { model: string; translator: TranslationPipeline } | undefined
+let active: { model: string; revision: string; translator: TranslationPipeline } | undefined
 let queue = Promise.resolve()
 self.addEventListener('message', ({ data }: MessageEvent<{
   id: number; model: string; revision: string; input: string; from: Language; to: Language
 }>) => {
   queue = queue.then(async () => {
     const { id, model, revision, input, from, to } = data
+    const started = performance.now()
     try {
-      if (active?.model !== model) {
+      if (active?.model !== model || active?.revision !== revision) {
         const saved = await packSaved({ id: model, revision })
         self.postMessage({ id, status: saved ? 'Preparing saved model…' : 'Downloading model…' })
         // Transformers.js requires local access enabled for cache-only loading.
@@ -27,18 +28,19 @@ self.addEventListener('message', ({ data }: MessageEvent<{
           revision, device: 'wasm', dtype: 'q8', local_files_only: saved,
           progress_callback: event => {
             if (event.status === 'progress') {
-              self.postMessage({ id, status: `Downloading ${event.file.split('/').pop()}… ${Math.round(event.progress)}%` })
+              self.postMessage({ id, status: saved ? 'Preparing saved model…' : `Downloading ${event.file.split('/').pop()}… ${Math.round(event.progress)}%` })
             }
           },
         })
-        active = { model, translator }
+        active = { model, revision, translator }
       }
+      const prepared = performance.now()
       self.postMessage({ id, status: 'Translating…' })
       const options = model.includes('m2m100') ? { src_lang: from, tgt_lang: to } : {}
-      const [result] = await active.translator(input, { ...options, max_new_tokens: 64 })
+      const [result] = await active.translator(input, { ...options, max_new_tokens: Math.min(512, Math.max(128, Math.ceil(input.length * 1.5))) })
       const text = result.translation_text.trim()
       if (!text) throw new Error('Empty translation')
-      self.postMessage({ id, text })
+      self.postMessage({ id, text, metrics: { preparationMs: prepared - started, inferenceMs: performance.now() - prepared } })
     } catch (error) {
       self.postMessage({ id, error: String(error) })
     }

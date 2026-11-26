@@ -5,6 +5,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+// @ts-expect-error app-local JS build plugin
+import { ocrRuntimePlugin } from './ocr-runtime-plugin.mjs'
 // @ts-expect-error JS plugin loaded from Vite config
 import { reviewDevPlugin } from './review-dev-plugin.mjs'
 
@@ -13,7 +15,7 @@ const trackedFiles = [
   ...readdirSync(new URL('./src/', import.meta.url), { recursive: true, withFileTypes: true })
     .filter(file => file.isFile())
     .map(file => file.parentPath.slice(webRoot.length) + '/' + file.name),
-  'vite.config.ts', 'package.json', '../pnpm-lock.yaml',
+  'vite.config.ts', 'ocr-runtime-plugin.mjs', 'package.json', '../pnpm-lock.yaml',
 ].sort()
 
 const fingerprint = createHash('sha256')
@@ -28,6 +30,7 @@ export default defineConfig({
   worker: { format: 'es' },
   plugins: [
     reviewDevPlugin(),
+    ocrRuntimePlugin(),
     react(),
     tailwindcss(),
     VitePWA({
@@ -35,8 +38,9 @@ export default defineConfig({
       manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,json}'],
+        globIgnores: ['ocr-runtime/**'],
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        runtimeCaching: [{
+        runtimeCaching: [{ urlPattern: /\/ocr-runtime\//, handler: 'CacheFirst', options: { cacheName: 'offline-translator-ocr-runtime-v1' } }, {
           urlPattern: /\/assets\/ort-wasm-[^/]+\.wasm$/,
           handler: 'CacheFirst',
           options: { cacheName: 'offline-translator-wasm', expiration: { maxEntries: 2 } },

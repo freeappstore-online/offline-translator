@@ -2,9 +2,9 @@
   "name": "Offline Translator",
   "short_name": "Translator",
   "description": "Travel phrase cards in English, Simplified Chinese, and Vietnamese.",
-  "start_url": "/",
+  "start_url": "/translate",
   "display": "standalone",
-  "background_color": "#f6f3ec",
+  "background_color": "#061841",
   "theme_color": "#8224b5",
   "icons": [
     {
@@ -18,6 +18,14 @@
     {
       "name": "microphone",
       "reason": "Record a short clip for on-device multilingual speech recognition."
+    },
+    {
+      "name": "clipboard",
+      "reason": "Copy a translation when you tap Copy."
+    },
+    {
+      "name": "camera",
+      "reason": "Take a photo for local text recognition when you choose Take photo."
     }
   ],
   "min_viewport_width": 320,

@@ -1,5 +1,6 @@
 import { env, pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers'
 import { speechCache, speechModel } from './speech-model'
+import { speechSaved } from './model-resources'
 import type { Language } from './model-options'
 
 env.allowLocalModels = false
@@ -7,24 +8,24 @@ env.useBrowserCache = true
 env.cacheKey = speechCache
 if (env.backends.onnx.wasm) env.backends.onnx.wasm.numThreads = 1
 let recognizer: AutomaticSpeechRecognitionPipeline | undefined
-self.onmessage = async ({ data }: MessageEvent<{ id: number; samples: Float32Array; language: Language }>) => {
+let queue = Promise.resolve()
+self.onmessage = ({ data }: MessageEvent<{ id: number; samples?: Float32Array; language: Language }>) => {
+  queue = queue.then(async () => {
   const started = performance.now()
   try {
     if (!recognizer) {
       self.postMessage({ id: data.id, status: 'Preparing speech model…' })
-      const cache = await caches.open(speechCache)
-      const files = ['config.json', 'tokenizer.json', 'tokenizer_config.json', 'preprocessor_config.json', 'generation_config.json', 'onnx/encoder_model_quantized.onnx', 'onnx/decoder_model_merged_quantized.onnx']
-      const prefix = `https://huggingface.co/${speechModel.id}/resolve/${speechModel.revision}/`
-      const saved = (await Promise.all(files.map(file => cache.match(prefix + file)))).every(response => response?.ok)
+      const saved = await speechSaved()
       env.allowLocalModels = saved
       recognizer = await pipeline('automatic-speech-recognition', speechModel.id, {
         revision: speechModel.revision, device: 'wasm', dtype: 'q8', local_files_only: saved,
         progress_callback: event => {
-          if (event.status === 'progress') self.postMessage({ id: data.id, status: 'Downloading speech model…', progress: Math.round(event.progress) })
+          if (event.status === 'progress') self.postMessage({ id: data.id, status: saved ? 'Preparing saved model…' : 'Downloading speech model…', progress: Math.round(event.progress) })
         },
       })
     }
     const prepared = performance.now()
+    if (!data.samples) { self.postMessage({ id: data.id, preparationMs: prepared - started }); return }
     self.postMessage({ id: data.id, status: 'Recognizing speech…' })
     const result = await recognizer(data.samples, {
       language: { en: 'english', vi: 'vietnamese', zh: 'chinese' }[data.language], task: 'transcribe',
@@ -35,4 +36,5 @@ self.onmessage = async ({ data }: MessageEvent<{ id: number; samples: Float32Arr
     if (!text) throw new Error('No speech recognized. Try again in a quiet place.')
     self.postMessage({ id: data.id, text, preparationMs: prepared - started, inferenceMs: performance.now() - prepared })
   } catch (error) { self.postMessage({ id: data.id, error: String(error) }) }
+  })
 }

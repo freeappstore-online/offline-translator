@@ -1,5 +1,6 @@
 import type { Language } from './model-options'
-import { normalize, type Phrase } from './phrases'
+import type { Phrase } from './phrases'
+import { normalize } from './text-normalize'
 
 export type PhraseSuggestion = {
   card: Phrase
@@ -10,7 +11,7 @@ const DEFAULT_LIMIT = 5
 const DEFAULT_MIN_SCORE = 0.38
 
 function fold(text: string) {
-  return text.normalize('NFD').replace(/\p{M}/gu, '')
+  return text.normalize('NFD').replace(/\p{M}/gu, '').replace(/đ/g, 'd')
 }
 
 function prepared(text: string) {
@@ -64,37 +65,35 @@ function levenshtein(a: string, b: string) {
   return previous[b.length]!
 }
 
-export function scorePhrase(query: string, candidate: string, lang: Language) {
-  const q = prepared(query)
-  const c = prepared(candidate)
+type Features = { text: string; words: ReadonlySet<string>; grams: ReadonlySet<string>; cjk: boolean }
+const features = (value: string, lang: Language): Features => {
+  const text = prepared(value)
+  return { text, words: new Set(tokens(text, lang)), grams: bigrams([...text.replace(/\s+/g, '')]), cjk: isCjk(lang, text) }
+}
+const featureCache = new WeakMap<Phrase, Partial<Record<Language, { source: string; value: Features }>>>()
+function candidateFeatures(card: Phrase, lang: Language) {
+  const entries = featureCache.get(card) ?? {}
+  if (entries[lang]?.source !== card[lang]) entries[lang] = { source: card[lang], value: features(card[lang], lang) }
+  featureCache.set(card, entries)
+  return entries[lang]!.value
+}
+function scorePrepared(query: Features, candidate: Features) {
+  const q = query.text, c = candidate.text
   if (!q || !c) return 0
   if (q === c) return 1
-
   let score = 0
   if (c.startsWith(q)) score = Math.max(score, 0.9 + Math.min(0.09, (q.length / c.length) * 0.09))
   else if (c.includes(q)) score = Math.max(score, 0.72 + Math.min(0.12, (q.length / c.length) * 0.12))
-
-  const queryTokens = new Set(tokens(q, lang))
-  const candidateTokens = new Set(tokens(c, lang))
-  const tokenScore = Math.max(
-    jaccard(queryTokens, candidateTokens),
-    coverage(queryTokens, candidateTokens) * 0.95,
-  )
+  const tokenScore = Math.max(jaccard(query.words, candidate.words), coverage(query.words, candidate.words) * 0.95)
   score = Math.max(score, tokenScore * 0.82)
-
-  if (isCjk(lang, q + c)) {
-    const gramScore = jaccard(bigrams([...q.replace(/\s+/g, '')]), bigrams([...c.replace(/\s+/g, '')]))
-    score = Math.max(score, gramScore * 0.88)
-  }
-
+  if (query.cjk || candidate.cjk) score = Math.max(score, jaccard(query.grams, candidate.grams) * 0.88)
   if (q.length <= 16 && c.length <= 48) {
-    const distance = levenshtein(q, c)
-    const similarity = 1 - distance / Math.max(q.length, c.length)
+    const distance = levenshtein(q, c), similarity = 1 - distance / Math.max(q.length, c.length)
     if (similarity >= 0.68) score = Math.max(score, similarity * 0.84)
   }
-
   return score
 }
+export function scorePhrase(query: string, candidate: string, lang: Language) { return scorePrepared(features(query, lang), features(candidate, lang)) }
 
 export function rankSuggestions(
   query: string,
@@ -109,9 +108,10 @@ export function rankSuggestions(
   const limit = options.limit ?? DEFAULT_LIMIT
   const minScore = options.minScore ?? DEFAULT_MIN_SCORE
   const ranked: PhraseSuggestion[] = []
+  const queryFeatures = features(trimmed, from)
 
   for (const card of cards) {
-    const score = scorePhrase(trimmed, card[from], from)
+    const score = scorePrepared(queryFeatures, candidateFeatures(card, from))
     if (score < minScore) continue
     ranked.push({ card, score })
   }

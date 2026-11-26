@@ -4,6 +4,10 @@
 @theme inline {
   --font-sans: "Manrope", system-ui, sans-serif;
   --font-display: "Fraunces", Georgia, serif;
+  --color-canvas: var(--canvas);
+  --color-canvas-ink: var(--canvas-ink);
+  --background-image-canvas-art: var(--canvas-art);
+  --shadow-navigation: var(--navigation-shadow);
   --color-paper: var(--paper);
   --color-paper-deep: var(--paper-deep);
   --color-panel: var(--panel);
@@ -30,6 +34,10 @@
 
 :root {
   color-scheme: light;
+  --canvas: #061841;
+  --canvas-ink: #f8f3ff;
+  --canvas-art: radial-gradient(ellipse at 5% 55%, #8224b544, transparent 50%), radial-gradient(ellipse at 95% 70%, #ff8a0033, transparent 45%);
+  --navigation-shadow: 0 8px 32px #25133322;
   --paper: #f8f5fc;
   --paper-deep: #eee6f5;
   --panel: #ffffff;
@@ -56,6 +64,9 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
+  --canvas: #120c18;
+  --canvas-ink: #f8f3ff;
+  --canvas-art: radial-gradient(ellipse at 5% 55%, #8224b533, transparent 50%), radial-gradient(ellipse at 95% 70%, #ff8a0018, transparent 45%);
   --paper: #19111f;
   --paper-deep: #120c18;
   --panel: #281b32;
@@ -80,7 +91,7 @@
 }
 
 @layer base {
-  body { @apply bg-paper font-sans text-ink; }
+  body { @apply bg-canvas font-sans text-ink; }
   h1 { @apply font-display; }
   button { @apply cursor-pointer; }
   :focus-visible { @apply outline-2 outline-offset-2 outline-accent; }
@@ -90,22 +101,7 @@
   #root > div > header > div > a[href="https://freeappstore.online"] { display: none; }
 }
 
-/* The reference layout keeps modes and pair selection behind its menu. */
-#translator-menu:not([open]) { display: none; }
-.reference-translator select option { background: var(--panel); color: var(--ink); }
-
-.bottom-navigation { position: fixed; z-index: 40; bottom: max(.75rem, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(calc(100% - 1.5rem), 40rem); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .125rem; padding: .5rem; border: 1px solid var(--line); border-radius: 1.5rem; background: var(--panel); box-shadow: 0 8px 32px #25133322; }
-#app-preferences:not([open]) { display: none; }
-
-body { background: #061841; }
-.app-workspace { background: radial-gradient(ellipse at 5% 55%, #8224b544, transparent 50%), radial-gradient(ellipse at 95% 70%, #ff8a0033, transparent 45%), #061841; }
-.app-workspace > header h1 { color: #fff; }
-.app-workspace > header h1 span { color: #d4a1f2; }
-.app-workspace > header button { background: transparent; border-color: transparent; color: #fff; }
-.app-workspace .bg-panel { color: var(--ink); }
-.app-workspace > h1, .app-workspace > p, .app-workspace > label { color: #f8f3ff; }
-
 @layer components {
-  /* This offline app does not expose the SDK shell sign-in action. */
+  /* The offline app has no account features; preserve the SDK shell accessibility controls. */
   #root > div > header > div:last-child > button.bg-accent { display: none; }
 }

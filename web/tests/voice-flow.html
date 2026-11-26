@@ -1,0 +1,11 @@
+<!doctype html><html><body><div id="root"></div><script type="module">
+import React from 'react';import{createRoot}from'react-dom/client';import App from '/src/App.tsx';import '/src/index.css';
+const denied = location.search.includes('deny');
+const fixture = fetch('https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/jfk.wav').then(response=>response.arrayBuffer());
+Object.defineProperty(navigator.mediaDevices,'getUserMedia',{configurable:true,value:async()=>{
+ if(denied)throw new DOMException('Test permission denial','NotAllowedError');
+ const context=new AudioContext();await context.resume();const data=await context.decodeAudioData((await fixture).slice(0));const source=context.createBufferSource();source.buffer=data;const destination=context.createMediaStreamDestination();source.connect(destination);source.start();
+ for(const track of destination.stream.getTracks()){const stop=track.stop.bind(track);track.stop=()=>{stop();void context.close().catch(()=>{})}}return destination.stream;
+}});
+history.replaceState(null,'','/translate');createRoot(document.querySelector('#root')).render(React.createElement(App));
+</script></body></html>

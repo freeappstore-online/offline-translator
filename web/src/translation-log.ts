@@ -24,6 +24,8 @@ export type LogEntry = {
     execution: 'phrase card' | 'Phrase card' | 'Vocabulary' | 'Phrase pattern' | 'browser API' | 'WASM worker'
     changes: string
   }
+  runtime?: { preparationMs: number; inferenceMs: number }
+  inputMethod?: 'text' | 'speech' | 'camera'
   lookup?: { elapsedMs: number; kind: string; id?: string; vocabularyId?: string }
   original: string
   translation: string | null
@@ -38,7 +40,7 @@ export type LogEntry = {
 export function readLog(): LogEntry[] {
   try {
     const entries = JSON.parse(localStorage.getItem(key) ?? '[]')
-    return Array.isArray(entries) ? entries.map((entry: LogEntry) => entry.check.status === 'pending' ? { ...entry, check: { status: 'unavailable', errors: ['Meaning check was interrupted.'] } } : entry) : []
+    return Array.isArray(entries) ? entries.filter((entry: unknown): entry is LogEntry => Boolean(entry && typeof entry === 'object' && typeof (entry as LogEntry).id === 'string' && (entry as LogEntry).check && Array.isArray((entry as LogEntry).check.errors))).map((entry: LogEntry) => entry.check.status === 'pending' ? { ...entry, check: { status: 'unavailable', errors: ['Meaning check was interrupted.'] } } : entry) : []
   } catch {
     return []
   }
@@ -71,16 +73,23 @@ function checkDetails(original: string, translated: string, from: Language, to: 
   if (sourceCurrencies.length && sourceCurrencies.join() !== targetCurrencies.join()) {
     errors.push(`Currency may have changed: ${sourceCurrencies.join(', ')} → ${targetCurrencies.join(', ') || 'unrecognized'}.`)
   }
-  const sourceTime = original.match(/\b(\d{1,2}):(\d{2})\b/u)
-  if (sourceTime) {
-    const clock = new RegExp(`(?:^|[^0-9])0?${Number(sourceTime[1])}\\s*(?::|h|giờ|点|點)\\s*${sourceTime[2]}(?![0-9])`, 'iu')
-    if (!clock.test(translated)) errors.push(`Time may be missing or changed: ${sourceTime[0]}.`)
-  }
   const evening = /\b(?:tonight|evening|p\.?m\.?)\b|tối|晚上|晚间/iu
   const morning = /\b(?:morning|a\.?m\.?)\b|buổi sáng|上午|早上/iu
-  if ((evening.test(original) && morning.test(translated)) || (morning.test(original) && evening.test(translated))) {
-    errors.push('Time of day may have changed between morning and evening.')
+  const clock = (text: string) => {
+    const match = text.match(/(?:^|[^0-9])(\d{1,2})\s*(?::|h|giờ|点|點)\s*(\d{2})(?![0-9])/iu)
+    if (!match) return undefined
+    const hour = Number(match[1]), minute = Number(match[2])
+    if (hour > 23 || minute > 59) return undefined
+    const period = evening.test(text) ? 'pm' : morning.test(text) ? 'am' : undefined
+    return { hour, minute, period, canonical: period === 'pm' ? hour % 12 + 12 : period === 'am' ? hour % 12 : hour }
   }
+  const sourceTime = clock(original), targetTime = clock(translated)
+  if (sourceTime) {
+    if (!targetTime || targetTime.minute !== sourceTime.minute ||
+      (sourceTime.period && (targetTime.period || targetTime.hour > 12) ? targetTime.canonical !== sourceTime.canonical : targetTime.hour !== sourceTime.hour)) errors.push('Time may be missing or changed.')
+    else if (sourceTime.period && !targetTime.period && targetTime.hour <= 12) errors.push('Time of day may be missing.')
+  }
+  if ((evening.test(original) && morning.test(translated)) || (morning.test(original) && evening.test(translated))) errors.push('Time of day may have changed between morning and evening.')
   if (negation[from].test(original) !== negation[to].test(translated)) errors.push('Negation or question wording may have changed.')
   return errors
 }

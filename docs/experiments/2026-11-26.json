@@ -1,0 +1,252 @@
+{
+  "date": "2026-11-26",
+  "timezone": "Asia/Saigon",
+  "environment": "Actual app WASM workers in desktop in-app browser on this Mac; other OCR/speech jobs ran concurrently. Not a controlled benchmark. Individual wall-clock timestamps were not captured in this smoke batch; not invented.",
+  "method": "Direct model calls bypass stored cards. Agent meaning review; not independent native-speaker certification. Durations are observed browser performance.now values.",
+  "translationAttempts": [
+    {
+      "model": "Xenova/opus-mt-en-vi",
+      "revision": "30bcd461c0d7338ad106b36314d3eedc2d4e998c",
+      "fromLanguage": "en",
+      "toLanguage": "vi",
+      "original": "I left my bag on the bus.",
+      "translation": "Tôi để quên túi trên xe buýt.",
+      "totalMs": 14848.2,
+      "preparationMs": 14391.5,
+      "inferenceMs": 197.3,
+      "agentReview": "acceptable"
+    },
+    {
+      "model": "Xenova/opus-mt-en-vi",
+      "revision": "30bcd461c0d7338ad106b36314d3eedc2d4e998c",
+      "fromLanguage": "en",
+      "toLanguage": "vi",
+      "original": "Could I have the bill, please?",
+      "translation": "Tôi có thể lấy hóa đơn không?",
+      "totalMs": 129.8,
+      "preparationMs": 0,
+      "inferenceMs": 129.6,
+      "agentReview": "acceptable"
+    },
+    {
+      "model": "Xenova/opus-mt-en-vi",
+      "revision": "30bcd461c0d7338ad106b36314d3eedc2d4e998c",
+      "fromLanguage": "en",
+      "toLanguage": "vi",
+      "original": "I do not eat pork.",
+      "translation": "Tôi không ăn thịt heo.",
+      "totalMs": 104.5,
+      "preparationMs": 0,
+      "inferenceMs": 104.1,
+      "agentReview": "acceptable"
+    },
+    {
+      "model": "Xenova/opus-mt-en-vi",
+      "revision": "30bcd461c0d7338ad106b36314d3eedc2d4e998c",
+      "fromLanguage": "en",
+      "toLanguage": "vi",
+      "original": "The bus leaves at 6:30 p.m.",
+      "translation": "Xe buýt rời bến lúc p.m.",
+      "totalMs": 135.3,
+      "preparationMs": 0,
+      "inferenceMs": 135.2,
+      "agentReview": "error: clock time omitted"
+    },
+    {
+      "model": "Xenova/opus-mt-en-vi",
+      "revision": "30bcd461c0d7338ad106b36314d3eedc2d4e998c",
+      "fromLanguage": "en",
+      "toLanguage": "vi",
+      "original": "Can I pay by card?",
+      "translation": "Tôi có thể trả bằng thẻ không?",
+      "totalMs": 122.4,
+      "preparationMs": 0,
+      "inferenceMs": 122.3,
+      "agentReview": "acceptable"
+    },
+    {
+      "model": "Xenova/m2m100_418M",
+      "revision": "9c374f0b7aca709787cea97b047bfbbd1559d177",
+      "fromLanguage": "en",
+      "toLanguage": "vi",
+      "original": "I left my bag on the bus.",
+      "translation": "Tôi để túi của mình trên xe buýt.",
+      "totalMs": 83338.3,
+      "preparationMs": 81807,
+      "inferenceMs": 1469,
+      "agentReview": "review: accidental leaving less explicit"
+    },
+    {
+      "model": "Xenova/m2m100_418M",
+      "revision": "9c374f0b7aca709787cea97b047bfbbd1559d177",
+      "fromLanguage": "en",
+      "toLanguage": "vi",
+      "original": "Could I have the bill, please?",
+      "translation": "Tôi có thể có tài khoản, xin vui lòng?",
+      "totalMs": 1041.8,
+      "preparationMs": 0,
+      "inferenceMs": 1041.5,
+      "agentReview": "error: bill translated as account"
+    },
+    {
+      "model": "Xenova/m2m100_418M",
+      "revision": "9c374f0b7aca709787cea97b047bfbbd1559d177",
+      "fromLanguage": "en",
+      "toLanguage": "vi",
+      "original": "I do not eat pork.",
+      "translation": "Tôi không ăn thịt lợn.",
+      "totalMs": 759.9,
+      "preparationMs": 0,
+      "inferenceMs": 759.9,
+      "agentReview": "acceptable"
+    },
+    {
+      "model": "Xenova/m2m100_418M",
+      "revision": "9c374f0b7aca709787cea97b047bfbbd1559d177",
+      "fromLanguage": "en",
+      "toLanguage": "vi",
+      "original": "The bus leaves at 6:30 p.m.",
+      "translation": "Xe buýt rời đi lúc 6:30",
+      "totalMs": 914.7,
+      "preparationMs": 0,
+      "inferenceMs": 914.4,
+      "agentReview": "error: evening period omitted"
+    },
+    {
+      "model": "Xenova/m2m100_418M",
+      "revision": "9c374f0b7aca709787cea97b047bfbbd1559d177",
+      "fromLanguage": "en",
+      "toLanguage": "vi",
+      "original": "Can I pay by card?",
+      "translation": "Tôi có thể trả bằng thẻ không?",
+      "totalMs": 893.7,
+      "preparationMs": 0,
+      "inferenceMs": 893.5,
+      "agentReview": "acceptable"
+    },
+    {
+      "model": "Xenova/opus-mt-vi-en",
+      "revision": "541dfd72ec07e8f1563795e0224408ad8d729e80",
+      "fromLanguage": "vi",
+      "toLanguage": "en",
+      "original": "Tôi để quên túi trên xe buýt.",
+      "translation": "I left my bag on the bus.",
+      "totalMs": 16977.2,
+      "preparationMs": 16701.7,
+      "inferenceMs": 212.7,
+      "agentReview": "acceptable"
+    },
+    {
+      "model": "Xenova/opus-mt-vi-en",
+      "revision": "541dfd72ec07e8f1563795e0224408ad8d729e80",
+      "fromLanguage": "vi",
+      "toLanguage": "en",
+      "original": "Cho tôi xin hóa đơn được không?",
+      "translation": "Can I have my bill, please?",
+      "totalMs": 134.8,
+      "preparationMs": 0,
+      "inferenceMs": 134.3,
+      "agentReview": "acceptable"
+    },
+    {
+      "model": "Xenova/opus-mt-vi-en",
+      "revision": "541dfd72ec07e8f1563795e0224408ad8d729e80",
+      "fromLanguage": "vi",
+      "toLanguage": "en",
+      "original": "Tôi không ăn thịt lợn.",
+      "translation": "I don't eat pig.",
+      "totalMs": 120.8,
+      "preparationMs": 0,
+      "inferenceMs": 120.5,
+      "agentReview": "review: unnatural pork wording"
+    },
+    {
+      "model": "Xenova/opus-mt-vi-en",
+      "revision": "541dfd72ec07e8f1563795e0224408ad8d729e80",
+      "fromLanguage": "vi",
+      "toLanguage": "en",
+      "original": "Xe buýt khởi hành lúc 6 giờ 30 tối.",
+      "translation": "The bus leaves at 6:30 p.m.",
+      "totalMs": 161.4,
+      "preparationMs": 0,
+      "inferenceMs": 161.1,
+      "agentReview": "acceptable"
+    },
+    {
+      "model": "Xenova/opus-mt-vi-en",
+      "revision": "541dfd72ec07e8f1563795e0224408ad8d729e80",
+      "fromLanguage": "vi",
+      "toLanguage": "en",
+      "original": "Tôi có thể thanh toán bằng thẻ không?",
+      "translation": "Can I get my cards?",
+      "totalMs": 103.6,
+      "preparationMs": 0,
+      "inferenceMs": 103.5,
+      "agentReview": "error: payment intent changed"
+    }
+  ],
+  "speech": [
+    {
+      "language": "en",
+      "fixture": "Public Transformers.js JFK wav",
+      "result": "Expected JFK sentence recognized",
+      "preparationMs": 985.2,
+      "inferenceMs": 1839.5
+    },
+    {
+      "language": "vi",
+      "fixture": "Synthetic local device voice",
+      "original": "Tôi muốn mua vé tàu.",
+      "translation": "Tôi muốn mua về ta.",
+      "preparationMs": 912.4,
+      "inferenceMs": 1483.7,
+      "agentReview": "Recognition error: ticket/train wording changed"
+    },
+    {
+      "language": "zh",
+      "fixture": "Synthetic local device voice",
+      "original": "我想买一张火车票。",
+      "translation": "我想每一張火車票",
+      "preparationMs": 0,
+      "inferenceMs": 1514.3,
+      "agentReview": "Recognition error: buy became every; script Traditional despite Simplified input"
+    }
+  ],
+  "ocr": [
+    {
+      "language": "en",
+      "original": "Where is the train station?",
+      "recognized": "Where is the train station?",
+      "confidence": 95,
+      "inferenceMs": 165.4,
+      "network": "External worker fetch blocked after cache preparation"
+    },
+    {
+      "language": "vi",
+      "original": "Ga tàu ở đâu?",
+      "recognized": "Ga tàu ở đâu?",
+      "confidence": 96,
+      "preparationMs": 96.4,
+      "inferenceMs": 108.8
+    },
+    {
+      "language": "zh",
+      "original": "火车站在哪里？",
+      "recognized": "火车 站 在 哪里 ?",
+      "confidence": 93,
+      "preparationMs": 517.5,
+      "inferenceMs": 110
+    }
+  ],
+  "technicalFailures": [
+    {
+      "issue": "Tesseract v6 supplied-language-buffer initialization failed",
+      "resolution": "Use supported string language IDs with standard IndexedDB traineddata cache; browser retest passed"
+    },
+    {
+      "issue": "Sandboxed system speech fixture creation produced empty audio",
+      "resolution": "Regenerated valid fixtures with approved command; invalid audio excluded from recognition assessment"
+    }
+  ],
+  "decision": "Keep both translation families. Do not treat small synthetic set as aggregate accuracy evidence. Add missing clock/period regression checks; physical Safari/real speech/noisy photos/full cold offline launch still outstanding."
+}
