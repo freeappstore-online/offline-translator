@@ -104,7 +104,7 @@ export default function App() {
     updateLog(entries => [checked, ...entries])
   }
 
-  const configured = Boolean(datasetId || import.meta.env.DEV)
+  const configured = Boolean(datasetId || import.meta.env.DEV || import.meta.env.VITE_USE_BUNDLED_DECK === 'true')
 
   useEffect(() => {
     const sync = () => setPath(currentPath())

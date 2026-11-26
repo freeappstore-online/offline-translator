@@ -27,14 +27,9 @@ export async function prepareOcr(language: Language, signal: AbortSignal, report
     const url = new URL(file, location.origin).href
     if (!(await runtime.match(url))?.ok) { const response = await fetch(url, { signal }); if (!response.ok) throw new Error('Could not prepare the image.'); await runtime.put(url, response) }
   }
-  const cache = await caches.open(ocrCache), url = urlFor(ocrLanguages[language])
-  let response = await cache.match(url)
-  if (!response?.ok) {
-    report('Downloading camera language…')
-    response = await fetch(url, { signal })
-    if (!response.ok) throw new Error('Could not download the camera language. Check your connection.')
-    await cache.put(url, response.clone())
-  }
+  // Tesseract downloads each language once and persists its decompressed data in IndexedDB.
+  // Prefetching the gzip here would duplicate that first download without serving the worker.
+  const cache = await caches.open(ocrCache)
   signal.throwIfAborted()
   report('Preparing camera recognition…')
   let rejectAbort: (error: Error) => void = () => {}
