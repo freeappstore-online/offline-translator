@@ -615,6 +615,28 @@ function ComposerSuggestions({ id, from, to, suggestions, activeSuggest, showSug
   )
 }
 
+function InputToolbar({ inputId }: { inputId: string }) {
+  return <div className="flex items-stretch gap-1 border-t border-line bg-panel p-2" role="group" aria-label={t('Input method')}>
+    <button type="button" aria-pressed="true"
+      onMouseDown={event => event.preventDefault()}
+      onClick={() => document.getElementById(inputId)?.focus()}
+      className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-accent-soft px-3 text-sm font-semibold text-accent">
+      <span aria-hidden="true" className="text-xl font-bold">T</span>{t('Text')}
+    </button>
+    {(['Voice', 'Camera'] as const).map(method => <button key={method} type="button" disabled
+      className="flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1 text-muted disabled:cursor-default"
+      aria-label={t(method) + ' · ' + t('Coming soon')}>
+      <span className="flex items-center gap-1.5 text-sm font-semibold">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="size-5">
+          {method === 'Voice' ? <><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></>
+            : <><path d="M4 7h4l2-3h4l2 3h4v13H4z"/><circle cx="12" cy="13" r="3"/></>}
+        </svg>{t(method)}
+      </span>
+      <span className="text-[0.6rem]">{t('Coming soon')}</span>
+    </button>)}
+  </div>
+}
+
 function ConversationChat({ cards, engine, near, far, log, lookup }: {
   cards: Phrase[]
   engine: Engine
@@ -693,7 +715,7 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
           </label>
         </div>
         <label htmlFor={inputId} className="mb-2 block text-sm font-semibold" lang={composer.from}>{typePrompt(composer.from)}</label>
-        <div className={`mb-3 overflow-hidden rounded-xl border bg-paper ${composer.showSuggestions ? 'border-line-strong' : 'border-line'}`}>
+        <div className={`mb-3 overflow-hidden rounded-xl border bg-accent-soft ${composer.showSuggestions ? 'border-line-strong' : 'border-line'}`}>
           <textarea id={inputId} lang={composer.from} className="block w-full resize-y border-0 bg-transparent p-3 text-base text-ink outline-none" rows={2}
             required maxLength={500} placeholder={composer.example?.[composer.from] ?? typePrompt(composer.from)} value={composer.draft}
             role="combobox" aria-autocomplete="list" aria-expanded={composer.showSuggestions} aria-controls={suggestionsId}
@@ -702,6 +724,7 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
             onBlur={() => composer.setSuggestOpen(false)}
             onKeyDown={event => composer.onDraftKeyDown(event)}
             onChange={event => composer.onDraftChange(event.target.value)} />
+          <InputToolbar inputId={inputId} />
           <ComposerSuggestions id={suggestionsId} from={composer.from} to={composer.to}
             suggestions={composer.suggestions} activeSuggest={composer.activeSuggest}
             showSuggestions={composer.showSuggestions}
@@ -753,7 +776,7 @@ function FaceToFaceSplit({ cards, engine, near, far, log, lookup }: {
       <label htmlFor={inputId} className="mb-2 block text-sm font-semibold" lang={composer.from}>
         {typePrompt(composer.from)}
       </label>
-      <div className={`mb-3 overflow-hidden rounded-xl border bg-paper ${composer.showSuggestions ? 'border-line-strong' : 'border-line'}`}>
+      <div className={`mb-3 overflow-hidden rounded-xl border bg-accent-soft ${composer.showSuggestions ? 'border-line-strong' : 'border-line'}`}>
         <textarea id={inputId} lang={composer.from} className="block w-full resize-y border-0 bg-transparent p-3 text-base text-ink outline-none" rows={2}
           required maxLength={500} placeholder={composer.example?.[composer.from] ?? typePrompt(composer.from)} value={composer.draft}
           role="combobox" aria-autocomplete="list" aria-expanded={composer.showSuggestions} aria-controls={suggestionsId}
@@ -762,6 +785,7 @@ function FaceToFaceSplit({ cards, engine, near, far, log, lookup }: {
           onBlur={() => composer.setSuggestOpen(false)}
           onKeyDown={event => composer.onDraftKeyDown(event)}
           onChange={event => composer.onDraftChange(event.target.value)} />
+          <InputToolbar inputId={inputId} />
         <ComposerSuggestions id={suggestionsId} from={composer.from} to={composer.to}
           suggestions={composer.suggestions} activeSuggest={composer.activeSuggest}
           showSuggestions={composer.showSuggestions}
@@ -907,7 +931,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
       {showTitle ? <h2 id={headingId} className="mb-3 text-xl font-bold">{languageName(from)} → {languageName(to)}</h2>
         : <h2 id={headingId} className="sr-only">{languageName(from)} → {languageName(to)}</h2>}
       <label htmlFor={inputId} className="text-sm font-semibold">{t('Write in {language}', { language: languageName(from) })}</label>
-      <div className={`mb-3 mt-1 overflow-hidden rounded-xl border bg-paper ${showSuggestions ? 'border-line-strong' : 'border-line'}`}>
+      <div className={`mb-3 mt-1 overflow-hidden rounded-xl border bg-accent-soft ${showSuggestions ? 'border-line-strong' : 'border-line'}`}>
         <textarea id={inputId} lang={from} className="block w-full resize-y border-0 bg-transparent p-3 text-base text-ink outline-none" rows={3}
           required maxLength={500} placeholder={example?.[from] ?? t("Enter a word or phrase")} value={draft}
           role="combobox" aria-autocomplete="list" aria-expanded={showSuggestions} aria-controls={suggestionsId}
@@ -924,6 +948,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
             onResult(undefined)
             setStatus('')
           }} />
+          <InputToolbar inputId={inputId} />
         {showSuggestions && (
           <div className="border-t border-line bg-panel">
             <p className="px-3 pt-2 text-[0.7rem] font-semibold tracking-wide text-muted uppercase">{t("Suggested cards · tap to use")}</p>
