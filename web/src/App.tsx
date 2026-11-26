@@ -243,7 +243,6 @@ export default function App() {
         {storageError && <p role="status" className="mt-3 text-sm text-muted">{t("Browser storage is full or unavailable. Export translation JSON from Packs before closing this page.")}</p>}
         {!!cards.length && path !== '/translate' && path !== '/packs' &&
           <Cards cards={cards} language={language} saved={saved} onFavorite={toggleFavorite} />}
-        <a className="mt-8 inline-block text-sm text-muted underline" href="https://freeappstore.online/">FreeAppStore</a>
       </div>
     </Shell>
   )
