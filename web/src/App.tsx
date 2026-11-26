@@ -1,3 +1,5 @@
+import { SpeechInput } from './SpeechInput'
+import { exportSpeechLog } from './speech-log'
 import { t, languageName, useLocale, setLocale, type Locale } from './i18n'
 import { Packs } from './Packs'
 import { scenarios, tasks, cardScenarios, cardTask } from './card-scenarios'
@@ -279,6 +281,7 @@ export default function App() {
           <Packs cards={cards} />
           <button type="button" className={control + ' mt-4'} disabled={!history.length}
             onClick={() => exportLog(history)}>{t("Export translation JSON")}</button>
+          <button type="button" className={control + ' mt-4 ml-2'} onClick={exportSpeechLog}>{t('Export speech JSON')}</button>
         </>}
         {storageError && <p role="status" className="mt-3 text-sm text-muted">{t("Browser storage is full or unavailable. Export translation JSON from Packs before closing this page.")}</p>}
         {!!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' &&
@@ -825,6 +828,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
   lookup: ReturnType<typeof buildApprovedIndex>
 }) {
   const [draft, setDraft] = useState('')
+  const [speechBusy, setSpeechBusy] = useState(false)
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
   const [suggestOpen, setSuggestOpen] = useState(false)
@@ -903,19 +907,20 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
   return (
     <form className="reference-translator flex min-w-0 flex-col gap-4 text-ink" aria-labelledby={headingId} onSubmit={event => {
       event.preventDefault()
+      if (speechBusy) return
       setSuggestOpen(false)
       void findTranslation()
     }}>
       <div className="rounded-[1.5rem] bg-panel p-4 sm:p-5">
       <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2">
         <label className="min-w-0 text-xs font-semibold text-accent">{t('Translate from')}
-          <select aria-label={t('From')} value={from} disabled={busy} onChange={event => { if (event.target.value !== from) onSwap?.() }} className={control + ' mt-2 w-full min-w-0 bg-panel px-2 text-sm'}>
+          <select aria-label={t('From')} value={from} disabled={busy || speechBusy} onChange={event => { if (event.target.value !== from) onSwap?.() }} className={control + ' mt-2 w-full min-w-0 bg-panel px-2 text-sm'}>
             {[from, ...(onSwap ? [to] : [])].map(code => <option key={code} value={code}>{code === 'en' ? '🇬🇧' : code === 'vi' ? '🇻🇳' : '🇨🇳'} {languageName(code)}</option>)}
           </select>
         </label>
-        <button type="button" disabled={!onSwap || busy} onClick={onSwap} aria-label={t('Swap languages')} className="flex size-12 items-center justify-center rounded-full bg-accent text-2xl text-on-accent disabled:opacity-50">⇄</button>
+        <button type="button" disabled={!onSwap || busy || speechBusy} onClick={onSwap} aria-label={t('Swap languages')} className="flex size-12 items-center justify-center rounded-full bg-accent text-2xl text-on-accent disabled:opacity-50">⇄</button>
         <label className="min-w-0 text-xs font-semibold text-accent">{t('Translate to')}
-          <select aria-label={t('To')} value={to} disabled={busy} onChange={event => { if (event.target.value !== to) onSwap?.() }} className={control + ' mt-2 w-full min-w-0 bg-panel px-2 text-sm'}>
+          <select aria-label={t('To')} value={to} disabled={busy || speechBusy} onChange={event => { if (event.target.value !== to) onSwap?.() }} className={control + ' mt-2 w-full min-w-0 bg-panel px-2 text-sm'}>
             {[to, ...(onSwap ? [from] : [])].map(code => <option key={code} value={code}>{code === 'en' ? '🇬🇧' : code === 'vi' ? '🇻🇳' : '🇨🇳'} {languageName(code)}</option>)}
           </select>
         </label>
@@ -925,7 +930,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
       <label htmlFor={inputId} className="sr-only">{t('Write in {language}', { language: languageName(from) })}</label>
       <div className="rounded-2xl border border-line bg-panel p-3 shadow-sm">
         <textarea id={inputId} lang={from} className="block min-h-36 w-full resize-none border-0 bg-transparent py-2 text-lg text-ink outline-none placeholder:text-muted" rows={4}
-          required maxLength={500} placeholder={typePrompt(from)} value={draft}
+          disabled={speechBusy} required maxLength={500} placeholder={typePrompt(from)} value={draft}
           role="combobox" aria-autocomplete="list" aria-expanded={showSuggestions} aria-controls={suggestionsId}
           aria-activedescendant={activeOptionId}
           onFocus={() => setSuggestOpen(true)}
@@ -943,9 +948,9 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
           <div className="mt-2 flex items-end justify-between gap-3">
             <span className="text-xs text-muted" aria-live="off">{draft.length} / 500</span>
             <div className="flex items-center gap-3">
-              <button type="button" onClick={() => setStatus(t('Voice input is coming soon. Your microphone is off. Type here to translate for now.'))} aria-label={t('Voice translation')} className="flex size-14 items-center justify-center rounded-full bg-accent text-on-accent">
-                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-7"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg>
-              </button>
+              <SpeechInput key={from} language={from} disabled={busy} onBusyChange={setSpeechBusy} onText={text => {
+                setDraft(text); onResult(undefined); setStatus(''); setSuggestOpen(false)
+              }} />
             </div>
           </div>
         {showSuggestions && (
@@ -1007,7 +1012,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
           <button type="button" className="flex min-h-11 items-center justify-center gap-2 text-sm" onClick={async () => { try { await navigator.clipboard.writeText(result.text); setStatus(t('Copied')) } catch { setStatus(t('Could not copy. Select the translation to copy it.')) } }}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="size-5"><rect x="8" y="7" width="12" height="15" rx="2"/><path d="M16 7V2H3v15h5"/></svg>{t('Copy')}</button>
         </div>}
         <div className="mt-auto pt-6">
-          <button disabled={busy} onMouseDown={event => event.preventDefault()} className="mx-auto flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-6 py-2 text-sm font-bold text-on-accent disabled:opacity-60"><span aria-hidden="true">→</span>{t('Translate')}</button>
+          <button disabled={busy || speechBusy} onMouseDown={event => event.preventDefault()} className="mx-auto flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-6 py-2 text-sm font-bold text-on-accent disabled:opacity-60"><span aria-hidden="true">→</span>{t('Translate')}</button>
           {status && <p role="status" className="mt-3 text-center text-xs text-muted">{t(status)}</p>}
         </div>
       </div>

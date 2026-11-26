@@ -25,3 +25,12 @@ Consider a local capability recommendation in Packs: combine selected pair, exis
 Review exported JSON with matched inputs in both directions, separate card hits from model outputs, check resolved checkpoint IDs, and record meaning errors, omissions, fluency, truncation, cold/warm latency, download size, preparation failures and available resource measurements. Do not invent scores or automatically promote one model based only on this report.
 
 Sources: https://huggingface.co/facebook/m2m100_418M and https://developer.mozilla.org/en-US/docs/Web/API/Navigator/deviceMemory (checked 2026-11-25).
+
+## 2026-11-26 — Browser Whisper Tiny smoke tests
+
+Actual app worker, Transformers.js 4.3.2, WASM q8, pinned multilingual Whisper Tiny revision `5332fcc35e32a33b86612b9a57a89be7906102b1`. Fixture: https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/jfk.wav . Public audio was decoded locally to 16 kHz Float32 samples and passed to the speech worker with English selected and `task: transcribe`.
+
+- First observed run: preparation 9613.3 ms, inference 2051.2 ms. Returned the expected English sentence. This timing includes initialization/download activity; it is not a controlled cold-cache benchmark.
+- Fresh worker, model-network requests blocked after caching: preparation 934.8 ms, inference 1656.4 ms. Returned the same expected sentence. The fixture was fetched before blocking model traffic; this verifies model reuse, not an entirely disconnected browser session.
+- TypeScript and production build passed. Test harnesses were temporary development files and are not shipped.
+- Not measured yet: Vietnamese and Chinese recognition accuracy, actual microphone capture on Safari/mobile, noisy speech, full offline app reload and competing ASR/translation memory costs. No accuracy scores are inferred from the English smoke tests.
