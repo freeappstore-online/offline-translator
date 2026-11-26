@@ -81,3 +81,5 @@ Packs uses English, Tiếng Việt and 简体中文 labels with flag icons. Engl
 Packs has two keyboard-accessible language comboboxes. Native names appear with English secondary names because the current app interface is English. Search accepts either name, language code, or unaccented Vietnamese. Choosing the language already selected in the other field swaps the pair. Resources remain shared across reversed pairs.
 
 Model observations and deferred architecture options: see [MODEL_EXPERIMENTS.md](MODEL_EXPERIMENTS.md).
+
+Chat input shows From and To language fields for the selected conversation pair. The middle arrow indicates left-to-right translation; Reverse exchanges the languages. Selecting either language also reverses the pair. Controls are disabled while sending.

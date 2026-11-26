@@ -673,12 +673,32 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
         event.preventDefault()
         void composer.send()
       }}>
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <label htmlFor={inputId} className="text-sm font-semibold" lang={composer.from}>{typePrompt(composer.from)}</label>
-          <button type="button" className={control + ' text-sm font-semibold'} lang={composer.to} onClick={composer.toggleSpeaker}>
-            {typePrompt(composer.to)}
+        <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2" aria-label="Translation direction">
+          <label className="min-w-0 text-xs font-semibold text-muted">
+            From
+            <select aria-label="Chat source language" value={composer.from} disabled={composer.busy}
+              className={control + ' mt-1 w-full min-w-0 px-2 text-sm font-semibold'}
+              onChange={event => { if (event.target.value !== composer.from) composer.toggleSpeaker() }}>
+              {[near, far].map(code => <option key={code} value={code}>{code === 'vi' ? 'Tiếng Việt' : code === 'zh' ? '简体中文' : 'English'}</option>)}
+            </select>
+          </label>
+          <button type="button" disabled={composer.busy}
+            className={control + ' flex flex-col items-center justify-center px-3 text-xs disabled:opacity-50'}
+            aria-label={`Reverse direction: ${languageNames[composer.from]} to ${languageNames[composer.to]}`}
+            title="Reverse translation direction" onClick={composer.toggleSpeaker}>
+            <span aria-hidden="true" className="text-xl leading-5">→</span>
+            <span>Reverse</span>
           </button>
+          <label className="min-w-0 text-xs font-semibold text-muted">
+            To
+            <select aria-label="Chat target language" value={composer.to} disabled={composer.busy}
+              className={control + ' mt-1 w-full min-w-0 px-2 text-sm font-semibold'}
+              onChange={event => { if (event.target.value !== composer.to) composer.toggleSpeaker() }}>
+              {[near, far].map(code => <option key={code} value={code}>{code === 'vi' ? 'Tiếng Việt' : code === 'zh' ? '简体中文' : 'English'}</option>)}
+            </select>
+          </label>
         </div>
+        <label htmlFor={inputId} className="mb-2 block text-sm font-semibold" lang={composer.from}>{typePrompt(composer.from)}</label>
         <div className={`mb-3 overflow-hidden rounded-xl border bg-paper ${composer.showSuggestions ? 'border-line-strong' : 'border-line'}`}>
           <textarea id={inputId} lang={composer.from} className="block w-full resize-y border-0 bg-transparent p-3 text-base text-ink outline-none" rows={2}
             required maxLength={500} placeholder={composer.example?.[composer.from] ?? typePrompt(composer.from)} value={composer.draft}
