@@ -984,8 +984,23 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
             <p className="mt-2 text-xs font-semibold text-warning">{t("High risk · pending human review")}</p>
           )}
         </> : <p className="mt-1 text-sm text-muted">{t("Your translation will appear here.")}</p>}
-        {result && <div className="mt-4 flex justify-end border-t border-line pt-3">
-          <button type="button" className={control + ' text-sm'} onClick={async () => { try { await navigator.clipboard.writeText(result.text); setStatus(t('Copied')) } catch { setStatus(t('Could not copy. Select the translation to copy it.')) } }}>{t('Copy')}</button>
+        {result && <div className="mt-4 grid grid-cols-3 gap-2 border-t border-line pt-3">
+          <button type="button" className="flex min-h-11 items-center justify-center gap-2 text-sm" onClick={() => {
+            try {
+              const key = 'offline-translator-saved-results-v1'
+              const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? '[]')
+              const saved = Array.isArray(parsed) ? parsed : []
+              localStorage.setItem(key, JSON.stringify([{ original: draft, translation: result.text, from, to, timestamp: new Date().toISOString() }, ...saved].slice(0, 500)))
+              setStatus(t('Saved'))
+            } catch { setStatus(t('Could not save. Browser storage is unavailable.')) }
+          }}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="size-5"><path d="M6 3h12v19l-6-4-6 4z"/></svg>{t('Save')}</button>
+          <button type="button" className="flex min-h-11 items-center justify-center gap-2 text-sm" onClick={async () => {
+            try {
+              if (navigator.share) await navigator.share({ text: result.text })
+              else { await navigator.clipboard.writeText(result.text); setStatus(t('Copied')) }
+            } catch (error) { if (!(error instanceof DOMException && error.name === 'AbortError')) setStatus(t('Could not share. Try Copy instead.')) }
+          }}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="size-5"><circle cx="5" cy="12" r="3"/><circle cx="19" cy="5" r="3"/><circle cx="19" cy="19" r="3"/><path d="m8 11 8-5M8 13l8 5"/></svg>{t('Share')}</button>
+          <button type="button" className="flex min-h-11 items-center justify-center gap-2 text-sm" onClick={async () => { try { await navigator.clipboard.writeText(result.text); setStatus(t('Copied')) } catch { setStatus(t('Could not copy. Select the translation to copy it.')) } }}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="size-5"><rect x="8" y="7" width="12" height="15" rx="2"/><path d="M16 7V2H3v15h5"/></svg>{t('Copy')}</button>
         </div>}
         <div className="mt-auto pt-6">
           <button disabled={busy} onMouseDown={event => event.preventDefault()} className="mx-auto flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-6 py-2 text-sm font-bold text-on-accent disabled:opacity-60"><span aria-hidden="true">→</span>{t('Translate')}</button>
