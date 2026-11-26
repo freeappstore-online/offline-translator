@@ -95,3 +95,5 @@ Visual palette: purple primary controls, orange secondary accents, pale lavender
 Translation input methods stay beside the text input in One way, Chat and Face to face. Text focuses the current field; Voice and Camera are disabled, labeled Coming soon, and request no permissions. Layout modes remain separate from input methods. Translation logs remain outside the interface.
 
 The default translation screen follows reference picture 2: a full purple input surface, source-language selector and menu at the top, camera/microphone placeholders below the input, and a white curved result panel. Layout and pair controls are behind the menu. Existing chat and face-to-face modes remain available.
+
+Face to face is now a voice-interface preview with two opposing microphone controls and reader-facing translation placeholders. No keyboard is shown. Tapping a microphone explains that the voice stack is not connected; it does not record, request microphone permission, run a model or create a translation log.

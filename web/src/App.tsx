@@ -183,7 +183,7 @@ export default function App() {
                 ? t("Translate in one direction. Swap languages to go the other way.")
                 : translateMode === 'chat'
                   ? t("Message-style conversation. English on one side, the other language on the other.")
-                  : t("Hold the phone between you. Top is flipped for the other language; type on the active side.")}
+                  : t('Place the phone between you. Each person uses the microphone facing them.')}
             </p>
             <label className="mb-4 grid min-w-0 gap-1 text-sm font-semibold sm:max-w-md">{t("Languages")}<select className={control + ' w-full bg-panel'} value={engine === 'opus' ? 'en-vi' : pair + '-' + language}
                 onChange={event => {
@@ -351,7 +351,7 @@ function Translate({ cards, engine, from, to, log, mode }: {
     return <ConversationChat cards={cards} engine={engine} near={from} far={to} log={log} lookup={lookup} />
   }
   if (mode === 'face-to-face') {
-    return <FaceToFaceSplit cards={cards} engine={engine} near={from} far={to} log={log} lookup={lookup} />
+    return <FaceToFaceSplit near={from} far={to} />
   }
 
   return (
@@ -727,101 +727,34 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
   )
 }
 
-function FaceToFaceSplit({ cards, engine, near, far, log, lookup }: {
-  cards: Phrase[]
-  engine: Engine
-  near: PhraseLanguage
-  far: PhraseLanguage
-  log: (entry: LogEntry) => void
-  lookup: ReturnType<typeof buildApprovedIndex>
-}) {
-  const [nearText, setNearText] = useState('')
-  const [farText, setFarText] = useState('')
-  const [reviewWarning, setReviewWarning] = useState(false)
-  const composer = useTurnSender({
-    cards, engine, near, far, log, lookup,
-    onTurn: turn => {
-      setReviewWarning(Boolean(turn.reviewWarning))
-      if (turn.speaker === 'near') {
-        setNearText(turn.original)
-        setFarText(turn.translation)
-      } else {
-        setFarText(turn.original)
-        setNearText(turn.translation)
-      }
-    },
-  })
-  const inputId = 'face-draft'
-  const suggestionsId = 'face-suggestions'
-  const farTyping = composer.speaker === 'far'
-  const activeOptionId = composer.showSuggestions
-    ? `${suggestionsId}-option-${composer.suggestions[composer.activeSuggest]?.card.id}`
-    : undefined
-
-  const entry = (
-    <form className="mt-4 w-full" onSubmit={event => {
-      event.preventDefault()
-      void composer.send()
-    }}>
-      <label htmlFor={inputId} className="mb-2 block text-sm font-semibold" lang={composer.from}>
-        {typePrompt(composer.from)}
-      </label>
-      <div className={`mb-3 overflow-hidden rounded-xl border bg-accent-soft ${composer.showSuggestions ? 'border-line-strong' : 'border-line'}`}>
-        <textarea id={inputId} lang={composer.from} className="block w-full resize-y border-0 bg-transparent p-3 text-base text-ink outline-none" rows={2}
-          required maxLength={500} placeholder={typePrompt(composer.from)} value={composer.draft}
-          role="combobox" aria-autocomplete="list" aria-expanded={composer.showSuggestions} aria-controls={suggestionsId}
-          aria-activedescendant={activeOptionId}
-          onFocus={() => composer.setSuggestOpen(true)}
-          onBlur={() => composer.setSuggestOpen(false)}
-          onKeyDown={event => composer.onDraftKeyDown(event)}
-          onChange={event => composer.onDraftChange(event.target.value)} />
-          <InputToolbar inputId={inputId} />
-        <ComposerSuggestions id={suggestionsId} from={composer.from} to={composer.to}
-          suggestions={composer.suggestions} activeSuggest={composer.activeSuggest}
-          showSuggestions={composer.showSuggestions}
-          onHover={composer.setActiveSuggest} onPick={composer.acceptSuggestion} />
-      </div>
-      <button disabled={composer.busy} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 font-bold text-on-accent disabled:opacity-60">{t("Send")}</button>
-      {composer.status && <p role="status" className="mt-2 text-sm text-muted">{t(composer.status)}</p>}
-    </form>
-  )
-
-  return (
-    <div className="mx-auto flex max-w-xl flex-col overflow-hidden rounded-[1.5rem] border border-line bg-panel">
-      <section className={`flex min-h-44 rotate-180 flex-col items-center gap-3 bg-accent-soft px-5 py-6 ${farTyping ? 'justify-start' : 'justify-center'}`} aria-live="polite">
-        <span className="rounded-full border border-line bg-panel px-3 py-1 text-xs font-semibold">{languageName(far)}</span>
-        <p className="wrap-anywhere text-center text-2xl font-bold leading-snug sm:text-3xl" lang={far}>
-          {farText || '…'}
-        </p>
-        {reviewWarning && (
-          <p className="rounded-lg bg-warning/15 px-2 py-1 text-center text-xs font-semibold text-warning">{t("High risk · pending human review")}</p>
-        )}
-        {farTyping && entry}
-      </section>
-
-      <div className="relative z-10 -my-5 flex justify-center">
-        <button type="button" className="flex size-11 items-center justify-center rounded-full bg-accent text-lg font-bold text-on-accent shadow-md"
-          aria-label={typePrompt(farTyping ? near : far)}
-          title={typePrompt(farTyping ? near : far)}
-          onClick={composer.toggleSpeaker}>
-          ↕
-        </button>
-      </div>
-
-      <section className={`flex min-h-56 flex-col bg-panel px-5 pb-5 pt-8 ${farTyping ? 'items-center justify-center' : ''}`}>
-        <div className="flex flex-col items-center gap-3">
-          <span className="rounded-full border border-line bg-paper px-3 py-1 text-xs font-semibold">{languageName(near)}</span>
-          <p className="wrap-anywhere text-center text-2xl font-bold leading-snug sm:text-3xl" lang={near}>
-            {nearText || '…'}
-          </p>
-          {reviewWarning && (
-            <p className="rounded-lg bg-warning/15 px-2 py-1 text-center text-xs font-semibold text-warning">{t("High risk · pending human review")}</p>
-          )}
+function FaceToFaceSplit({ near, far }: { near: PhraseLanguage; far: PhraseLanguage }) {
+  const [selected, setSelected] = useState<PhraseLanguage>()
+  return <div className="mx-auto max-w-xl">
+    <p className="mb-3 text-center text-xs text-muted">{t('Voice preview · microphone is off')}</p>
+    <div className="overflow-hidden rounded-[1.75rem] border border-line bg-panel">
+      {([far, near] as const).map((code, index) => <section key={index}
+        className={`flex min-h-64 flex-col items-center justify-between gap-4 px-5 py-6 ${index === 0 ? 'rotate-180 bg-accent text-on-accent' : 'bg-panel text-ink'}`}
+        aria-label={languageName(code)}>
+        <p className="text-sm font-semibold">{languageName(code)}</p>
+        <div className="flex min-h-16 flex-col items-center justify-center gap-2 text-center">
+          <p className="text-xl font-semibold">{t('Translation will appear here')}</p>
+          <p className={`text-xs ${index === 0 ? 'text-on-accent/75' : 'text-muted'}`}>{t('For you to read')}</p>
         </div>
-        {!farTyping && entry}
-      </section>
+        <div className="flex flex-col items-center gap-2">
+          <button type="button" aria-label={t('Speak in {language}', { language: languageName(code) })}
+            aria-describedby={`voice-preview-${index}`}
+            onClick={() => setSelected(code)}
+            className={`flex size-16 items-center justify-center rounded-full border-2 ${index === 0 ? 'border-on-accent/40 bg-on-accent text-accent' : 'border-secondary bg-secondary-soft text-secondary-ink'}`}>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-7"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg>
+          </button>
+          <p className="text-xs font-semibold">{t('Tap to speak')}</p>
+          <p id={`voice-preview-${index}`} className={`text-[0.65rem] ${index === 0 ? 'text-on-accent/75' : 'text-muted'}`}>{t('Coming soon')}</p>
+          {selected === code && <p role="status" className="max-w-64 text-center text-xs">{t('Voice translation is not connected yet. No audio is being recorded.')}</p>}
+        </div>
+      </section>)}
     </div>
-  )
+    <p className="mt-3 text-center text-xs text-muted">{t('Place the phone between you. Each person uses the microphone facing them.')}</p>
+  </div>
 }
 
 function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = true, result, onResult, onSwap }: {
