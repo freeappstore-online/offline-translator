@@ -198,7 +198,7 @@ export default function App() {
           <button type="button" className="flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[0.65rem] font-semibold text-muted"
             onClick={openSettings}><NavigationIcon kind="settings" />{t('Settings')}</button>
         </nav>
-        {path !== '/translate' && path !== '/camera' && <div className="text-canvas-ink"><PageHeader title={title} /></div>}
+        {path !== '/translate' && path !== '/camera' && <div className="text-canvas-ink [&_h1]:text-canvas-ink"><PageHeader title={title} /></div>}
         {path !== '/packs' && path !== '/translate' && path !== '/camera' && (
           <label className="mb-4 flex flex-wrap items-center gap-2 text-canvas-ink">{t("Language")}<select className={control} value={language} onChange={event => setLanguage(event.target.value as TargetLanguage)}>
               {Object.keys(languages).map(id => <option key={id} value={id}>{languageName(id as Locale)}</option>)}
@@ -284,10 +284,12 @@ export default function App() {
         {path === '/' && <SavedTranslations onUse={(text, from, to) => useRecognizedText(text, from, to, 'text')} />}
         {path === '/packs' && <>
           <Packs cards={cards} />
-          <button type="button" className={control + ' mt-4'} disabled={!history.length}
+          <details className="mx-auto mt-3 max-w-2xl rounded-2xl bg-panel px-4 text-sm"><summary className="min-h-11 cursor-pointer py-3 text-muted">{t('Export test records')}</summary><div className="flex flex-wrap gap-2 pb-4">
+          <button type="button" className={control} disabled={!history.length}
             onClick={() => exportLog(history)}>{t("Export translation JSON")}</button>
-          <button type="button" className={control + ' mt-4 ml-2'} onClick={exportSpeechLog}>{t('Export speech JSON')}</button>
-          <button type="button" className={control + ' mt-4 ml-2'} onClick={exportOcrLog}>{t('Export camera JSON')}</button>
+          <button type="button" className={control} onClick={exportSpeechLog}>{t('Export speech JSON')}</button>
+          <button type="button" className={control} onClick={exportOcrLog}>{t('Export camera JSON')}</button>
+          </div></details>
         </>}
         {storageError && <p role="status" className="mt-3 text-sm text-muted">{t("Browser storage is full or unavailable. Export translation JSON from Packs before closing this page.")}</p>}
         {!!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' &&

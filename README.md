@@ -8,7 +8,7 @@ A mobile-first FreeAppStore translator for English, Vietnamese and Simplified Ch
 - **Conversation:** opposing voice panels. Recognition automatically enters the same translation pipeline; the translated result appears on the other person's panel. No reversed keyboard.
 - **Camera:** take/select a photo, recognize English/Vietnamese/Simplified Chinese locally, edit the text, and send it to Translate with the selected direction. Recognition is Tesseract.js 6.0.1; images are not uploaded or retained in history.
 - **Cards:** scenario/task navigation, search, card favorites and separately saved translation results. Saved results support reuse, removal and undo. Device speech playback uses installed local voices only.
-- **Packs:** searchable language-pair selection, explicit model/phrase/OCR preparation, cancel, removal, cache checks, storage usage/protection and release of active model memory. Downloaded resources are shared across relevant pairs.
+- **Packs:** searchable language-pair selection and one translation-model package at a time. The selected direction offers OPUS-MT where supported plus M2M100; the reverse OPUS package is accessed by reversing the pair. Travel phrases stay compact; Voice and Camera expand on demand. Saved resources put checks/removal under Manage, with storage tools and JSON exports collapsed separately. Downloads, cancellation, preparation and shared caches remain available. No accuracy recommendation is inferred from download size.
 - **Settings:** interface language, theme and translation model choice. Both OPUS-MT directions and M2M100 remain available. No account/sign-in is required.
 
 ## Offline operation and preparation

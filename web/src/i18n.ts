@@ -18,6 +18,16 @@ export function useLocale() {
   return useSyncExternalStore(callback => { listeners.add(callback); return () => { listeners.delete(callback) } }, () => locale)
 }
 const messages: Record<string, Partial<Record<Locale, string>>> = {
+  "Download": { vi: "Tải xuống", zh: "下载" },
+  "Manage": { vi: "Quản lý", zh: "管理" },
+  "Not downloaded": { vi: "Chưa tải", zh: "未下载" },
+  "Download once. Use offline in this browser.": { vi: "Tải một lần. Dùng ngoại tuyến trong trình duyệt này.", zh: "下载一次，即可在此浏览器中离线使用。" },
+  "Text translation": { vi: "Dịch văn bản", zh: "文字翻译" },
+  "Shared multilingual model": { vi: "Mô hình dùng chung cho nhiều ngôn ngữ", zh: "共用多语言模型" },
+  "Smaller download · one direction": { vi: "Gói nhỏ hơn · một chiều", zh: "下载更小 · 单向" },
+  "Shared by all three languages.": { vi: "Dùng chung cho cả ba ngôn ngữ.", zh: "三种语言共用。" },
+  "{count} of {total} saved": { vi: "Đã tải {count}/{total}", zh: "已下载 {count}/{total}" },
+  "Export test records": { vi: "Xuất dữ liệu thử nghiệm", zh: "导出测试记录" },
   "Listening… Words may change until you stop. Maximum 20 seconds.": { vi: "Đang nghe… Chữ có thể thay đổi cho đến khi bạn dừng. Tối đa 20 giây.", zh: "正在聆听…停止前文字可能会调整，最长20秒。" },
   "Finalizing speech…": { vi: "Đang hoàn thiện lời nói…", zh: "正在确认识别结果…" },
   "Live microphone input is not supported in this browser. You can still type.": { vi: "Trình duyệt này không hỗ trợ nhập giọng nói trực tiếp. Bạn vẫn có thể gõ.", zh: "此浏览器不支持实时语音输入，您仍可输入文字。" },
