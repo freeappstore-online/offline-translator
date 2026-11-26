@@ -89,3 +89,5 @@ Language labels use native names with English in parentheses, for example Tiến
 ## Interface languages
 
 The App language selector supports English, Vietnamese and Simplified Chinese. It follows the browser language initially, remembers an explicit choice locally, and does not change the translation pair or phrase content. Language labels combine a native name with its name in the current interface language; identical names appear once. Search accepts native names, English names, localized names and codes. App controls and scenario names are translated locally with English fallback. Model identifiers and technical failure details remain unchanged.
+
+Visual palette: purple primary controls, orange secondary accents, pale lavender surfaces and warm translation results. Dark mode uses matching purple and amber tones.

@@ -651,7 +651,7 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
               <div className={`rounded-2xl px-3 py-2 ${nearSide ? 'rounded-br-md bg-accent text-on-accent' : 'rounded-bl-md bg-paper text-ink'}`}>
                 <p className="wrap-anywhere text-sm leading-snug" lang={turn.from}>{turn.original}</p>
               </div>
-              <div className={`rounded-2xl px-3 py-2 ${nearSide ? 'rounded-br-md bg-accent-soft text-ink' : 'rounded-bl-md border border-line bg-panel text-ink'}`}>
+              <div className={`rounded-2xl px-3 py-2 ${nearSide ? 'rounded-br-md bg-secondary-soft text-ink' : 'rounded-bl-md border border-line bg-panel text-ink'}`}>
                 <p className="wrap-anywhere text-sm font-semibold leading-snug" lang={turn.to}>{turn.translation}</p>
                 <p className="mt-1 text-[0.65rem] text-muted">{turn.source}</p>
                 {turn.reviewWarning && (
@@ -677,7 +677,7 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
           </label>
           <div className="relative flex flex-col items-center">
             <button type="button" disabled={composer.busy}
-              className="flex size-12 shrink-0 items-center justify-center rounded-full border border-line bg-paper text-ink disabled:opacity-50"
+              className="flex size-12 shrink-0 items-center justify-center rounded-full border border-secondary bg-secondary-soft text-secondary-ink disabled:opacity-50"
               aria-label={t("Reverse translation direction") + `: ${languageName(composer.from)} → ${languageName(composer.to)}`}
               aria-describedby="chat-swap-hint"
               title={t("Reverse translation direction")} onClick={composer.toggleSpeaker}>
@@ -957,7 +957,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
       {/* Keep focus in the textarea: blurring it closes the suggestions and moves this button before the click lands */}
       <button disabled={busy} onMouseDown={event => event.preventDefault()} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 sm:w-auto sm:self-start font-bold text-on-accent disabled:opacity-60">{t("Translate")}</button>
       {status && <p role="status" className="mt-2 text-sm text-muted">{t(status)}</p>}
-      <div className="mt-4 flex-1 rounded-2xl bg-accent-soft p-4" role="status">
+      <div className="mt-4 flex-1 rounded-2xl bg-secondary-soft p-4" role="status">
         <p className="text-sm font-semibold">{t('{language} translation', { language: languageName(to) })}</p>
         {result ? <>
           <p className="mt-1 wrap-anywhere text-xl font-semibold leading-snug sm:text-2xl" lang={to}>{result.text}</p>

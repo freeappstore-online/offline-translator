@@ -19,6 +19,9 @@
   --color-accent-soft: var(--accent-soft);
   --color-accent-deep: var(--accent-deep);
   --color-on-accent: var(--on-accent);
+  --color-secondary: var(--secondary);
+  --color-secondary-soft: var(--secondary-soft);
+  --color-secondary-ink: var(--secondary-ink);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
@@ -27,47 +30,53 @@
 
 :root {
   color-scheme: light;
-  --paper: #edf3f5;
-  --paper-deep: #e1eaed;
+  --paper: #f8f5fc;
+  --paper-deep: #eee6f5;
   --panel: #ffffff;
   --panel-glass: #ffffffe8;
   --popover: var(--panel);
-  --ink: #172e26;
-  --ink-strong: #12241e;
-  --muted: #53665b;
-  --line: #d7ddd0;
-  --line-strong: #9baa9b;
-  --accent: #173d30;
-  --accent-hover: #295645;
-  --accent-soft: #e1f0ea;
-  --accent-deep: #173d30;
-  --on-accent: #fffefa;
+  --ink: #302039;
+  --ink-strong: #24122e;
+  --muted: #6b5a74;
+  --line: #e2d6eb;
+  --line-strong: #a991bb;
+  --accent: #8224b5;
+  --accent-hover: #691895;
+  --accent-soft: #f0e3fa;
+  --accent-deep: #8224b5;
+  --on-accent: #ffffff;
+  --secondary: #ff8a00;
+  --secondary-soft: #fff0dc;
+  --secondary-ink: #723b00;
   --success: #32643d;
   --warning: #825a24;
   --danger: #a13035;
-  --scrim: #142c22c9;
+  --scrim: #251333c9;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --paper: #16221d;
-  --paper-deep: #0f1814;
-  --panel: #21322a;
-  --panel-glass: #21322ae8;
-  --ink: #edf1e8;
-  --ink-strong: #fffefa;
-  --muted: #b4c5b9;
-  --line: #415449;
-  --line-strong: #788e81;
-  --accent: #c7e3a5;
-  --accent-hover: #d9edbf;
-  --accent-soft: #344a3b;
-  --accent-deep: #d4eac0;
-  --on-accent: #172e26;
+  --paper: #19111f;
+  --paper-deep: #120c18;
+  --panel: #281b32;
+  --panel-glass: #281b32e8;
+  --ink: #f5edf9;
+  --ink-strong: #ffffff;
+  --muted: #c8b8d3;
+  --line: #513d60;
+  --line-strong: #9279a4;
+  --accent: #d6a5fa;
+  --accent-hover: #e5c5ff;
+  --accent-soft: #422653;
+  --accent-deep: #e4bcff;
+  --on-accent: #302039;
+  --secondary: #ffac4a;
+  --secondary-soft: #422b19;
+  --secondary-ink: #ffca88;
   --success: #afdfa7;
   --warning: #f7ce8b;
   --danger: #f7acae;
-  --scrim: #070d0ac9;
+  --scrim: #100818d9;
 }
 
 @layer base {
