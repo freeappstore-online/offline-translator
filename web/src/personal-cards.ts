@@ -1,9 +1,10 @@
 import type { Language } from './model-options'
+import type { TemplateReference } from './card-templates'
 import { matchKey } from './approved-phrases'
 export const personalCardsKey = 'offline-translator-personal-cards-v1'
 export const personalCardsEvent = 'offline-translator-personal-cards-changed'
 export type PersonalVersion = { text: string; origin: 'ai' | 'user'; model?: { id: string; revision: string }; generatedAt?: string; editedAt?: string }
-export type PersonalCard = { id: string; source: Language; original: string; translations: Partial<Record<Language, PersonalVersion>>; useInTranslate: boolean; createdAt: string; updatedAt: string }
+export type PersonalCard = { template?: TemplateReference; id: string; source: Language; original: string; translations: Partial<Record<Language, PersonalVersion>>; useInTranslate: boolean; createdAt: string; updatedAt: string }
 const language = (value: unknown): value is Language => value === 'en' || value === 'vi' || value === 'zh'
 export function parsePersonalCards(raw: string): PersonalCard[] {
   const parsed: unknown = JSON.parse(raw), ids = new Set<string>()
@@ -14,6 +15,7 @@ export function parsePersonalCards(raw: string): PersonalCard[] {
       if (!language(code) || code === row.source || !version || typeof version.text !== 'string' || !version.text.trim() || version.text.length > 500 || !['ai', 'user'].includes(version.origin) || (version.model && (typeof version.model.id !== 'string' || typeof version.model.revision !== 'string'))) throw new Error('Personal card data is invalid.')
     }
     if (!Object.keys(row.translations).length) throw new Error('Add at least one translation.')
+    if (row.template && (typeof row.template.id !== 'string' || !Number.isInteger(row.template.revision) || row.template.revision < 1 || row.template.source !== row.source || !row.template.values || typeof row.template.values !== 'object' || Array.isArray(row.template.values) || !Object.values(row.template.values).every(value => typeof value === 'string' && value.trim() && value.length <= 120))) throw new Error('Personal card template data is invalid.')
     ids.add(row.id)
   }
   return parsed

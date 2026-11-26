@@ -13,3 +13,11 @@ Draft generation bypasses the card index and actually invokes the selected model
 ## Validation — 2026-11-27
 
 Automated tests cover opt-in exact/reverse lookup, conflict handling, shared precedence, stable edits, provenance and corrupt-storage protection. Browser checks generated an M2M100 English→Vietnamese draft, edited it, saved and enabled it, reused its exact wording in Translate, removed/restored it and confirmed persistence after reload. The generated folder translation was inaccurate; editing remains essential and no quality approval is inferred from this test.
+
+## Templates and saved instances — 2026-11-27
+
+New card offers Write your own and Use a template. Template definitions are versioned separately in `card-templates.ts`; reusable field definitions carry identifiers, labels and semantic kinds (name, identifier, date or text). Each source language has its own sentence skeleton. User-entered values create only the original-language sentence. Target versions use the existing whole-sentence AI draft/manual-edit flow, never concatenated translated vocabulary. Names/numbers are literal in the original preview, but model outputs still require checking. Medical templates remain explicitly unreviewed.
+
+A saved instance stores the complete original and target versions plus optional `template` metadata: ID, revision, source and field values. Existing free-form cards need no migration. Editing an original detaches its reference and clears target drafts to avoid stale translations. Future template edits cannot silently alter saved wording. Changing the builder source language clears field values so translated vocabulary is not silently reused as another source language.
+
+The initial template set covers destinations, accommodation/booking numbers, hotel check-in, check-out date, restaurant reservations, meeting a named person and allergy communication. Dates use explicit text with a month-word hint. This is not the deferred broader shared-library variation redesign or a Trip Info profile store.

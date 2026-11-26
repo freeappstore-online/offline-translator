@@ -20,7 +20,7 @@ import { engines, modelFor, type Engine } from './model-options'
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { initApp } from '@freeappstore/sdk'
 import { PageHeader, Shell, type NavItem } from '@freeappstore/sdk/ui'
-import { categories, datasetId, languages, loadPhrases, needsHumanReviewWarning, normalize, type Phrase, type TargetLanguage } from './phrases'
+import { datasetId, languages, loadPhrases, needsHumanReviewWarning, normalize, type Phrase, type TargetLanguage } from './phrases'
 import { rankSuggestions } from './suggest-phrases'
 import ReviewWorkstation from './ReviewWorkstation'
 
@@ -280,22 +280,17 @@ export default function App() {
         </>}
         {storageError && <p role="status" className="mt-3 text-sm text-muted">{t("Browser storage is full or unavailable. Export translation JSON from Packs before closing this page.")}</p>}
         {!!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' && path !== '/conversation' && collection === 'shared' &&
-          <Cards cards={cards} language={language} saved={saved} onFavorite={toggleFavorite} />}
+          <Cards cards={cards} language={language} saved={saved} onFavorite={toggleFavorite} onCreate={() => setCollection('personal')} />}
       </div>
     </Shell>
   )
 }
 
-function Cards({ cards, language, saved, onFavorite }: {
-  cards: Phrase[]
-  language: TargetLanguage
-  saved: Set<string>
-  onFavorite: (id: string) => void
+function Cards({ cards, language, saved, onFavorite, onCreate }: {
+  cards: Phrase[]; language: TargetLanguage; saved: Set<string>; onFavorite: (id: string) => void; onCreate: () => void
 }) {
-  const [query, setQuery] = useState('')
-  const [scenario, setScenario] = useState('essentials')
-  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(() => new Set())
-  const [selected, setSelected] = useState<Phrase | null>(null)
+  const [query, setQuery] = useState(''), [scenario, setScenario] = useState<string | null>(null), [taskFilter, setTaskFilter] = useState('')
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(() => new Set()), [selected, setSelected] = useState<Phrase | null>(null)
   const dialog = useRef<HTMLDialogElement>(null)
   const searching = Boolean(query.trim())
   const matches = useMemo(() => {
@@ -303,88 +298,42 @@ function Cards({ cards, language, saved, onFavorite }: {
     const scores = new Map<string, number>()
     for (const result of ranked) scores.set(result.card.id, Math.max(scores.get(result.card.id) ?? 0, result.score))
     return cards.filter(card =>
-      (searching || scenario === 'all' || (scenario === 'saved' ? saved.has(card.id) : cardScenarios(card).includes(scenario as keyof typeof scenarios))) &&
+      (searching || scenario === 'all' || (scenario === 'saved' ? saved.has(card.id) : scenario !== null && cardScenarios(card).includes(scenario as keyof typeof scenarios))) &&
       (!searching || scores.has(card.id) || [card.en, card[language]].some(text => normalize(text).includes(normalize(query)))))
       .sort((a, b) => searching ? (scores.get(b.id) ?? 0) - (scores.get(a.id) ?? 0) : 0)
   }, [cards, language, query, saved, scenario, searching])
-  const groups = tasks.map(task => ({
-    task, cards: matches.filter(card => cardTask(card, scenario) === task),
-  })).filter(group => group.cards.length)
-
-
-  return (
-    <>
-      <label className="sr-only" htmlFor="search">{t("Search phrases")}</label>
-      <input id="search" type="search" className={control + ' w-full'} value={query} onChange={event => setQuery(event.target.value)} placeholder={t("Search all scenarios")} />
-      <div className="my-4 flex gap-2 overflow-x-auto pb-2" role="tablist" aria-label={t("Scenarios")}>
-        {[...Object.entries(scenarios), ['saved', t("Saved")], ['all', t("All phrases")]].map(([id, name]) => (
-          <button key={id} type="button" role="tab" id={'scenario-' + id}
-            aria-selected={scenario === id} aria-controls="scenario-cards"
-            tabIndex={scenario === id ? 0 : -1}
-            className={`min-h-11 shrink-0 rounded-full px-4 text-sm font-semibold ${scenario === id ? 'bg-accent text-on-accent' : 'bg-panel text-ink'}`}
-            onClick={() => { setScenario(id); setQuery(''); setExpandedTasks(new Set()) }}
-            onKeyDown={event => {
-              const list = Array.from(event.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>('[role=tab]'))
-              const index = list.indexOf(event.currentTarget)
-              const next = event.key === 'ArrowRight' ? (index + 1) % list.length
-                : event.key === 'ArrowLeft' ? (index - 1 + list.length) % list.length
-                : event.key === 'Home' ? 0 : event.key === 'End' ? list.length - 1 : undefined
-              if (next === undefined) return
-              event.preventDefault()
-              list[next].click()
-              list[next].focus()
-              list[next].scrollIntoView({ block: 'nearest', inline: 'nearest' })
-            }}>{t(name)}</button>
-        ))}
-      </div>
-      {searching && <p className="mb-2 text-sm text-canvas-ink">{t("Searching all scenarios")}</p>}
-      <p className="mb-3 text-sm text-canvas-ink" role="status">{matches.length ? t('{count} cards', { count: matches.length }) : t("No matching cards.")}</p>
-      <div id="scenario-cards" role="tabpanel" aria-labelledby={'scenario-' + scenario}>
-      {groups.map(group => <section key={group.task} className="mb-6">
-        <h2 className="mb-3 text-base font-semibold text-canvas-ink">{t(group.task)}</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {(searching || expandedTasks.has(group.task) ? group.cards : group.cards.slice(0, 6)).map(card => (
-          <article key={card.id} className={panel}>
-            <div className="mb-3 flex items-center justify-between gap-2 text-sm text-muted">
-              {t(categories[card.category])}
-              <button className={control} type="button" aria-label={`Save card: ${card.en}`} aria-pressed={saved.has(card.id)} onClick={() => onFavorite(card.id)}>
-                {saved.has(card.id) ? '★' : '☆'}
-              </button>
-            </div>
-            {needsHumanReviewWarning(card) && (
-              <p className="mb-2 rounded-lg bg-warning/15 px-2 py-1 text-xs font-semibold text-warning" role="status">{t("High risk · pending human review")}</p>
-            )}
-            <button type="button" className="w-full text-left hover:underline" onClick={() => { setSelected(card); dialog.current?.showModal() }}>
-              <strong className="block">{card.en}</strong>
-              <span className="mt-1 block text-muted" lang={language}>{card[language]}</span>
-            </button>
-          </article>
-        ))}
-        </div>
-        {!searching && group.cards.length > 6 && <button type="button"
-          className="mt-3 min-h-11 text-sm font-semibold text-canvas-ink"
-          aria-expanded={expandedTasks.has(group.task)}
-          onClick={() => setExpandedTasks(previous => {
-            const next = new Set(previous)
-            if (next.has(group.task)) next.delete(group.task)
-            else next.add(group.task)
-            return next
-          })}>{expandedTasks.has(group.task) ? t("Show fewer") : t('Show all {count} phrases', { count: group.cards.length })}</button>}
-      </section>)}
-      </div>
-      <dialog ref={dialog} aria-labelledby="card-text" onClose={() => setSelected(null)} className="m-auto w-[calc(100%-1.5rem)] max-w-2xl rounded-[1.25rem] bg-popover p-5 text-ink backdrop:bg-scrim sm:p-8">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted">{languageName(language)} · {t('Show this to someone')}</p>
-          <form method="dialog"><button className={control} aria-label={t("Close card")}>✕</button></form>
-        </div>
-        {selected && needsHumanReviewWarning(selected) && (
-          <p className="mt-3 rounded-lg bg-warning/15 px-3 py-2 text-sm font-semibold text-warning" role="status">{t("High risk · pending human review. Confirm wording with a native speaker before relying on this in an emergency.")}</p>
-        )}
-        <h2 id="card-text" lang={language} className="my-5 text-3xl font-bold wrap-anywhere sm:text-5xl">{selected?.[language]}</h2>
-        <p>{selected?.en}</p>
-      </dialog>
-    </>
-  )
+  const groups = tasks.map(task => ({ task, cards: matches.filter(card => cardTask(card, scenario ?? '') === task) })).filter(group => group.cards.length)
+  const icons: Record<string, string> = { essentials: '☀', restaurant: '♨', transport: '↗', hotel: '⌂', shopping: '♧', belongings: '▣', help: '＋' }
+  const openScenario = (id: string) => { setScenario(id); setQuery(''); setTaskFilter(''); setExpandedTasks(new Set()) }
+  const scenarioTitle = scenario === 'saved' ? 'Saved phrases' : scenario === 'all' ? 'All phrases' : scenarios[scenario as keyof typeof scenarios]
+  return <>
+    <label className="sr-only" htmlFor="search">{t('Search phrases')}</label>
+    <input id="search" type="search" className={control + ' w-full'} value={query} onChange={event => { setQuery(event.target.value); setTaskFilter('') }} placeholder={t('Search all scenarios')} />
+    {!scenario && !searching ? <div className="mt-4 space-y-5">
+      <button type="button" className="flex min-h-24 w-full items-center justify-between gap-3 rounded-2xl bg-accent p-4 text-left text-on-accent" onClick={onCreate}><span><strong className="block text-base">{t('Create a personal card')}</strong><span className="mt-1 block text-sm">{t('Write your own sentence or start with a template.')}</span></span><span aria-hidden="true">＋</span></button>
+      <div className="flex gap-3"><button type="button" className="min-h-11 flex-1 rounded-xl border border-line bg-panel p-3 text-left text-sm font-semibold text-ink" onClick={() => openScenario('saved')}>♡ {t('Saved phrases')} <span className="text-muted">({cards.filter(card => saved.has(card.id)).length})</span></button><button type="button" className="min-h-11 rounded-xl bg-panel px-4 text-sm text-accent" onClick={() => openScenario('all')}>{t('All phrases')} ›</button></div>
+      <section aria-label={t('Scenarios')}><h2 className="mb-3 text-base font-semibold text-canvas-ink">{t('What do you need?')}</h2><div className="grid grid-cols-2 gap-3">{Object.entries(scenarios).map(([id, name]) => <button type="button" key={id} className="flex min-h-36 min-w-0 flex-col items-start rounded-2xl border border-line bg-panel p-4 text-left text-ink" onClick={() => openScenario(id)}><span aria-hidden="true" className="mb-3 flex size-10 items-center justify-center rounded-xl bg-secondary-soft text-xl text-secondary-ink">{icons[id]}</span><strong className="wrap-anywhere text-sm sm:text-base">{t(name)}</strong><span className="mt-2 text-xs text-muted">{t('{count} cards', { count: cards.filter(card => cardScenarios(card).includes(id as keyof typeof scenarios)).length })}</span></button>)}</div></section>
+    </div> : <div className="mt-4">
+      <button type="button" className="mb-3 min-h-11 rounded-full bg-panel px-4 text-sm font-semibold text-accent" onClick={() => { setScenario(null); setQuery(''); setTaskFilter('') }}>← {t('All scenarios')}</button>
+      <h2 className="text-xl font-bold text-canvas-ink">{t(searching ? 'Search results' : scenarioTitle)}</h2>
+      <p className="mb-4 mt-1 text-sm text-canvas-ink" role="status">{matches.length ? t('{count} cards', { count: matches.length }) : t(scenario === 'saved' && !searching ? 'Tap the heart on a phrase to save it here.' : 'No matching cards.')}</p>
+      {groups.length > 1 && !searching && <label className="mb-4 block text-sm text-canvas-ink">{t('Specific need')}<select className={control + ' mt-1 w-full'} value={taskFilter} onChange={event => setTaskFilter(event.target.value)}><option value="">{t('All needs')}</option>{groups.map(group => <option key={group.task} value={group.task}>{t(group.task)} ({group.cards.length})</option>)}</select></label>}
+      <div aria-label={t(searching ? 'Search results' : scenarioTitle)}>{groups.filter(group => !taskFilter || group.task === taskFilter).map(group => <section key={group.task} className="mb-5">
+        <h3 className="mb-2 text-sm font-semibold text-canvas-ink">{t(group.task)}</h3>
+        <div className="divide-y divide-line overflow-hidden rounded-2xl bg-panel text-ink">{(searching || expandedTasks.has(group.task) ? group.cards : group.cards.slice(0, 6)).map(card => <article key={card.id} className="flex items-start gap-1 p-3 sm:p-4">
+          <button type="button" className="min-h-14 min-w-0 flex-1 text-left" onClick={() => { setSelected(card); dialog.current?.showModal() }}><strong className="block wrap-anywhere text-sm sm:text-base">{card.en}</strong><span className="mt-1 block wrap-anywhere text-sm text-muted" lang={language}>{card[language]}</span>{needsHumanReviewWarning(card) && <span className="mt-2 block text-xs font-semibold text-warning">{t('High risk · pending human review')}</span>}</button>
+          <button type="button" className="flex size-11 shrink-0 items-center justify-center rounded-full text-xl text-accent" aria-label={t('Save phrase: {phrase}', { phrase: card.en })} aria-pressed={saved.has(card.id)} onClick={() => onFavorite(card.id)}>{saved.has(card.id) ? '♥' : '♡'}</button>
+        </article>)}</div>
+        {!searching && group.cards.length > 6 && <button type="button" className="mt-2 min-h-11 text-sm font-semibold text-canvas-ink" aria-expanded={expandedTasks.has(group.task)} onClick={() => setExpandedTasks(previous => { const next = new Set(previous); if (next.has(group.task)) next.delete(group.task); else next.add(group.task); return next })}>{expandedTasks.has(group.task) ? t('Show fewer') : t('Show all {count} phrases', { count: group.cards.length })}</button>}
+      </section>)}</div>
+    </div>}
+    <dialog ref={dialog} aria-labelledby="card-text" onClose={() => setSelected(null)} className="m-auto max-h-[85dvh] w-[calc(100%-1.5rem)] max-w-2xl overflow-y-auto rounded-3xl bg-popover p-5 text-ink backdrop:bg-scrim sm:p-8">
+      <div className="flex items-center justify-between gap-3"><p className="text-sm text-muted">{languageName(language)} · {t('Show this to someone')}</p><form method="dialog"><button className={control} aria-label={t('Close card')}>✕</button></form></div>
+      {selected && needsHumanReviewWarning(selected) && <p className="mt-3 rounded-lg bg-warning/15 p-3 text-sm font-semibold text-warning">{t('High risk · pending human review. Confirm wording with a native speaker before relying on this in an emergency.')}</p>}
+      <h2 id="card-text" lang={language} className="my-5 text-3xl font-bold wrap-anywhere sm:text-5xl">{selected?.[language]}</h2><p lang="en" className="wrap-anywhere text-muted">{selected?.en}</p>
+      {selected && <div className="mt-5 flex items-center justify-between border-t border-line pt-3"><ReadAloud text={selected[language]} language={language} /><button type="button" className={control} aria-pressed={saved.has(selected.id)} onClick={() => onFavorite(selected.id)}>{saved.has(selected.id) ? '♥ ' + t('Saved') : '♡ ' + t('Save phrase')}</button></div>}
+    </dialog>
+  </>
 }
 
 function Translate({ cards, personalCards, engine, from, to, log, incoming }: {

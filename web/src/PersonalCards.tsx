@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { TemplateBuilder } from './TemplateBuilder'
+import type { TemplateReference } from './card-templates'
 import { LanguagePicker } from './LanguagePicker'
 import { ReadAloud } from './ReadAloud'
 import { t, languageName } from './i18n'
@@ -11,6 +13,7 @@ const field = 'min-h-11 w-full rounded-xl border border-line bg-paper p-3 text-b
 const button = 'min-h-11 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-on-accent disabled:opacity-50'
 const codes: Language[] = ['en', 'vi', 'zh']
 export function PersonalCards({ cards, engine, target, onUse, onLog }: { cards: PersonalCard[]; engine: Engine; target: Language; onUse: (text: string, from: Language, to: Language) => void; onLog: (entry: LogEntry) => void }) {
+  const [createMode, setCreateMode] = useState<'choose' | 'template' | null>(null), [template, setTemplate] = useState<TemplateReference>()
   const [editing, setEditing] = useState(false), [id, setId] = useState<string>(), [source, setSource] = useState<Language>('en'), [original, setOriginal] = useState('')
   const [targets, setTargets] = useState<Language[]>([target]), [versions, setVersions] = useState<Partial<Record<Language, PersonalVersion>>>({}), [enabled, setEnabled] = useState(false)
   const [modelChoice, setModelChoice] = useState<Engine>(engine), [busy, setBusy] = useState(false), [status, setStatus] = useState(''), [query, setQuery] = useState('')
@@ -20,11 +23,11 @@ export function PersonalCards({ cards, engine, target, onUse, onLog }: { cards: 
   useEffect(() => { alive.current = true; return () => { alive.current = false; request.current?.abort() } }, [])
   const valid = Boolean(original.trim() && original.length <= 500 && targets.length && targets.every(code => versions[code]?.text.trim() && versions[code]!.text.length <= 500))
   function open(card?: PersonalCard) {
-    setId(card?.id); setSource(card?.source ?? 'en'); setOriginal(card?.original ?? ''); setTargets(card ? Object.keys(card.translations) as Language[] : [target]); setVersions(card?.translations ?? {}); setEnabled(card?.useInTranslate ?? false); setModelChoice(engine); setStatus(''); setEditing(true)
+    setCreateMode(null); setTemplate(card?.template); setId(card?.id); setSource(card?.source ?? 'en'); setOriginal(card?.original ?? ''); setTargets(card ? Object.keys(card.translations) as Language[] : [target]); setVersions(card?.translations ?? {}); setEnabled(card?.useInTranslate ?? false); setModelChoice(engine); setStatus(''); setEditing(true)
     window.setTimeout(() => editor.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 0)
   }
   function changeSource(text: string, code = source) {
-    setOriginal(text); setSource(code); setVersions({}); setEnabled(false)
+    setTemplate(undefined); setOriginal(text); setSource(code); setVersions({}); setEnabled(false)
     if (targets.includes(code)) setTargets([codes.find(item => item !== code)!])
     setStatus('Source changed. Generate or enter translations again.')
   }
@@ -53,13 +56,19 @@ export function PersonalCards({ cards, engine, target, onUse, onLog }: { cards: 
   function save() {
     const previous = cards.find(card => card.id === id), now = new Date().toISOString()
     const translations = Object.fromEntries(targets.map(code => [code, { ...versions[code]!, text: versions[code]!.text.trim() }]))
-    try { savePersonalCard({ id: id ?? crypto.randomUUID(), source, original: original.trim(), translations, useInTranslate: enabled, createdAt: previous?.createdAt ?? now, updatedAt: now }); setEditing(false); setStatus('Personal card saved.') } catch { setStatus('Could not save personal cards. Browser storage is full, unavailable or contains invalid data. Export a backup before clearing site data.') }
+    try { savePersonalCard({ template, id: id ?? crypto.randomUUID(), source, original: original.trim(), translations, useInTranslate: enabled, createdAt: previous?.createdAt ?? now, updatedAt: now }); setEditing(false); setStatus('Personal card saved.') } catch { setStatus('Could not save personal cards. Browser storage is full, unavailable or contains invalid data. Export a backup before clearing site data.') }
   }
   const matches = cards.filter(card => !query.trim() || [card.original, ...Object.values(card.translations).map(version => version.text)].some(text => text.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())))
   return <section className="space-y-4 rounded-3xl bg-panel p-4 text-ink sm:p-5" aria-label={t('My cards')}>
-    <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-bold">{t('My cards')}</h2><button type="button" className={button} disabled={busy} onClick={() => open()}>{t('New card')}</button></div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-bold">{t('My cards')}</h2><button type="button" className={button} disabled={busy} onClick={() => { setEditing(false); setCreateMode('choose'); setStatus('') }}>{t('New card')}</button></div>
     <p className="text-xs text-muted">{t('Personal cards stay in this browser. AI drafts are unreviewed; saving or editing does not verify their accuracy.')}</p>
+    {createMode === 'choose' && <div className="grid gap-3 sm:grid-cols-2" aria-label={t('Create card')}>
+      <button type="button" className="min-h-24 rounded-2xl border border-line bg-paper p-4 text-left" onClick={() => open()}><strong className="block text-accent">{t('Write your own')}</strong><span className="mt-1 block text-sm text-muted">{t('Start with any sentence and add translations.')}</span></button>
+      <button type="button" className="min-h-24 rounded-2xl border border-line bg-paper p-4 text-left" onClick={() => setCreateMode('template')}><strong className="block text-accent">{t('Use a template')}</strong><span className="mt-1 block text-sm text-muted">{t('Fill in a destination, hotel or booking number.')}</span></button>
+    </div>}
+    {createMode === 'template' && <TemplateBuilder onCancel={() => setCreateMode('choose')} onApply={(text, code, reference) => { open(); setSource(code); setOriginal(text); setTargets([code === target ? (code === 'en' ? 'vi' : 'en') : target]); setTemplate(reference) }} />}
     {editing && <div ref={editor} className="scroll-mt-16 rounded-2xl border border-line p-3 sm:p-4">
+      {template && <p className="mb-3 text-xs text-muted">{t('Created from a template. Editing the original detaches it from the template.')}</p>}
       <form className="space-y-4" onSubmit={event => { event.preventDefault(); if (valid && !busy) save() }}>
         <LanguagePicker label="Original language" value={source} disabled={busy} onChange={code => changeSource(original, code)} />
         <label className="block text-sm font-semibold">{t('Original phrase')}<textarea className={field + ' mt-1 min-h-24'} lang={source} value={original} maxLength={500} disabled={busy} required onChange={event => changeSource(event.target.value)} /></label>
