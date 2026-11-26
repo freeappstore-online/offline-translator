@@ -40,6 +40,10 @@ function currentPath() {
   return location.pathname
 }
 
+function openTranslationMode(mode: 'one-way' | 'voice') {
+  window.dispatchEvent(new CustomEvent('translator-input-mode', { detail: mode }))
+}
+
 export default function App() {
   const uiLocale = useLocale()
   useEffect(() => { document.documentElement.lang = uiLocale === 'zh' ? 'zh-Hans' : uiLocale }, [uiLocale])
@@ -51,10 +55,19 @@ export default function App() {
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const [saved, setSaved] = useState(readFavorites)
-  const [translateMode, setTranslateMode] = useState<'one-way' | 'chat' | 'face-to-face'>('one-way')
+  const [translateMode, setTranslateMode] = useState<'one-way' | 'chat' | 'voice'>('one-way')
   const [history, setHistory] = useState(readLog)
   const logRef = useRef(history)
   const [storageError, setStorageError] = useState(false)
+  useEffect(() => {
+    const switchMode = (event: Event) => {
+      const mode = (event as CustomEvent<string>).detail
+      if (mode === 'one-way' || mode === 'voice') setTranslateMode(mode)
+    }
+    window.addEventListener('translator-input-mode', switchMode)
+    return () => window.removeEventListener('translator-input-mode', switchMode)
+  }, [])
+
 
   function updateLog(update: (entries: LogEntry[]) => LogEntry[]) {
     const entries = update(logRef.current)
@@ -164,11 +177,10 @@ export default function App() {
           <>
             <details id="translator-menu" className="mx-auto mb-3 max-w-xl rounded-2xl bg-panel px-4 py-2">
               <summary className="flex min-h-11 cursor-pointer items-center justify-between text-sm font-semibold"><span>{t('Translation settings')}</span><span aria-hidden="true">≡</span></summary>
-              <div className="pt-2">            <div className="mb-4 grid grid-cols-3 gap-1 rounded-2xl bg-paper-deep p-1 sm:max-w-lg" role="tablist" aria-label="Translate mode">
+              <div className="pt-2">            <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl bg-paper-deep p-1 sm:max-w-lg" role="tablist" aria-label="Translate mode">
               {([
                 ['one-way', t("One way")],
                 ['chat', t("Chat")],
-                ['face-to-face', t("Face to face")],
               ] as const).map(([id, label]) => {
                 const active = translateMode === id
                 return (
@@ -339,7 +351,7 @@ function Translate({ cards, engine, from, to, log, mode }: {
   from: PhraseLanguage
   to: PhraseLanguage
   log: (entry: LogEntry) => void
-  mode: 'one-way' | 'chat' | 'face-to-face'
+  mode: 'one-way' | 'chat' | 'voice'
 }) {
   const lookup = useMemo(() => buildApprovedIndex(cards), [cards])
   const [outgoing, setOutgoing] = useState<TranslationResult>()
@@ -350,8 +362,8 @@ function Translate({ cards, engine, from, to, log, mode }: {
   if (mode === 'chat') {
     return <ConversationChat cards={cards} engine={engine} near={from} far={to} log={log} lookup={lookup} />
   }
-  if (mode === 'face-to-face') {
-    return <FaceToFaceSplit near={from} far={to} />
+  if (mode === 'voice') {
+    return <VoiceConversation near={from} far={to} />
   }
 
   return (
@@ -613,16 +625,16 @@ function InputToolbar({ inputId }: { inputId: string }) {
       className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-accent-soft px-3 text-sm font-semibold text-accent">
       <span aria-hidden="true" className="text-xl font-bold">T</span>{t('Text')}
     </button>
-    {(['Voice', 'Camera'] as const).map(method => <button key={method} type="button" disabled
+    {(['Voice', 'Camera'] as const).map(method => <button key={method} type="button" disabled={method === 'Camera'} onClick={() => openTranslationMode('voice')}
       className="flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1 text-muted disabled:cursor-default"
-      aria-label={t(method) + ' · ' + t('Coming soon')}>
+      aria-label={method === 'Voice' ? t('Voice translation') : t(method) + ' · ' + t('Coming soon')}>
       <span className="flex items-center gap-1.5 text-sm font-semibold">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="size-5">
           {method === 'Voice' ? <><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></>
             : <><path d="M4 7h4l2-3h4l2 3h4v13H4z"/><circle cx="12" cy="13" r="3"/></>}
         </svg>{t(method)}
       </span>
-      <span className="text-[0.6rem]">{t('Coming soon')}</span>
+      <span className="text-[0.6rem]">{method === 'Voice' ? t('Preview') : t('Coming soon')}</span>
     </button>)}
   </div>
 }
@@ -727,9 +739,13 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
   )
 }
 
-function FaceToFaceSplit({ near, far }: { near: PhraseLanguage; far: PhraseLanguage }) {
+function VoiceConversation({ near, far }: { near: PhraseLanguage; far: PhraseLanguage }) {
   const [selected, setSelected] = useState<PhraseLanguage>()
   return <div className="mx-auto max-w-xl">
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <button type="button" className={control + ' text-sm'} onClick={() => openTranslationMode('one-way')}>← {t('Text')}</button>
+      <h2 className="text-base font-semibold">{t('Voice translation')}</h2>
+    </div>
     <p className="mb-3 text-center text-xs text-muted">{t('Voice preview · microphone is off')}</p>
     <div className="overflow-hidden rounded-[1.75rem] border border-line bg-panel">
       {([far, near] as const).map((code, index) => <section key={index}
@@ -884,10 +900,10 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
             setStatus('')
           }} />
           <div className="mt-4 flex items-center justify-center gap-10" role="group" aria-label={t('Input method')}>
-            {(['Camera', 'Voice'] as const).map(method => <button key={method} type="button" disabled className="flex min-h-11 min-w-16 flex-col items-center gap-1 text-on-accent/65" aria-label={t(method) + ' · ' + t('Coming soon')}>
+            {(['Camera', 'Voice'] as const).map(method => <button key={method} type="button" disabled={method === 'Camera'} onClick={() => openTranslationMode('voice')} className="flex min-h-11 min-w-16 flex-col items-center gap-1 text-on-accent/65" aria-label={method === 'Voice' ? t('Voice translation') : t(method) + ' · ' + t('Coming soon')}>
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-7">
                 {method === 'Voice' ? <><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></> : <><path d="M4 7h4l2-3h4l2 3h4v13H4z"/><circle cx="12" cy="13" r="3"/></>}
-              </svg><span className="text-[0.6rem]">{t('Coming soon')}</span>
+              </svg><span className="text-[0.6rem]">{method === 'Voice' ? t('Preview') : t('Coming soon')}</span>
             </button>)}
           </div>
         {showSuggestions && (
