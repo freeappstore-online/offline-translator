@@ -85,3 +85,7 @@ Model observations and deferred architecture options: see [MODEL_EXPERIMENTS.md]
 Chat input shows From and To language fields for the selected conversation pair. The middle arrow indicates left-to-right translation; Reverse exchanges the languages. Selecting either language also reverses the pair. Controls are disabled while sending.
 
 Language labels use native names with English in parentheses, for example Tiếng Việt (Vietnamese). English remains English.
+
+## Interface languages
+
+The App language selector supports English, Vietnamese and Simplified Chinese. It follows the browser language initially, remembers an explicit choice locally, and does not change the translation pair or phrase content. Language labels combine a native name with its name in the current interface language; identical names appear once. Search accepts native names, English names, localized names and codes. App controls and scenario names are translated locally with English fallback. Model identifiers and technical failure details remain unchanged.

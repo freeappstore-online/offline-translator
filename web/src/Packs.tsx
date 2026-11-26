@@ -1,3 +1,4 @@
+import { t, languageName } from './i18n'
 import { LanguagePicker, languageLabels } from './LanguagePicker'
 import { useEffect, useRef, useState } from 'react'
 import { translateWithModel } from './downloaded-translation'
@@ -9,7 +10,7 @@ function LanguageLabel({ code }: { code: Language }) {
   const language = languageLabels[code]
   return <span className="inline-flex items-center gap-2">
     <span aria-hidden="true" className="text-xl">{language.flag}</span>
-    <span lang={language.lang}>{language.name}{language.name !== language.translatedName && ` (${language.translatedName})`}</span>
+    <span lang={language.lang}>{languageName(code)}</span>
   </span>
 }
 
@@ -40,30 +41,30 @@ export function Packs({ cards }: { cards: Phrase[] }) {
     setUsage((await navigator.storage?.estimate())?.usage)
   }
 
-  useEffect(() => { void refresh().catch(() => setError('Browser storage is unavailable.')) }, [])
+  useEffect(() => { void refresh().catch(() => setError(t("Browser storage is unavailable."))) }, [])
 
   async function install(key: string) {
     if (busy.current) return
     busy.current = true
     setActive(key)
     setError('')
-    setStatus('Preparing package…')
+    setStatus(t("Preparing package…"))
     try {
       await caches.open(modelCache)
       if (key === 'phrases') {
         await savePhrases(cards)
-        setStatus('Phrase library saved for offline use.')
+        setStatus(t("Phrase library saved for offline use."))
       } else {
         const pack = packs.find(pack => pack.key === key)!
         const installed = await packSaved(pack.model)
-        setStatus(installed ? 'Preparing saved model…' : 'Downloading model…')
+        setStatus(installed ? t("Preparing saved model…") : t("Downloading model…"))
         const from = pack.key === 'multilingual' ? pair.from : pack.from
         const to = pack.key === 'multilingual' ? pair.to : pack.to
         const sample = { en: 'Hello.', vi: 'Xin chào.', zh: '你好。' }
         await translateWithModel(pack.model, sample[from],
           from, to, new AbortController().signal, setStatus)
-        if (!await packSaved(pack.model)) throw new Error('The model ran, but its files were not fully saved. Please retry.')
-        setStatus('Model saved and ready.')
+        if (!await packSaved(pack.model)) throw new Error(t("The model ran, but its files were not fully saved. Please retry."))
+        setStatus(t("Model saved and ready."))
       }
       await refresh()
     } catch (cause) {
@@ -77,52 +78,52 @@ export function Packs({ cards }: { cards: Phrase[] }) {
 
   return <div className="mx-auto max-w-2xl space-y-5">
     <div className="grid gap-4 sm:grid-cols-2">
-      <LanguagePicker label="First language" value={pair.from} disabled={Boolean(active)}
+      <LanguagePicker label={t("First language")} value={pair.from} disabled={Boolean(active)}
         onChange={value => chooseLanguage('from', value)} />
-      <LanguagePicker label="Second language" value={pair.to} disabled={Boolean(active)}
+      <LanguagePicker label={t("Second language")} value={pair.to} disabled={Boolean(active)}
         onChange={value => chooseLanguage('to', value)} />
     </div>
 
-    <p className="text-sm text-muted">Download once while online. Saved resources are reused in this browser.</p>
+    <p className="text-sm text-muted">{t("Download once while online. Saved resources are reused in this browser.")}</p>
 
-    <section aria-label="Phrase package" className="rounded-2xl bg-panel p-4 sm:p-5">
-      <h2 className="text-base font-semibold">Travel phrases</h2>
-      <p className="my-2 text-sm text-muted">{pairCardCount} cards for this pair · shared library includes all three languages</p>
+    <section aria-label={t("Phrase package")} className="rounded-2xl bg-panel p-4 sm:p-5">
+      <h2 className="text-base font-semibold">{t("Travel phrases")}</h2>
+      <p className="my-2 text-sm text-muted">{pairCardCount}{t("cards for this pair · shared library includes all three languages")}</p>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm">{saved.phrases ? 'Saved in this browser' : 'Ready to download'}</p>
+        <p className="text-sm">{saved.phrases ? t("Saved in this browser") : t("Ready to download")}</p>
         <button type="button" disabled={Boolean(active) || !cards.length}
           className="min-h-11 rounded-full bg-accent px-5 py-2 text-sm font-semibold text-on-accent disabled:opacity-50"
           onClick={() => void install('phrases')}>
-          {active === 'phrases' ? 'Saving…' : saved.phrases ? 'Save library again' : 'Download phrases'}
+          {active === 'phrases' ? t("Saving…") : saved.phrases ? t("Save library again") : t("Download phrases")}
         </button>
       </div>
     </section>
 
-    <section aria-label="Models for selected language pair" className="space-y-3">
-      <h2 className="text-base font-semibold">Translation models</h2>
+    <section aria-label={t("Models for selected language pair")} className="space-y-3">
+      <h2 className="text-base font-semibold">{t("Translation models")}</h2>
       {visibleModels.map(pack => <article key={pack.key} className="rounded-2xl bg-panel p-4 sm:p-5">
         <h3 className="font-semibold">{pack.key === 'multilingual' ? 'M2M100' : 'OPUS-MT'}</h3>
         <div className="my-2 flex flex-wrap items-center gap-2 text-sm">
           <LanguageLabel code={pack.key === 'multilingual' ? pair.from : pack.from} />
-          <span aria-label={pack.key === 'multilingual' ? 'both directions' : 'to'}>{pack.key === 'multilingual' ? '↔' : '→'}</span>
+          <span aria-label={t(pack.key === 'multilingual' ? 'both directions' : 'to')}>{pack.key === 'multilingual' ? '↔' : '→'}</span>
           <LanguageLabel code={pack.key === 'multilingual' ? pair.to : pack.to} />
         </div>
-        <p className="mb-3 text-sm text-muted">{pack.size}{pack.key === 'multilingual' ? ' · one download covers all three languages' : ' · this direction'}</p>
+        <p className="mb-3 text-sm text-muted">{t(pack.size)}{pack.key === 'multilingual' ? ' · ' + t('one download covers all three languages') : ' · ' + t('this direction')}</p>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm">{saved[pack.key] ? 'Saved in this browser' : 'Ready to download'}</p>
+          <p className="text-sm">{saved[pack.key] ? t("Saved in this browser") : t("Ready to download")}</p>
           <button type="button" disabled={Boolean(active)}
             className="min-h-11 rounded-full bg-accent px-5 py-2 text-sm font-semibold text-on-accent disabled:opacity-50"
             onClick={() => void install(pack.key)}>
-            {active === pack.key ? 'Preparing…' : saved[pack.key] ? 'Check saved model' : 'Download model'}
+            {active === pack.key ? t("Preparing…") : saved[pack.key] ? t("Check saved model") : t("Download model")}
           </button>
         </div>
       </article>)}
     </section>
-    {(status || error) && <p role="status" className="text-sm">{status || error}</p>}
+    {(status || error) && <p role="status" className="text-sm">{t(status || error)}</p>}
     <details className="text-sm text-muted">
-      <summary className="min-h-11 cursor-pointer py-3">Storage & downloads</summary>
-      {usage !== undefined && <p className="mb-2">App storage · {(usage / 1024 / 1024).toFixed(0)} MB</p>}
-      <p>Model sizes exclude the shared runtime. Saved models take a short time to prepare after reopening. Browser storage can be cleared or evicted.</p>
+      <summary className="min-h-11 cursor-pointer py-3">{t("Storage & downloads")}</summary>
+      {usage !== undefined && <p className="mb-2">{t("App storage ·")}{(usage / 1024 / 1024).toFixed(0)} MB</p>}
+      <p>{t("Model sizes exclude the shared runtime. Saved models take a short time to prepare after reopening. Browser storage can be cleared or evicted.")}</p>
     </details>
   </div>
 }

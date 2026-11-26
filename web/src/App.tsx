@@ -1,3 +1,4 @@
+import { t, languageName, useLocale, setLocale, type Locale } from './i18n'
 import { Packs } from './Packs'
 import { scenarios, tasks, cardScenarios, cardTask } from './card-scenarios'
 import { approvedLabels, buildApprovedIndex, type ApprovedMatch } from './approved-phrases'
@@ -40,6 +41,8 @@ function currentPath() {
 }
 
 export default function App() {
+  const uiLocale = useLocale()
+  useEffect(() => { document.documentElement.lang = uiLocale === 'zh' ? 'zh-Hans' : uiLocale }, [uiLocale])
   const [path, setPath] = useState(currentPath)
   const [language, setLanguage] = useState<TargetLanguage>('vi')
   const [engine, setEngine] = useState<Engine>('opus')
@@ -106,7 +109,7 @@ export default function App() {
     setPath(href)
   }
 
-  const title = path === '/translate' ? 'Translate' : path === '/packs' ? 'Language Packs' : path === '/review' ? 'Review workstation' : 'Quick Cards'
+  const title = path === '/translate' ? t("Translate") : path === '/packs' ? t("Language Packs") : path === '/review' ? 'Review workstation' : t("Quick Cards")
   if (path === '/review') {
     return (
       <Shell app={fas} appName="Offline Translator" nav={nav} renderNav={() => null} onNavigate={navigate}>
@@ -125,7 +128,14 @@ export default function App() {
   return (
     <Shell app={fas} appName="Offline Translator" nav={nav} renderNav={() => null} onNavigate={navigate}>
       <div className="mx-auto w-full max-w-5xl px-4 pb-12 pt-4 sm:px-6">
-        <nav aria-label="Main" className="mb-5 grid grid-cols-3 gap-1 rounded-2xl bg-paper-deep p-1 sm:max-w-sm">
+        <label className="mb-4 flex flex-wrap items-center justify-end gap-2 text-sm">
+          {t('App language')}
+          <select aria-label={t('App language')} value={uiLocale} className={control + ' max-w-full'}
+            onChange={event => setLocale(event.target.value as Locale)}>
+            {(['en', 'vi', 'zh'] as const).map(code => <option key={code} value={code}>{languageName(code)}</option>)}
+          </select>
+        </label>
+        <nav aria-label={t("Main")} className="mb-5 grid grid-cols-3 gap-1 rounded-2xl bg-paper-deep p-1 sm:max-w-sm">
           {nav.map(item => {
             const active = item.href === path
             return <a key={item.href} href={item.href} aria-current={active ? 'page' : undefined}
@@ -134,31 +144,29 @@ export default function App() {
                 if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
                 event.preventDefault()
                 if (!active) navigate(item.href)
-              }}>{item.label}</a>
+              }}>{t(item.label)}</a>
           })}
         </nav>
         <PageHeader title={title} />
         {path !== '/packs' && path !== '/translate' && (
-          <label className="mb-4 flex flex-wrap items-center gap-2">
-            Language
-            <select className={control} value={language} onChange={event => setLanguage(event.target.value as TargetLanguage)}>
-              {Object.entries(languages).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+          <label className="mb-4 flex flex-wrap items-center gap-2">{t("Language")}<select className={control} value={language} onChange={event => setLanguage(event.target.value as TargetLanguage)}>
+              {Object.keys(languages).map(id => <option key={id} value={id}>{languageName(id as Locale)}</option>)}
             </select>
           </label>
         )}
         {!cards.length && path !== '/translate' && path !== '/packs' && (
           <div className={panel}>
-            <p role="status">{!configured ? 'The phrase deck is being set up.' : failed ? 'Couldn’t load phrases. Check your connection and try again.' : 'Loading phrases…'}</p>
-            {failed && <button className={control + ' mt-3'} onClick={() => { setFailed(false); setAttempt(attempt + 1) }}>Try again</button>}
+            <p role="status">{!configured ? t("The phrase deck is being set up.") : failed ? t("Couldn’t load phrases. Check your connection and try again.") : t("Loading phrases…")}</p>
+            {failed && <button className={control + ' mt-3'} onClick={() => { setFailed(false); setAttempt(attempt + 1) }}>{t("Try again")}</button>}
           </div>
         )}
         {path === '/translate' && (
           <>
             <div className="mb-4 grid grid-cols-3 gap-1 rounded-2xl bg-paper-deep p-1 sm:max-w-lg" role="tablist" aria-label="Translate mode">
               {([
-                ['one-way', 'One way'],
-                ['chat', 'Chat'],
-                ['face-to-face', 'Face to face'],
+                ['one-way', t("One way")],
+                ['chat', t("Chat")],
+                ['face-to-face', t("Face to face")],
               ] as const).map(([id, label]) => {
                 const active = translateMode === id
                 return (
@@ -170,35 +178,31 @@ export default function App() {
             </div>
             <p className="mb-4 text-sm text-muted">
               {translateMode === 'one-way'
-                ? 'Translate in one direction. Swap languages to go the other way.'
+                ? t("Translate in one direction. Swap languages to go the other way.")
                 : translateMode === 'chat'
-                  ? 'Message-style conversation. English on one side, the other language on the other.'
-                  : 'Hold the phone between you. Top is flipped for the other language; type on the active side.'}
+                  ? t("Message-style conversation. English on one side, the other language on the other.")
+                  : t("Hold the phone between you. Top is flipped for the other language; type on the active side.")}
             </p>
-            <label className="mb-4 grid min-w-0 gap-1 text-sm font-semibold sm:max-w-md">
-              Languages
-              <select className={control + ' w-full bg-panel'} value={engine === 'opus' ? 'en-vi' : pair + '-' + language}
+            <label className="mb-4 grid min-w-0 gap-1 text-sm font-semibold sm:max-w-md">{t("Languages")}<select className={control + ' w-full bg-panel'} value={engine === 'opus' ? 'en-vi' : pair + '-' + language}
                 onChange={event => {
                   const [first, second] = event.target.value.split('-')
                   setPair(first as 'en' | 'vi')
                   setLanguage(second as TargetLanguage)
                 }}>
-                <option value="en-vi">English ↔ Vietnamese</option>
-                {engine !== 'opus' && <option value="en-zh">English ↔ Simplified Chinese</option>}
-                {engine === 'multilingual' && <option value="vi-zh">Vietnamese ↔ Simplified Chinese</option>}
+                <option value="en-vi">{languageName('en')} ↔ {languageName('vi')}</option>
+                {engine !== 'opus' && <option value="en-zh">{languageName('en')} ↔ {languageName('zh')}</option>}
+                {engine === 'multilingual' && <option value="vi-zh">{languageName('vi')} ↔ {languageName('zh')}</option>}
               </select>
             </label>
             <Translate mode={translateMode} key={engine + pair + language + translateMode} cards={cards} engine={engine}
               from={engine === 'multilingual' ? pair : 'en'} to={engine === 'opus' ? 'vi' : language} log={logTranslation} />
             <details className="mt-5 rounded-2xl bg-panel px-4 py-1">
               <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm font-semibold">
-                <span>Translation settings</span>
+                <span>{t("Translation settings")}</span>
                 <span className="text-right text-muted">{engines[engine].split(' · ')[0]} <span aria-hidden="true">⌄</span></span>
               </summary>
               <div className="space-y-3 pb-3">
-              <label className="grid min-w-0 gap-1 text-sm font-semibold">
-                Translation model
-                <select className={control + ' w-full'} value={engine} onChange={event => {
+              <label className="grid min-w-0 gap-1 text-sm font-semibold">{t("Translation model")}<select className={control + ' w-full'} value={engine} onChange={event => {
                   const next = event.target.value as Engine
                   setEngine(next)
                   if (next !== 'multilingual') setPair('en')
@@ -207,7 +211,7 @@ export default function App() {
                 </select>
               </label>
                 <p className="text-sm text-muted">
-                  First use downloads {engine === 'opus' ? 'about 107 MB per direction' : 'about 640 MB for all directions'} plus the runtime. Your text stays on this device.
+                  {t('First use downloads {size} plus the runtime. Your text stays on this device.', { size: t(engine === 'opus' ? 'about 107 MB per direction' : 'about 640 MB for all directions') })}
                 </p>
               </div>
             </details>
@@ -217,11 +221,9 @@ export default function App() {
         {path === '/packs' && <>
           <Packs cards={cards} />
           <button type="button" className={control + ' mt-4'} disabled={!history.length}
-            onClick={() => exportLog(history)}>Export translation JSON</button>
+            onClick={() => exportLog(history)}>{t("Export translation JSON")}</button>
         </>}
-        {storageError && <p role="status" className="mt-3 text-sm text-muted">
-          Browser storage is full or unavailable. Export translation JSON from Packs before closing this page.
-        </p>}
+        {storageError && <p role="status" className="mt-3 text-sm text-muted">{t("Browser storage is full or unavailable. Export translation JSON from Packs before closing this page.")}</p>}
         {!!cards.length && path !== '/translate' && path !== '/packs' &&
           <Cards cards={cards} language={language} saved={saved} onFavorite={toggleFavorite} />}
         <a className="mt-8 inline-block text-sm text-muted underline" href="https://freeappstore.online/">FreeAppStore</a>
@@ -253,10 +255,10 @@ function Cards({ cards, language, saved, onFavorite }: {
 
   return (
     <>
-      <label className="sr-only" htmlFor="search">Search phrases</label>
-      <input id="search" type="search" className={control + ' w-full'} value={query} onChange={event => setQuery(event.target.value)} placeholder="Search all scenarios" />
-      <div className="my-4 flex gap-2 overflow-x-auto pb-2" role="tablist" aria-label="Scenarios">
-        {[...Object.entries(scenarios), ['saved', 'Saved'], ['all', 'All phrases']].map(([id, name]) => (
+      <label className="sr-only" htmlFor="search">{t("Search phrases")}</label>
+      <input id="search" type="search" className={control + ' w-full'} value={query} onChange={event => setQuery(event.target.value)} placeholder={t("Search all scenarios")} />
+      <div className="my-4 flex gap-2 overflow-x-auto pb-2" role="tablist" aria-label={t("Scenarios")}>
+        {[...Object.entries(scenarios), ['saved', t("Saved")], ['all', t("All phrases")]].map(([id, name]) => (
           <button key={id} type="button" role="tab" id={'scenario-' + id}
             aria-selected={scenario === id} aria-controls="scenario-cards"
             tabIndex={scenario === id ? 0 : -1}
@@ -273,27 +275,25 @@ function Cards({ cards, language, saved, onFavorite }: {
               list[next].click()
               list[next].focus()
               list[next].scrollIntoView({ block: 'nearest', inline: 'nearest' })
-            }}>{name}</button>
+            }}>{t(name)}</button>
         ))}
       </div>
-      {searching && <p className="mb-2 text-sm text-muted">Searching all scenarios</p>}
-      <p className="mb-3 text-sm text-muted" role="status">{matches.length ? `${matches.length} ${matches.length === 1 ? 'card' : 'cards'}` : 'No matching cards.'}</p>
+      {searching && <p className="mb-2 text-sm text-muted">{t("Searching all scenarios")}</p>}
+      <p className="mb-3 text-sm text-muted" role="status">{matches.length ? t('{count} cards', { count: matches.length }) : t("No matching cards.")}</p>
       <div id="scenario-cards" role="tabpanel" aria-labelledby={'scenario-' + scenario}>
       {groups.map(group => <section key={group.task} className="mb-6">
-        <h2 className="mb-3 text-base font-semibold">{group.task}</h2>
+        <h2 className="mb-3 text-base font-semibold">{t(group.task)}</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {(searching || expandedTasks.has(group.task) ? group.cards : group.cards.slice(0, 6)).map(card => (
           <article key={card.id} className={panel}>
             <div className="mb-3 flex items-center justify-between gap-2 text-sm text-muted">
-              {categories[card.category]}
+              {t(categories[card.category])}
               <button className={control} type="button" aria-label={`Save card: ${card.en}`} aria-pressed={saved.has(card.id)} onClick={() => onFavorite(card.id)}>
                 {saved.has(card.id) ? '★' : '☆'}
               </button>
             </div>
             {needsHumanReviewWarning(card) && (
-              <p className="mb-2 rounded-lg bg-warning/15 px-2 py-1 text-xs font-semibold text-warning" role="status">
-                High risk · pending human review
-              </p>
+              <p className="mb-2 rounded-lg bg-warning/15 px-2 py-1 text-xs font-semibold text-warning" role="status">{t("High risk · pending human review")}</p>
             )}
             <button type="button" className="w-full text-left hover:underline" onClick={() => { setSelected(card); dialog.current?.showModal() }}>
               <strong className="block">{card.en}</strong>
@@ -310,18 +310,16 @@ function Cards({ cards, language, saved, onFavorite }: {
             if (next.has(group.task)) next.delete(group.task)
             else next.add(group.task)
             return next
-          })}>{expandedTasks.has(group.task) ? 'Show fewer' : `Show all ${group.cards.length} phrases`}</button>}
+          })}>{expandedTasks.has(group.task) ? t("Show fewer") : t('Show all {count} phrases', { count: group.cards.length })}</button>}
       </section>)}
       </div>
       <dialog ref={dialog} aria-labelledby="card-text" onClose={() => setSelected(null)} className="m-auto w-[calc(100%-1.5rem)] max-w-2xl rounded-[1.25rem] bg-popover p-5 text-ink backdrop:bg-scrim sm:p-8">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted">{languages[language]} · Show this to someone</p>
-          <form method="dialog"><button className={control} aria-label="Close card">✕</button></form>
+          <p className="text-sm text-muted">{languageName(language)} · {t('Show this to someone')}</p>
+          <form method="dialog"><button className={control} aria-label={t("Close card")}>✕</button></form>
         </div>
         {selected && needsHumanReviewWarning(selected) && (
-          <p className="mt-3 rounded-lg bg-warning/15 px-3 py-2 text-sm font-semibold text-warning" role="status">
-            High risk · pending human review. Confirm wording with a native speaker before relying on this in an emergency.
-          </p>
+          <p className="mt-3 rounded-lg bg-warning/15 px-3 py-2 text-sm font-semibold text-warning" role="status">{t("High risk · pending human review. Confirm wording with a native speaker before relying on this in an emergency.")}</p>
         )}
         <h2 id="card-text" lang={language} className="my-5 text-3xl font-bold wrap-anywhere sm:text-5xl">{selected?.[language]}</h2>
         <p>{selected?.en}</p>
@@ -354,14 +352,12 @@ function Translate({ cards, engine, from, to, log, mode }: {
   return (
     <div className="mx-auto grid max-w-xl gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-muted">{languageNames[source]} → {languageNames[target]}</p>
+        <p className="text-sm font-semibold text-muted">{languageName(source)} → {languageName(target)}</p>
         <button type="button" className={control + ' text-sm font-semibold'}
           onClick={() => {
             setSwapped(value => !value)
             setOutgoing(undefined)
-          }}>
-          Swap languages
-        </button>
+          }}>{t("Swap languages")}</button>
       </div>
       <TranslationPanel cards={cards} engine={engine} log={log} lookup={lookup}
         from={source} to={target} showTitle={false} result={outgoing} onResult={setOutgoing} />
@@ -369,8 +365,7 @@ function Translate({ cards, engine, from, to, log, mode }: {
   )
 }
 
-const languageNames = { en: 'English', ...languages }
-type PhraseLanguage = keyof typeof languageNames
+type PhraseLanguage = Locale
 
 const typePrompts: Record<PhraseLanguage, string> = {
   en: 'Type in English',
@@ -440,10 +435,10 @@ async function runPhraseTranslation(options: {
     return { text: match.text, source, reviewWarning: card ? needsHumanReviewWarning(card) : false }
   }
 
-  onStatus?.('Preparing translation…')
+  onStatus?.(t("Preparing translation…"))
   if (!model) {
-    record(null, modelName, 'This model does not support the selected language pair.')
-    throw new Error('This model does not support the selected language pair.')
+    record(null, modelName, t("This model does not support the selected language pair."))
+    throw new Error(t("This model does not support the selected language pair."))
   }
   try {
     const text = await translateWithModel(model, input, from, to, signal ?? new AbortController().signal, message => onStatus?.(message))
@@ -452,7 +447,7 @@ async function runPhraseTranslation(options: {
     return { text, source: engine === 'opus' ? 'OPUS-MT' : 'M2M100' }
   } catch (error) {
     const canceled = signal?.aborted
-    record(null, modelName, canceled ? 'Translation canceled.' : String(error))
+    record(null, modelName, canceled ? t("Translation canceled.") : String(error))
     throw error
   }
 }
@@ -497,7 +492,7 @@ function useTurnSender(options: {
     request.current = controller
     setBusy(true)
     setSuggestOpen(false)
-    setStatus('Preparing translation…')
+    setStatus(t("Preparing translation…"))
     try {
       const result = await runPhraseTranslation({
         input, from, to, engine, lookup, log, cards, signal: controller.signal,
@@ -518,7 +513,7 @@ function useTurnSender(options: {
       setStatus('')
       setSpeaker(speaker === 'near' ? 'far' : 'near')
     } catch {
-      if (!controller.signal.aborted) setStatus('Couldn’t translate. Connect to the internet if the language pack needs downloading, then try again.')
+      if (!controller.signal.aborted) setStatus(t("Couldn’t translate. Connect to the internet if the language pack needs downloading, then try again."))
     } finally {
       if (request.current === controller) request.current = null
       setBusy(false)
@@ -594,8 +589,8 @@ function ComposerSuggestions({ id, from, to, suggestions, activeSuggest, showSug
   if (!showSuggestions) return null
   return (
     <div className="border-t border-line bg-panel">
-      <p className="px-3 pt-2 text-[0.7rem] font-semibold tracking-wide text-muted uppercase">Suggested cards · tap to use</p>
-      <ul id={id} role="listbox" aria-label="Suggested phrases" className="max-h-40 overflow-auto py-1">
+      <p className="px-3 pt-2 text-[0.7rem] font-semibold tracking-wide text-muted uppercase">{t("Suggested cards · tap to use")}</p>
+      <ul id={id} role="listbox" aria-label={t("Suggested phrases")} className="max-h-40 overflow-auto py-1">
         {suggestions.map(({ card }, index) => {
           const optionId = `${id}-option-${card.id}`
           const active = index === activeSuggest
@@ -610,7 +605,7 @@ function ComposerSuggestions({ id, from, to, suggestions, activeSuggest, showSug
                   <span className="block wrap-anywhere text-sm font-medium" lang={from}>{card[from]}</span>
                   <span className="mt-0.5 block wrap-anywhere text-xs text-muted" lang={to}>{card[to]}</span>
                 </span>
-                <span className="shrink-0 pt-0.5 text-xs font-semibold text-accent">Use</span>
+                <span className="shrink-0 pt-0.5 text-xs font-semibold text-accent">{t("Use")}</span>
               </button>
             </li>
           )
@@ -646,13 +641,13 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-3">
-      <section className="flex min-h-72 flex-col gap-2 overflow-y-auto rounded-[1.25rem] border border-line bg-panel p-3 sm:min-h-80" aria-label="Chat">
-        {!turns.length && <p className="m-auto text-center text-sm text-muted">Start the conversation below.</p>}
+      <section className="flex min-h-72 flex-col gap-2 overflow-y-auto rounded-[1.25rem] border border-line bg-panel p-3 sm:min-h-80" aria-label={t("Chat")}>
+        {!turns.length && <p className="m-auto text-center text-sm text-muted">{t("Start the conversation below.")}</p>}
         {turns.map(turn => {
           const nearSide = turn.speaker === 'near'
           return (
             <article key={turn.id} className={`flex max-w-[85%] flex-col gap-1 ${nearSide ? 'self-end items-end' : 'self-start items-start'}`}>
-              <p className="text-[0.7rem] font-semibold text-muted">{languageNames[turn.from]}</p>
+              <p className="text-[0.7rem] font-semibold text-muted">{languageName(turn.from)}</p>
               <div className={`rounded-2xl px-3 py-2 ${nearSide ? 'rounded-br-md bg-accent text-on-accent' : 'rounded-bl-md bg-paper text-ink'}`}>
                 <p className="wrap-anywhere text-sm leading-snug" lang={turn.from}>{turn.original}</p>
               </div>
@@ -660,7 +655,7 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
                 <p className="wrap-anywhere text-sm font-semibold leading-snug" lang={turn.to}>{turn.translation}</p>
                 <p className="mt-1 text-[0.65rem] text-muted">{turn.source}</p>
                 {turn.reviewWarning && (
-                  <p className="mt-1 text-[0.65rem] font-semibold text-warning">High risk · pending human review</p>
+                  <p className="mt-1 text-[0.65rem] font-semibold text-warning">{t("High risk · pending human review")}</p>
                 )}
               </div>
             </article>
@@ -673,28 +668,24 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
         event.preventDefault()
         void composer.send()
       }}>
-        <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2" aria-label="Translation direction">
-          <label className="min-w-0 text-xs font-semibold text-muted">
-            From
-            <select aria-label="Chat source language" value={composer.from} disabled={composer.busy}
+        <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2" aria-label={t("Translation direction")}>
+          <label className="min-w-0 text-xs font-semibold text-muted">{t("From")}<select aria-label={t("Chat source language")} value={composer.from} disabled={composer.busy}
               className={control + ' mt-1 w-full min-w-0 px-2 text-sm font-semibold'}
               onChange={event => { if (event.target.value !== composer.from) composer.toggleSpeaker() }}>
-              {[near, far].map(code => <option key={code} value={code}>{languageNames[code]}</option>)}
+              {[near, far].map(code => <option key={code} value={code}>{languageName(code)}</option>)}
             </select>
           </label>
           <button type="button" disabled={composer.busy}
             className={control + ' flex flex-col items-center justify-center px-3 text-xs disabled:opacity-50'}
-            aria-label={`Reverse direction: ${languageNames[composer.from]} to ${languageNames[composer.to]}`}
-            title="Reverse translation direction" onClick={composer.toggleSpeaker}>
+            aria-label={t("Reverse translation direction") + `: ${languageName(composer.from)} → ${languageName(composer.to)}`}
+            title={t("Reverse translation direction")} onClick={composer.toggleSpeaker}>
             <span aria-hidden="true" className="text-xl leading-5">→</span>
-            <span>Reverse</span>
+            <span>{t("Reverse")}</span>
           </button>
-          <label className="min-w-0 text-xs font-semibold text-muted">
-            To
-            <select aria-label="Chat target language" value={composer.to} disabled={composer.busy}
+          <label className="min-w-0 text-xs font-semibold text-muted">{t("To")}<select aria-label={t("Chat target language")} value={composer.to} disabled={composer.busy}
               className={control + ' mt-1 w-full min-w-0 px-2 text-sm font-semibold'}
               onChange={event => { if (event.target.value !== composer.to) composer.toggleSpeaker() }}>
-              {[near, far].map(code => <option key={code} value={code}>{languageNames[code]}</option>)}
+              {[near, far].map(code => <option key={code} value={code}>{languageName(code)}</option>)}
             </select>
           </label>
         </div>
@@ -713,8 +704,8 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
             showSuggestions={composer.showSuggestions}
             onHover={composer.setActiveSuggest} onPick={composer.acceptSuggestion} />
         </div>
-        <button disabled={composer.busy} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 sm:w-auto font-bold text-on-accent disabled:opacity-60">Send</button>
-        {composer.status && <p role="status" className="mt-2 text-sm text-muted">{composer.status}</p>}
+        <button disabled={composer.busy} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 sm:w-auto font-bold text-on-accent disabled:opacity-60">{t("Send")}</button>
+        {composer.status && <p role="status" className="mt-2 text-sm text-muted">{t(composer.status)}</p>}
       </form>
     </div>
   )
@@ -773,20 +764,20 @@ function FaceToFaceSplit({ cards, engine, near, far, log, lookup }: {
           showSuggestions={composer.showSuggestions}
           onHover={composer.setActiveSuggest} onPick={composer.acceptSuggestion} />
       </div>
-      <button disabled={composer.busy} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 font-bold text-on-accent disabled:opacity-60">Send</button>
-      {composer.status && <p role="status" className="mt-2 text-sm text-muted">{composer.status}</p>}
+      <button disabled={composer.busy} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 font-bold text-on-accent disabled:opacity-60">{t("Send")}</button>
+      {composer.status && <p role="status" className="mt-2 text-sm text-muted">{t(composer.status)}</p>}
     </form>
   )
 
   return (
     <div className="mx-auto flex max-w-xl flex-col overflow-hidden rounded-[1.5rem] border border-line bg-panel">
       <section className={`flex min-h-44 rotate-180 flex-col items-center gap-3 bg-accent-soft px-5 py-6 ${farTyping ? 'justify-start' : 'justify-center'}`} aria-live="polite">
-        <span className="rounded-full border border-line bg-panel px-3 py-1 text-xs font-semibold">{languageNames[far]}</span>
+        <span className="rounded-full border border-line bg-panel px-3 py-1 text-xs font-semibold">{languageName(far)}</span>
         <p className="wrap-anywhere text-center text-2xl font-bold leading-snug sm:text-3xl" lang={far}>
           {farText || '…'}
         </p>
         {reviewWarning && (
-          <p className="rounded-lg bg-warning/15 px-2 py-1 text-center text-xs font-semibold text-warning">High risk · pending human review</p>
+          <p className="rounded-lg bg-warning/15 px-2 py-1 text-center text-xs font-semibold text-warning">{t("High risk · pending human review")}</p>
         )}
         {farTyping && entry}
       </section>
@@ -802,12 +793,12 @@ function FaceToFaceSplit({ cards, engine, near, far, log, lookup }: {
 
       <section className={`flex min-h-56 flex-col bg-panel px-5 pb-5 pt-8 ${farTyping ? 'items-center justify-center' : ''}`}>
         <div className="flex flex-col items-center gap-3">
-          <span className="rounded-full border border-line bg-paper px-3 py-1 text-xs font-semibold">{languageNames[near]}</span>
+          <span className="rounded-full border border-line bg-paper px-3 py-1 text-xs font-semibold">{languageName(near)}</span>
           <p className="wrap-anywhere text-center text-2xl font-bold leading-snug sm:text-3xl" lang={near}>
             {nearText || '…'}
           </p>
           {reviewWarning && (
-            <p className="rounded-lg bg-warning/15 px-2 py-1 text-center text-xs font-semibold text-warning">High risk · pending human review</p>
+            <p className="rounded-lg bg-warning/15 px-2 py-1 text-center text-xs font-semibold text-warning">{t("High risk · pending human review")}</p>
           )}
         </div>
         {!farTyping && entry}
@@ -856,7 +847,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
     request.current = controller
     setBusy(true)
     onResult(undefined)
-    setStatus('Preparing translation…')
+    setStatus(t("Preparing translation…"))
     try {
       const translation = await runPhraseTranslation({
         input, from, to, engine, lookup, log, cards, signal: controller.signal,
@@ -866,7 +857,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
       onResult(translation)
       setStatus('')
     } catch {
-      if (!controller.signal.aborted) setStatus('Couldn’t translate. Connect to the internet if the language pack needs downloading, then try again.')
+      if (!controller.signal.aborted) setStatus(t("Couldn’t translate. Connect to the internet if the language pack needs downloading, then try again."))
     } finally {
       if (request.current === controller) request.current = null
       setBusy(false)
@@ -910,12 +901,12 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
       setSuggestOpen(false)
       void findTranslation()
     }}>
-      {showTitle ? <h2 id={headingId} className="mb-3 text-xl font-bold">{languageNames[from]} → {languageNames[to]}</h2>
-        : <h2 id={headingId} className="sr-only">{languageNames[from]} → {languageNames[to]}</h2>}
-      <label htmlFor={inputId} className="text-sm font-semibold">Write in {languageNames[from]}</label>
+      {showTitle ? <h2 id={headingId} className="mb-3 text-xl font-bold">{languageName(from)} → {languageName(to)}</h2>
+        : <h2 id={headingId} className="sr-only">{languageName(from)} → {languageName(to)}</h2>}
+      <label htmlFor={inputId} className="text-sm font-semibold">{t('Write in {language}', { language: languageName(from) })}</label>
       <div className={`mb-3 mt-1 overflow-hidden rounded-xl border bg-paper ${showSuggestions ? 'border-line-strong' : 'border-line'}`}>
         <textarea id={inputId} lang={from} className="block w-full resize-y border-0 bg-transparent p-3 text-base text-ink outline-none" rows={3}
-          required maxLength={500} placeholder={example?.[from] ?? "Enter a word or phrase"} value={draft}
+          required maxLength={500} placeholder={example?.[from] ?? t("Enter a word or phrase")} value={draft}
           role="combobox" aria-autocomplete="list" aria-expanded={showSuggestions} aria-controls={suggestionsId}
           aria-activedescendant={activeOptionId}
           onFocus={() => setSuggestOpen(true)}
@@ -932,8 +923,8 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
           }} />
         {showSuggestions && (
           <div className="border-t border-line bg-panel">
-            <p className="px-3 pt-2 text-[0.7rem] font-semibold tracking-wide text-muted uppercase">Suggested cards · tap to use</p>
-            <ul id={suggestionsId} role="listbox" aria-label="Suggested phrases" className="max-h-40 overflow-auto py-1">
+            <p className="px-3 pt-2 text-[0.7rem] font-semibold tracking-wide text-muted uppercase">{t("Suggested cards · tap to use")}</p>
+            <ul id={suggestionsId} role="listbox" aria-label={t("Suggested phrases")} className="max-h-40 overflow-auto py-1">
               {suggestions.map(({ card }, index) => {
                 const optionId = `${suggestionsId}-option-${card.id}`
                 const active = index === activeSuggest
@@ -948,10 +939,10 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
                         <span className="block wrap-anywhere text-sm font-medium" lang={from}>{card[from]}</span>
                         <span className="mt-0.5 block wrap-anywhere text-xs text-muted" lang={to}>{card[to]}</span>
                         {needsHumanReviewWarning(card) && (
-                          <span className="mt-1 block text-xs font-semibold text-warning">High risk · pending human review</span>
+                          <span className="mt-1 block text-xs font-semibold text-warning">{t("High risk · pending human review")}</span>
                         )}
                       </span>
-                      <span className="shrink-0 pt-0.5 text-xs font-semibold text-accent">Use</span>
+                      <span className="shrink-0 pt-0.5 text-xs font-semibold text-accent">{t("Use")}</span>
                     </button>
                   </li>
                 )
@@ -961,17 +952,17 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
         )}
       </div>
       {/* Keep focus in the textarea: blurring it closes the suggestions and moves this button before the click lands */}
-      <button disabled={busy} onMouseDown={event => event.preventDefault()} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 sm:w-auto sm:self-start font-bold text-on-accent disabled:opacity-60">Translate</button>
-      {status && <p role="status" className="mt-2 text-sm text-muted">{status}</p>}
+      <button disabled={busy} onMouseDown={event => event.preventDefault()} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 sm:w-auto sm:self-start font-bold text-on-accent disabled:opacity-60">{t("Translate")}</button>
+      {status && <p role="status" className="mt-2 text-sm text-muted">{t(status)}</p>}
       <div className="mt-4 flex-1 rounded-2xl bg-accent-soft p-4" role="status">
-        <p className="text-sm font-semibold">{languageNames[to]} translation</p>
+        <p className="text-sm font-semibold">{t('{language} translation', { language: languageName(to) })}</p>
         {result ? <>
           <p className="mt-1 wrap-anywhere text-xl font-semibold leading-snug sm:text-2xl" lang={to}>{result.text}</p>
           <p className="mt-1 text-xs text-muted">{result.source}</p>
           {result.reviewWarning && (
-            <p className="mt-2 text-xs font-semibold text-warning">High risk · pending human review</p>
+            <p className="mt-2 text-xs font-semibold text-warning">{t("High risk · pending human review")}</p>
           )}
-        </> : <p className="mt-1 text-sm text-muted">Your translation will appear here.</p>}
+        </> : <p className="mt-1 text-sm text-muted">{t("Your translation will appear here.")}</p>}
       </div>
     </form>
   )

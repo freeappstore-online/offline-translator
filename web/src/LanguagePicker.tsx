@@ -1,3 +1,4 @@
+import { t, languageName } from './i18n'
 import { useId, useState } from 'react'
 import type { Language } from './model-options'
 
@@ -21,8 +22,8 @@ export function LanguagePicker({ label, value, disabled, onChange }: {
   const [query, setQuery] = useState('')
   const [highlight, setHighlight] = useState(0)
   const selected = languageLabels[value]
-  const options = codes.filter(code => searchable([code, languageLabels[code].name, languageLabels[code].translatedName].join(' ')).includes(searchable(query.trim())))
-  const display = selected.name === selected.translatedName ? selected.name : selected.name + ' (' + selected.translatedName + ')'
+  const options = codes.filter(code => searchable([code, languageLabels[code].name, languageLabels[code].translatedName, languageName(code)].join(' ')).includes(searchable(query.trim())))
+  const display = languageName(value)
 
   function choose(code: Language) {
     onChange(code)
@@ -32,12 +33,12 @@ export function LanguagePicker({ label, value, disabled, onChange }: {
   return <div className="relative min-w-0" onBlur={event => {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false)
   }}>
-    <label className="mb-2 block text-sm font-semibold" htmlFor={id}>{label}</label>
+    <label className="mb-2 block text-sm font-semibold" htmlFor={id}>{t(label)}</label>
     <div className="flex min-h-12 items-center gap-2 rounded-xl border border-line bg-panel px-3 focus-within:outline-2 focus-within:outline-accent">
       <span aria-hidden="true" className="text-xl">{selected.flag}</span>
       <input id={id} role="combobox" aria-autocomplete="list" aria-expanded={open}
         aria-controls={id + '-list'} aria-activedescendant={open && options[highlight] ? id + '-' + options[highlight] : undefined}
-        disabled={disabled} value={open ? query : display} placeholder="Search languages"
+        disabled={disabled} value={open ? query : display} placeholder={t("Search languages")}
         className="min-h-12 w-full min-w-0 bg-transparent text-base text-ink outline-none disabled:opacity-50"
         onFocus={() => { setOpen(true); setQuery(''); setHighlight(0) }}
         onClick={() => { if (!open) { setOpen(true); setQuery(''); setHighlight(0) } }}
@@ -65,13 +66,11 @@ export function LanguagePicker({ label, value, disabled, onChange }: {
           onMouseDown={event => event.preventDefault()} onMouseEnter={() => setHighlight(index)}
           onClick={() => choose(code)}>
           <span aria-hidden="true" className="text-xl">{language.flag}</span>
-          <span><span className="block font-semibold" lang={language.lang}>{language.name}</span>
-            {language.name !== language.translatedName && <span className="text-muted">({language.translatedName})</span>}
-          </span>
+          <span className="font-semibold">{languageName(code)}</span>
           {code === value && <span aria-hidden="true" className="ml-auto">✓</span>}
         </div>
       })}
-      {!options.length && <p className="px-3 py-3 text-sm text-muted" role="status">No matching languages</p>}
+      {!options.length && <p className="px-3 py-3 text-sm text-muted" role="status">{t("No matching languages")}</p>}
     </div>}
   </div>
 }
