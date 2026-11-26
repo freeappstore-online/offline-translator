@@ -104,3 +104,8 @@ body { background: #061841; }
 .app-workspace > header button { background: transparent; border-color: transparent; color: #fff; }
 .app-workspace .bg-panel { color: var(--ink); }
 .app-workspace > h1, .app-workspace > p, .app-workspace > label { color: #f8f3ff; }
+
+@layer components {
+  /* This offline app does not expose the SDK shell sign-in action. */
+  #root > div > header > div:last-child > button.bg-accent { display: none; }
+}
