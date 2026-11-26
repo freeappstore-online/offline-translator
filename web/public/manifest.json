@@ -1,7 +1,7 @@
 {
   "name": "Offline Translator",
   "short_name": "Translator",
-  "description": "Travel phrase cards in English, Simplified Chinese, and Vietnamese.",
+  "description": "Local text, voice and photo translation with travel phrase cards in English, Vietnamese and Simplified Chinese.",
   "start_url": "/translate",
   "display": "standalone",
   "background_color": "#061841",
