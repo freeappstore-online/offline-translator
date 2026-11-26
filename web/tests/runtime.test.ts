@@ -35,3 +35,15 @@ test('translation reports preparation separately and abort resets the runtime', 
   const pending = translateWithModel(model, 'bye', 'en', 'vi', controller.signal, () => {}); controller.abort()
   await assert.rejects(pending, { name: 'AbortError' }); assert.ok(worker.terminated); releaseTranslation()
 })
+test('speech preview messages keep request alive until final text and ignore stale callbacks after cancel', async () => {
+  FakeWorker.instances.length = 0
+  const controller = new AbortController(), previews: string[] = []
+  const pending = transcribeSpeech(new Float32Array([0.1]), 'en', controller.signal, () => {}, text => previews.push(text))
+  const worker = FakeWorker.instances[0], id = worker.messages[0].id
+  worker.respond({ id, partial: 'I need' }); worker.respond({ id, partial: 'I need help' })
+  worker.respond({ id, text: 'I need help.', preparationMs: 0, inferenceMs: 20 })
+  assert.deepEqual(previews, ['I need', 'I need help']); assert.equal((await pending).text, 'I need help.')
+  const canceled = transcribeSpeech(new Float32Array([0.1]), 'en', controller.signal, () => {}, text => previews.push(text)); controller.abort()
+  await assert.rejects(canceled, { name: 'AbortError' }); worker.respond({ id: worker.messages[1].id, partial: 'stale' })
+  assert.equal(previews.includes('stale'), false)
+})

@@ -85,3 +85,7 @@ Do **not** combine chat history with a flipped card in one screen. Avoid you/the
 ## Current implementation override — 26 November 2026
 
 Basic microphone input now transcribes into the current editable field. Conversation uses two opposing voice panels with automatic translation onto the other reader's side. Camera is a separate bottom tab with local OCR and editable handoff. Earlier preview/coming-soon descriptions are superseded. Both model families, approval-gated exact matching, explicit pattern variants and hidden JSON history remain. No arbitrary slot composition or automatic review approval was added.
+
+## Progressive speech — 26 November 2026
+
+Basic Translate and Chat display revisable grey recognition in their existing input fields. Conversation shows the provisional transcript on the speaking person's panel and translates only the final transcript onto the other reader's side. Provisional text is never silently treated as a final card match or translated. Final text uses the regular ink color and remains editable in basic Translate/Chat.

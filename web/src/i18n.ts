@@ -18,6 +18,9 @@ export function useLocale() {
   return useSyncExternalStore(callback => { listeners.add(callback); return () => { listeners.delete(callback) } }, () => locale)
 }
 const messages: Record<string, Partial<Record<Locale, string>>> = {
+  "Listening… Words may change until you stop. Maximum 20 seconds.": { vi: "Đang nghe… Chữ có thể thay đổi cho đến khi bạn dừng. Tối đa 20 giây.", zh: "正在聆听…停止前文字可能会调整，最长20秒。" },
+  "Finalizing speech…": { vi: "Đang hoàn thiện lời nói…", zh: "正在确认识别结果…" },
+  "Live microphone input is not supported in this browser. You can still type.": { vi: "Trình duyệt này không hỗ trợ nhập giọng nói trực tiếp. Bạn vẫn có thể gõ.", zh: "此浏览器不支持实时语音输入，您仍可输入文字。" },
   "Speech recognized.": { vi: "Đã nhận dạng giọng nói.", zh: "语音识别完成。" },
   "Check the recognized text, then tap Send.": { vi: "Kiểm tra nội dung nhận dạng, rồi nhấn Gửi.", zh: "检查识别的文字，然后点按发送。" },
   "Cards": {

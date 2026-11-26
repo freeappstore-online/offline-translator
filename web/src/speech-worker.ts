@@ -1,4 +1,4 @@
-import { env, pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers'
+import { env, pipeline, WhisperTextStreamer, type WhisperTokenizer, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers'
 import { speechCache, speechModel } from './speech-model'
 import { speechSaved } from './model-resources'
 import type { Language } from './model-options'
@@ -9,7 +9,7 @@ env.cacheKey = speechCache
 if (env.backends.onnx.wasm) env.backends.onnx.wasm.numThreads = 1
 let recognizer: AutomaticSpeechRecognitionPipeline | undefined
 let queue = Promise.resolve()
-self.onmessage = ({ data }: MessageEvent<{ id: number; samples?: Float32Array; language: Language }>) => {
+self.onmessage = ({ data }: MessageEvent<{ id: number; samples?: Float32Array; language: Language; stream?: boolean }>) => {
   queue = queue.then(async () => {
   const started = performance.now()
   try {
@@ -27,9 +27,11 @@ self.onmessage = ({ data }: MessageEvent<{ id: number; samples?: Float32Array; l
     const prepared = performance.now()
     if (!data.samples) { self.postMessage({ id: data.id, preparationMs: prepared - started }); return }
     self.postMessage({ id: data.id, status: 'Recognizing speech…' })
+    let partial = ''
+    const streamer = data.stream ? new WhisperTextStreamer(recognizer.tokenizer as WhisperTokenizer, { skip_prompt: true, callback_function: text => { partial += text; self.postMessage({ id: data.id, partial: partial.trim() }) } }) : undefined
     const result = await recognizer(data.samples, {
       language: { en: 'english', vi: 'vietnamese', zh: 'chinese' }[data.language], task: 'transcribe',
-      return_timestamps: false, max_new_tokens: 128,
+      return_timestamps: false, max_new_tokens: 128, streamer,
     })
     const output = Array.isArray(result) ? result[0] : result
     const text = output.text.trim()

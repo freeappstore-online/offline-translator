@@ -1,0 +1,38 @@
+{
+  "method": "Actual app AudioWorklet microphone path supplied by a public JFK audio fixture through a synthetic MediaStream. No real room microphone recorded. One desktop browser run, not a device benchmark.",
+  "pipelineUnderTest": "AudioWorklet PCM snapshots + Whisper Tiny token callbacks, grey draft, automatic 20-second stop, final full-clip recognition. The developer note in the raw record predates the live change; preserved verbatim. The release updates that note.",
+  "observedDrafts": [
+    "And so my",
+    "And so my fellow Americans ask not what",
+    "And so my fellow Americans ask not what your country can do for you, ask what you can do for your country."
+  ],
+  "observedStyling": {
+    "whileRecording": "text-interim; input disabled",
+    "afterFinal": "text-ink; input editable"
+  },
+  "record": {
+    "id": "bc39cdb3-0a71-4e75-a401-3d325215853b",
+    "at": "2026-11-26T10:03:47.560Z",
+    "model": {
+      "id": "Xenova/whisper-tiny",
+      "revision": "5332fcc35e32a33b86612b9a57a89be7906102b1"
+    },
+    "build": "4e15a7f209e16238",
+    "changes": "Connected shared multilingual Whisper voice input to basic Translate, Chat and opposing-reader Conversation; added local Tesseract camera OCR and editable handoff, saved results and local-voice playback. Added resource download/cancel/remove, runtime reuse, isolated caches with a single OCR language download, storage management and update notice. Separate preparation/inference timings and input method are logged; time checks flag missing clock/AM-PM. Both OPUS-MT directions and M2M100 remain available; card review policy unchanged.",
+    "language": "en",
+    "text": "And so my fellow Americans ask not what your country can do for you, ask what you can do for your country.",
+    "durationMs": 20003.600000023842,
+    "preparationMs": 966.6000000238419,
+    "inferenceMs": 1560.5,
+    "live": {
+      "previewPasses": 9,
+      "updates": 149,
+      "previewInferenceMs": 13788.600000143051,
+      "previewErrors": [],
+      "firstPreviewMs": 2896.600000023842,
+      "finalizationMs": 1561.3999999761581
+    }
+  },
+  "review": "Expected public English fixture recognized. Grey text visibly progressed before stopping; final became normal editable text. First preview 2.9 seconds after recording started; about 13.8 seconds preview inference over nine passes. No preview errors. No claim about real-device latency or multilingual accuracy.",
+  "followup": "Avoided token-prefix flicker on subsequent re-recognition passes and fixed provisional character count; covered by regression test."
+}

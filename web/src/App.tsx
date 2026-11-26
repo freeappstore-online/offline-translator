@@ -682,6 +682,7 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
   lookup: ReturnType<typeof buildApprovedIndex>
 }) {
   const [speechBusy, setSpeechBusy] = useState(false)
+  const [speechPreview, setSpeechPreview] = useState<string | null>(null)
   const [turns, setTurns] = useState<ChatTurn[]>([])
   const threadEnd = useRef<HTMLDivElement>(null)
   const composer = useTurnSender({
@@ -753,15 +754,15 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
         </div>
         <label htmlFor={inputId} className="mb-2 block text-sm font-semibold" lang={composer.from}>{typePrompt(composer.from)}</label>
         <div className={`mb-3 overflow-hidden rounded-xl border bg-accent-soft ${composer.showSuggestions ? 'border-line-strong' : 'border-line'}`}>
-          <textarea id={inputId} lang={composer.from} className="block w-full resize-y border-0 bg-transparent p-3 text-base text-ink outline-none" rows={2}
-            disabled={speechBusy} required maxLength={500} placeholder={typePrompt(composer.from)} value={composer.draft}
+          <textarea id={inputId} lang={composer.from} className={`block w-full resize-y border-0 bg-transparent p-3 text-base outline-none ${speechPreview !== null ? 'text-interim' : 'text-ink'}`} rows={2}
+            disabled={speechBusy} required maxLength={500} placeholder={typePrompt(composer.from)} value={speechPreview ?? composer.draft}
             role="combobox" aria-autocomplete="list" aria-expanded={composer.showSuggestions} aria-controls={suggestionsId}
             aria-activedescendant={activeOptionId}
             onFocus={() => composer.setSuggestOpen(true)}
             onBlur={() => composer.setSuggestOpen(false)}
             onKeyDown={event => composer.onDraftKeyDown(event)}
             onChange={event => composer.onDraftChange(event.target.value)} />
-          <SpeechInput key={composer.from} language={composer.from} completionMessage="Check the recognized text, then tap Send." disabled={composer.busy} onBusyChange={setSpeechBusy} onText={composer.onDraftChange} />
+          <SpeechInput key={composer.from} language={composer.from} completionMessage="Check the recognized text, then tap Send." onPreview={setSpeechPreview} disabled={composer.busy} onBusyChange={setSpeechBusy} onText={composer.onDraftChange} />
           <ComposerSuggestions id={suggestionsId} from={composer.from} to={composer.to}
             suggestions={composer.suggestions} activeSuggest={composer.activeSuggest}
             showSuggestions={composer.showSuggestions}
@@ -781,6 +782,7 @@ function VoiceConversation({ near, far, cards, engine, lookup, log }: {
   const [heard, setHeard] = useState<Partial<Record<PhraseLanguage, string>>>({})
   const [outputs, setOutputs] = useState<Partial<Record<PhraseLanguage, TranslationResult>>>({})
   const [voiceBusy, setVoiceBusy] = useState(false)
+  const [previews, setPreviews] = useState<Partial<Record<PhraseLanguage, string | null>>>({})
   const [translating, setTranslating] = useState(false)
   const [status, setStatus] = useState('')
   const request = useRef<AbortController | null>(null)
@@ -807,10 +809,10 @@ function VoiceConversation({ near, far, cards, engine, lookup, log }: {
           <p className="text-xl font-semibold" lang={code}>{outputs[code]?.text || t('Translation will appear here')}</p>
           {outputs[code] && <><ReadAloud text={outputs[code]!.text} language={code} /><p className="text-xs text-muted">{outputs[code]!.source}</p></>}
           {outputs[code]?.reviewWarning && <p className="text-xs text-warning">{t('High risk · pending human review')}</p>}
-          {heard[code] && <p className="text-xs text-muted" lang={code}>{t('Recognized speech')}: {heard[code]}</p>}
+          {(previews[code] != null || heard[code]) && <p className={previews[code] != null ? 'text-base text-interim' : 'text-base text-ink'} lang={code} aria-live="polite">{t('Recognized speech')}: {previews[code] ?? heard[code]}</p>}
         </div>
         <div className="flex flex-col items-center gap-2">
-          <SpeechInput language={code} completionMessage="Speech recognized." disabled={voiceBusy || translating} onBusyChange={setVoiceBusy} onText={text => void translateTurn(text, code)} />
+          <SpeechInput language={code} completionMessage="Speech recognized." onPreview={text => setPreviews(previous => ({ ...previous, [code]: text }))} disabled={voiceBusy || translating} onBusyChange={setVoiceBusy} onText={text => void translateTurn(text, code)} />
           <p className="text-xs font-semibold">{t('Tap to speak')}</p>
         </div>
       </section>)}
@@ -837,6 +839,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
   const [draft, setDraft] = useState(initialText ?? '')
   const [inputMethod, setInputMethod] = useState<'text' | 'speech' | 'camera'>(initialMethod ?? 'text')
   const [speechBusy, setSpeechBusy] = useState(false)
+  const [speechPreview, setSpeechPreview] = useState<string | null>(null)
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
   const [suggestOpen, setSuggestOpen] = useState(false)
@@ -937,8 +940,8 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
       {showTitle && <p className="sr-only">{languageName(from)} → {languageName(to)}</p>}
       <label htmlFor={inputId} className="sr-only">{t('Write in {language}', { language: languageName(from) })}</label>
       <div className="rounded-2xl border border-line bg-panel p-3 shadow-sm">
-        <textarea id={inputId} lang={from} className="block min-h-24 w-full resize-none border-0 bg-transparent py-2 text-lg text-ink outline-none placeholder:text-muted" rows={3}
-          disabled={speechBusy} required maxLength={500} placeholder={typePrompt(from)} value={draft}
+        <textarea id={inputId} lang={from} className={`block min-h-24 w-full resize-none border-0 bg-transparent py-2 text-lg outline-none placeholder:text-muted ${speechPreview !== null ? 'text-interim' : 'text-ink'}`} rows={3}
+          disabled={speechBusy} required maxLength={500} placeholder={typePrompt(from)} value={speechPreview ?? draft}
           role="combobox" aria-autocomplete="list" aria-expanded={showSuggestions} aria-controls={suggestionsId}
           aria-activedescendant={activeOptionId}
           onFocus={() => setSuggestOpen(true)}
@@ -955,9 +958,9 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
             setStatus('')
           }} />
           <div className="mt-2 flex items-end justify-between gap-3">
-            <span className="text-xs text-muted" aria-live="off">{draft.length} / 500</span>
+            <span className="text-xs text-muted" aria-live="off">{(speechPreview ?? draft).length} / 500</span>
             <div className="flex items-center gap-3">
-              <SpeechInput key={from} language={from} disabled={busy} onBusyChange={setSpeechBusy} onText={text => {
+              <SpeechInput key={from} language={from} onPreview={setSpeechPreview} disabled={busy} onBusyChange={setSpeechBusy} onText={text => {
                 setInputMethod('speech'); setDraft(text); onResult(undefined); setStatus(''); setSuggestOpen(false)
               }} />
             </div>

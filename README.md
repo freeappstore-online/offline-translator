@@ -4,7 +4,7 @@ A mobile-first FreeAppStore translator for English, Vietnamese and Simplified Ch
 
 ## Current features
 
-- **Translate:** editable text or local multilingual voice input; approved complete card/word/pattern lookup runs before OPUS-MT or M2M100. Basic microphone input stays in the same screen. Check the transcript, then translate.
+- **Translate:** editable text or progressive local multilingual voice input; approved complete card/word/pattern lookup runs before OPUS-MT or M2M100. Basic microphone input stays in the same screen. Grey provisional words appear while speaking and may be revised; stopping runs a final full-clip pass and commits normal dark text (light in dark mode). Check the final transcript, then translate.
 - **Conversation:** opposing voice panels. Recognition automatically enters the same translation pipeline; the translated result appears on the other person's panel. No reversed keyboard.
 - **Camera:** take/select a photo, recognize English/Vietnamese/Simplified Chinese locally, edit the text, and send it to Translate with the selected direction. Recognition is Tesseract.js 6.0.1; images are not uploaded or retained in history.
 - **Cards:** scenario/task navigation, search, card favorites and separately saved translation results. Saved results support reuse, removal and undo. Device speech playback uses installed local voices only.
@@ -14,6 +14,8 @@ A mobile-first FreeAppStore translator for English, Vietnamese and Simplified Ch
 ## Offline operation and preparation
 
 Open the app online once and prepare the resources you need from Packs. The service worker caches the app shell. Translation and speech use separate revision-pinned browser caches; camera language data also uses Tesseract's IndexedDB cache. Camera runtime assets are served by this app and cached on demand, rather than added to every initial installation.
+
+Speech prepares the model before opening the microphone. During recording, snapshots of up to 20 seconds are re-recognized, with Whisper token callbacks updating the grey draft. This is an incremental adapter around a clip-based model, not a native streaming recognizer. Only one inference runs at a time; snapshots do not queue up, and a final pass may revise earlier words. Slower devices show less frequent updates.
 
 Reopening still creates a WASM runtime, reads/decompresses weights, allocates memory and prepares inference sessions. Saved files avoid the network download, not initialization. A shared live worker reuses its active session between attempts. Switching translation model/direction or OCR language can require another preparation. No large background model download or automatic architecture switch is performed.
 
@@ -31,7 +33,7 @@ Lookup accepts normalized exact complete phrases, words and explicitly approved 
 
 - OPUS-MT: separate `Xenova/opus-mt-en-vi` and `Xenova/opus-mt-vi-en`, q8.
 - M2M100: `Xenova/m2m100_418M`, q8; shared multilingual model.
-- Voice: multilingual `Xenova/whisper-tiny`, q8, selected spoken source language, 20-second recording maximum. Local audio decoding/downmixing/resampling to 16 kHz; raw audio discarded.
+- Voice: multilingual `Xenova/whisper-tiny`, q8, selected spoken source language, 20-second recording maximum. AudioWorklet captures mono PCM, resampled locally to 16 kHz; raw audio discarded. AudioWorklet support is required for this live input path.
 - Camera: Tesseract LSTM with eng/vie/chi_sim trained data. Images up to 20 MB are resized to a maximum 2,400-pixel dimension before recognition.
 
 Transformers.js 4.3.2 runs model inference in single-thread WASM workers. First preparation downloads public weights, not user inputs. Microphone/camera access follows a user action. Permission errors, cancellation, timeouts and interrupted work have recoverable states.
@@ -42,7 +44,7 @@ Whisper Tiny made Vietnamese and Chinese errors in synthetic fixture tests. Both
 
 Packs exports **translation-history.json**, **speech-history.json** and **camera-history.json** separately. Records stay on this browser until explicitly exported; full translation history is not displayed in the product. Saved results are a separate user action.
 
-Translation attempts include UTC timestamp, original/result or error, direction, exact model revision, input method, total time, lookup path, build fingerprint and developer-maintained changes-before-run note. Model preparation and inference timings are separate. Speech/OCR records include their own timings and outcomes; no raw audio/images are logged. Automatic checks flag recognizable time/AM-PM, currency, identifier and negation changes. They are limited checks, not a semantic judge. Agent/native-speaker review of exported batches remains necessary for meaning accuracy.
+Translation attempts include UTC timestamp, original/result or error, direction, exact model revision, input method, total time, lookup path, build fingerprint and developer-maintained changes-before-run note. Model preparation and inference timings are separate. Speech/OCR records include their own timings and outcomes; speech also records first-preview delay, preview passes/inference/errors and finalization time. No raw audio/images are logged. Automatic checks flag recognizable time/AM-PM, currency, identifier and negation changes. They are limited checks, not a semantic judge. Agent/native-speaker review of exported batches remains necessary for meaning accuracy.
 
 Update `web/src/build-changes.ts` whenever the pipeline changes. The fingerprint hashes app source, build plugin/config and dependency lock; restart the dev server before comparing builds. Old entries retain their metadata. SDK automatic capture/upload is disabled by the existing SDK logger patch.
 

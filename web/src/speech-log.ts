@@ -3,7 +3,7 @@ import { buildChanges } from './build-changes'
 import { speechModel } from './speech-model'
 import type { Language } from './model-options'
 const key = 'offline-translator-speech-history-v1'
-export type SpeechRun = { language: Language; text?: string; durationMs?: number; preparationMs?: number; inferenceMs?: number; error?: string }
+export type SpeechRun = { language: Language; text?: string; durationMs?: number; preparationMs?: number; inferenceMs?: number; error?: string; live?: { previewPasses: number; updates: number; firstPreviewMs?: number; previewInferenceMs: number; previewErrors: string[]; finalizationMs: number } }
 export function logSpeech(run: SpeechRun) {
   try {
     const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? '[]')

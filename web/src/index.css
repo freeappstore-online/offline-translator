@@ -16,6 +16,7 @@
   --color-ink: var(--ink);
   --color-ink-strong: var(--ink-strong);
   --color-muted: var(--muted);
+  --color-interim: var(--interim);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
   --color-accent: var(--accent);
@@ -46,6 +47,7 @@
   --ink: #302039;
   --ink-strong: #24122e;
   --muted: #6b5a74;
+  --interim: #737373;
   --line: #e2d6eb;
   --line-strong: #a991bb;
   --accent: #8224b5;
@@ -74,6 +76,7 @@
   --ink: #f5edf9;
   --ink-strong: #ffffff;
   --muted: #c8b8d3;
+  --interim: #bdbdbd;
   --line: #513d60;
   --line-strong: #9279a4;
   --accent: #d6a5fa;

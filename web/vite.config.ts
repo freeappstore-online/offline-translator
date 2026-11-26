@@ -15,7 +15,7 @@ const trackedFiles = [
   ...readdirSync(new URL('./src/', import.meta.url), { recursive: true, withFileTypes: true })
     .filter(file => file.isFile())
     .map(file => file.parentPath.slice(webRoot.length) + '/' + file.name),
-  'vite.config.ts', 'ocr-runtime-plugin.mjs', 'package.json', '../pnpm-lock.yaml',
+  'vite.config.ts', 'public/speech-capture-worklet.js', 'ocr-runtime-plugin.mjs', 'package.json', '../pnpm-lock.yaml',
 ].sort()
 
 const fingerprint = createHash('sha256')
