@@ -7,7 +7,7 @@ import { ProgressiveSpeech } from './progressive-speech'
 import { logSpeech } from './speech-log'
 
 type Phase = 'idle' | 'permission' | 'recording' | 'processing'
-type Session = { id: number; mounted: boolean; controller?: AbortController; cleanup?: () => void; stop?: () => Promise<void> }
+type Session = { id: number; mounted: boolean; preparing?: boolean; controller?: AbortController; cleanup?: () => void; stop?: () => Promise<void> }
 export function SpeechInput({ language, onText, onPreview, onBusyChange, completionMessage = 'Check the recognized text, then tap Translate.', disabled = false }: {
   language: Language; onText: (text: string) => void; onPreview?: (text: string | null) => void
   onBusyChange: (busy: boolean) => void; completionMessage?: string; disabled?: boolean
@@ -17,20 +17,20 @@ export function SpeechInput({ language, onText, onPreview, onBusyChange, complet
   const session = useRef<Session>({ id: 0, mounted: true })
   useEffect(() => { onBusyChange(phase !== 'idle'); return () => onBusyChange(false) }, [phase, onBusyChange])
   useEffect(() => { const state = session.current; state.mounted = true; return () => { state.mounted = false; state.id++; state.controller?.abort(); state.cleanup?.() } }, [])
-  useEffect(() => { const hidden = () => { if (document.hidden) void session.current.stop?.() }; document.addEventListener('visibilitychange', hidden); return () => document.removeEventListener('visibilitychange', hidden) }, [])
+  useEffect(() => { const hidden = () => { if (document.hidden) { if (session.current.preparing) cancel(); else void session.current.stop?.() } }; document.addEventListener('visibilitychange', hidden); return () => document.removeEventListener('visibilitychange', hidden) }, [])
   function publish(text: string | null) { setPreview(text ?? ''); onPreview?.(text === null ? null : text.slice(0, 500)) }
   function cancel() {
-    const state = session.current; state.id++; state.controller?.abort(); state.cleanup?.(); state.cleanup = undefined; state.stop = undefined; state.controller = undefined
+    const state = session.current; state.id++; state.controller?.abort(); state.cleanup?.(); state.cleanup = undefined; state.stop = undefined; state.controller = undefined; state.preparing = false
     publish(null); setPhase('idle'); setProgress(undefined); setStatus('Speech input canceled.'); logSpeech({ language, error: 'Speech input canceled' })
   }
   async function start() {
     if (!navigator.mediaDevices?.getUserMedia || typeof AudioWorkletNode === 'undefined') { setStatus('Live microphone input is not supported in this browser. You can still type.'); return }
-    const state = session.current, id = ++state.id, controller = new AbortController(); state.controller = controller
+    const state = session.current, id = ++state.id, controller = new AbortController(); state.controller = controller; state.preparing = true
     const current = () => state.mounted && state.id === id && !controller.signal.aborted
     let context: AudioContext | undefined, stream: MediaStream | undefined, source: MediaStreamAudioSourceNode | undefined, node: AudioWorkletNode | undefined
     let interval = 0, timer = 0, audio: SpeechAudio | undefined, live: ProgressiveSpeech | undefined, recording = false, stopping = false
     let firstPreviewMs: number | undefined, started = 0, flush: (() => void) | undefined
-    const cleanup = () => { clearInterval(interval); clearTimeout(timer); recording = false; live?.cancel(); stream?.getTracks().forEach(track => track.stop()); source?.disconnect(); node?.disconnect(); node?.port.close(); void context?.close().catch(() => {}); audio?.clear(); if (state.id === id) state.stop = undefined }
+    const cleanup = () => { clearInterval(interval); clearTimeout(timer); recording = false; live?.cancel(); stream?.getTracks().forEach(track => track.stop()); source?.disconnect(); node?.disconnect(); node?.port.close(); void context?.close().catch(() => {}); audio?.clear(); if (state.id === id) { state.stop = undefined; state.preparing = false } }
     state.cleanup = cleanup
     setPhase('permission'); setStatus('Preparing speech model…'); setProgress(undefined); publish('')
     try {
@@ -40,9 +40,12 @@ export function SpeechInput({ language, onText, onPreview, onBusyChange, complet
       await context.audioWorklet.addModule('/speech-capture-worklet.js')
       const prepared = await prepareSpeech(controller.signal, (message, value) => { if (current()) { setStatus(message); setProgress(value) } })
       if (!current()) return
+      if (document.hidden) { cancel(); return }
       setStatus('Allow microphone access to start.'); setProgress(undefined)
       stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } })
       if (!current()) { stream.getTracks().forEach(track => track.stop()); return }
+      if (document.hidden) { stream.getTracks().forEach(track => track.stop()); cancel(); return }
+      state.preparing = false
       audio = new SpeechAudio(context.sampleRate)
       const report = (message: string, value?: number) => { if (current() && !recording) { setStatus(message); setProgress(value) } }
       live = new ProgressiveSpeech((samples, partial) => transcribeSpeech(samples, language, controller.signal, report, partial), text => {

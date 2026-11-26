@@ -15,7 +15,7 @@ A mobile-first FreeAppStore translator for English, Vietnamese and Simplified Ch
 
 Open the app online once and prepare the resources you need from Packs. The service worker caches the app shell. Translation and speech use separate revision-pinned browser caches; camera language data also uses Tesseract's IndexedDB cache. Camera runtime assets are served by this app and cached on demand, rather than added to every initial installation.
 
-Speech prepares the model before opening the microphone. During recording, snapshots of up to 20 seconds are re-recognized, with Whisper token callbacks updating the grey draft. This is an incremental adapter around a clip-based model, not a native streaming recognizer. Only one inference runs at a time; snapshots do not queue up, and a final pass may revise earlier words. Slower devices show less frequent updates.
+Speech prepares the model before opening the microphone; hiding the page during preparation cancels it. During recording, snapshots of up to 20 seconds are re-recognized, with Whisper token callbacks updating the grey draft. This is an incremental adapter around a clip-based model, not a native streaming recognizer. Only one inference runs at a time; snapshots do not queue up, and a final pass may revise earlier words. Slower devices show less frequent updates.
 
 Reopening still creates a WASM runtime, reads/decompresses weights, allocates memory and prepares inference sessions. Saved files avoid the network download, not initialization. A shared live worker reuses its active session between attempts. Switching translation model/direction or OCR language can require another preparation. No large background model download or automatic architecture switch is performed.
 
