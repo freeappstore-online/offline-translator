@@ -21,10 +21,11 @@ export type LogEntry = {
     mode: 'development' | 'production'
     selectedEngine: string
     modelRevision?: string
-    execution: 'phrase card' | 'Phrase card' | 'Vocabulary' | 'Phrase pattern' | 'browser API' | 'WASM worker'
+    execution: 'phrase card' | 'Phrase card' | 'Vocabulary' | 'Phrase pattern' | 'Personal card' | 'Personal card conflict' | 'browser API' | 'WASM worker'
     changes: string
   }
   runtime?: { preparationMs: number; inferenceMs: number }
+  purpose?: 'personal-card-draft'
   inputMethod?: 'text' | 'speech' | 'camera'
   lookup?: { elapsedMs: number; kind: string; id?: string; vocabularyId?: string }
   original: string

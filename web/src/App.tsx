@@ -1,3 +1,5 @@
+import { readPersonalCards, personalCardsEvent, personalCardsKey, type PersonalCard } from './personal-cards'
+import { buildTranslationLookup } from './translation-lookup'
 import { usePreference } from './preferences'
 import { UpdateNotice } from './UpdateNotice'
 import { lazy, Suspense } from 'react'
@@ -10,7 +12,7 @@ import { exportSpeechLog } from './speech-log'
 import { t, languageName, useLocale, setLocale, type Locale } from './i18n'
 import { Packs } from './Packs'
 import { scenarios, tasks, cardScenarios, cardTask } from './card-scenarios'
-import { approvedLabels, buildApprovedIndex, type ApprovedMatch } from './approved-phrases'
+import { approvedLabels, type ApprovedMatch } from './approved-phrases'
 import { buildChanges } from './build-changes'
 import { buildFingerprint, checkMeaning, exportLog, readLog, writeLog, type LogEntry } from './translation-log'
 import { translateWithModel, type TranslationMetrics } from './downloaded-translation'
@@ -22,6 +24,7 @@ import { categories, datasetId, languages, loadPhrases, needsHumanReviewWarning,
 import { rankSuggestions } from './suggest-phrases'
 import ReviewWorkstation from './ReviewWorkstation'
 
+const PersonalCards = lazy(() => import('./PersonalCards').then(module => ({ default: module.PersonalCards })))
 const CameraTranslation = lazy(() => import('./CameraTranslation').then(module => ({ default: module.CameraTranslation })))
 
 const fas = initApp({ appId: 'offline-translator' })
@@ -71,6 +74,9 @@ export default function App() {
   const [engine, setEngine] = usePreference<Engine>('translator-engine', 'opus', (value): value is Engine => value === 'opus' || value === 'multilingual')
   const [pair, setPair] = usePreference<'en' | 'vi'>('translator-pair', 'en', (value): value is 'en' | 'vi' => value === 'en' || value === 'vi')
   const [cards, setCards] = useState<Phrase[]>([])
+  const [personalCards, setPersonalCards] = useState(readPersonalCards)
+  const [collection, setCollection] = useState<'shared' | 'personal' | 'results'>('shared')
+  useEffect(() => { const sync = (event: Event) => { if (event.type !== 'storage' || ((event as StorageEvent).key === personalCardsKey || (event as StorageEvent).key === null)) setPersonalCards(readPersonalCards()) }; window.addEventListener(personalCardsEvent, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(personalCardsEvent, sync); window.removeEventListener('storage', sync) } }, [])
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const [saved, setSaved] = useState(readFavorites)
@@ -201,13 +207,13 @@ export default function App() {
             <NavigationIcon kind={item.icon} /><span className="max-w-full text-center text-[0.65rem] leading-tight">{t(item.icon === 'conversation' ? 'Talk' : item.label)}</span></a>)}
         </nav>
         {path !== '/translate' && path !== '/camera' && path !== '/conversation' && <div className="text-canvas-ink [&_h1]:text-canvas-ink"><PageHeader title={title} /></div>}
-        {path !== '/packs' && path !== '/translate' && path !== '/camera' && path !== '/conversation' && (
+        {path !== '/packs' && path !== '/translate' && path !== '/camera' && path !== '/conversation' && collection === 'shared' && (
           <label className="mb-4 flex flex-wrap items-center gap-2 text-canvas-ink">{t("Language")}<select className={control} value={language} onChange={event => setLanguage(event.target.value as TargetLanguage)}>
               {Object.keys(languages).map(id => <option key={id} value={id}>{languageName(id as Locale)}</option>)}
             </select>
           </label>
         )}
-        {!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' && path !== '/conversation' && (
+        {!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' && path !== '/conversation' && collection === 'shared' && (
           <div className={panel}>
             <p role="status">{!configured ? t("The phrase deck is being set up.") : failed ? t("Couldn’t load phrases. Check your connection and try again.") : t("Loading phrases…")}</p>
             {failed && <button className={control + ' mt-3'} onClick={() => { setFailed(false); setAttempt(attempt + 1) }}>{t("Try again")}</button>}
@@ -216,9 +222,9 @@ export default function App() {
         {(path === '/translate' || path === '/conversation') && (
           <>
             {path === '/translate'
-              ? <Translate key={engine + pair + language + (incoming?.id ?? 0)} cards={cards} engine={engine} incoming={incoming}
+              ? <Translate personalCards={personalCards} key={engine + pair + language + (incoming?.id ?? 0)} cards={cards} engine={engine} incoming={incoming}
                   from={engine === 'multilingual' ? pair : 'en'} to={engine === 'opus' ? 'vi' : language} log={logTranslation} />
-              : <VoiceConversation key={engine + pair + language} cards={cards} engine={engine}
+              : <VoiceConversation personalCards={personalCards} key={engine + pair + language} cards={cards} engine={engine}
                   near={engine === 'multilingual' ? pair : 'en'} far={engine === 'opus' ? 'vi' : language}
                   log={logTranslation} />}
             <details className="mt-5 rounded-2xl bg-panel px-4 py-1">
@@ -251,7 +257,13 @@ export default function App() {
           </>
         )}
         {path === '/camera' && <Suspense fallback={<p className="rounded-2xl bg-panel p-4">{t('Loading camera…')}</p>}><CameraTranslation onUse={useRecognizedText} /></Suspense>}
-        {path === '/' && <SavedTranslations onUse={(text, from, to) => useRecognizedText(text, from, to, 'text')} />}
+        {path === '/' && <>
+          <div className="mb-4 grid grid-cols-3 gap-1 rounded-2xl bg-panel p-1" role="tablist" aria-label={t('Card collections')}>
+            {([['shared', 'Shared cards'], ['personal', 'My cards'], ['results', 'Saved results']] as const).map(([id, label]) => <button type="button" role="tab" key={id} aria-selected={collection === id} className={`min-h-11 rounded-xl px-2 text-xs font-semibold ${collection === id ? 'bg-accent text-on-accent' : 'text-muted'}`} onClick={() => setCollection(id)}>{t(label)}</button>)}
+          </div>
+          {collection === 'personal' && <Suspense fallback={<p className={panel}>{t('Loading…')}</p>}><PersonalCards cards={personalCards} engine={engine} target={language} onLog={logTranslation} onUse={(text, from, to) => useRecognizedText(text, from, to, 'text')} /></Suspense>}
+          {collection === 'results' && <SavedTranslations onUse={(text, from, to) => useRecognizedText(text, from, to, 'text')} />}
+        </>}
         {path === '/packs' && <>
           <Packs cards={cards} onReady={(nextEngine, from, to) => {
             setEngine(nextEngine)
@@ -267,7 +279,7 @@ export default function App() {
           </div></details>
         </>}
         {storageError && <p role="status" className="mt-3 text-sm text-muted">{t("Browser storage is full or unavailable. Export translation JSON from Packs before closing this page.")}</p>}
-        {!!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' && path !== '/conversation' &&
+        {!!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' && path !== '/conversation' && collection === 'shared' &&
           <Cards cards={cards} language={language} saved={saved} onFavorite={toggleFavorite} />}
       </div>
     </Shell>
@@ -375,7 +387,8 @@ function Cards({ cards, language, saved, onFavorite }: {
   )
 }
 
-function Translate({ cards, engine, from, to, log, incoming }: {
+function Translate({ cards, personalCards, engine, from, to, log, incoming }: {
+  personalCards: PersonalCard[]
   cards: Phrase[]
   engine: Engine
   from: PhraseLanguage
@@ -383,7 +396,7 @@ function Translate({ cards, engine, from, to, log, incoming }: {
   log: (entry: LogEntry) => void
   incoming?: { text: string; from: Locale; to: Locale; method: 'text' | 'camera' }
 }) {
-  const lookup = useMemo(() => buildApprovedIndex(cards), [cards])
+  const lookup = useMemo(() => buildTranslationLookup(cards, personalCards), [cards, personalCards])
   const [outgoing, setOutgoing] = useState<TranslationResult>()
   const [swapped, setSwapped] = useState(incoming?.from === to)
   const source = swapped ? to : from
@@ -403,7 +416,7 @@ function typePrompt(language: PhraseLanguage) {
   return t({ en: 'Type in English', vi: 'Type in Vietnamese', zh: 'Type in Simplified Chinese' }[language])
 }
 
-type TranslationResult = { text: string; source: string; reviewWarning?: boolean }
+type TranslationResult = { text: string; source: string; personal?: boolean; reviewWarning?: boolean }
 
 type ChatTurn = {
   id: string
@@ -414,6 +427,7 @@ type ChatTurn = {
   translation: string
   source: string
   reviewWarning?: boolean
+  personal?: boolean
 }
 
 async function runPhraseTranslation(options: {
@@ -421,7 +435,7 @@ async function runPhraseTranslation(options: {
   from: PhraseLanguage
   to: PhraseLanguage
   engine: Engine
-  lookup: ReturnType<typeof buildApprovedIndex>
+  lookup: ReturnType<typeof buildTranslationLookup>
   log: (entry: LogEntry) => void
   cards?: readonly Phrase[]
   signal?: AbortSignal
@@ -436,7 +450,8 @@ async function runPhraseTranslation(options: {
   const modelName = model?.id ?? engines[engine]
   let runtime: TranslationMetrics | undefined
   const lookupStart = performance.now()
-  const match = lookup(input, from, to)
+  const lookupHit = lookup(input, from, to)
+  const match = lookupHit?.kind === 'personal-conflict' ? undefined : lookupHit
   const lookupMs = performance.now() - lookupStart
 
   function record(translation: string | null, label: string, error?: string, matched?: ApprovedMatch) {
@@ -451,16 +466,16 @@ async function runPhraseTranslation(options: {
         changes: buildChanges,
       },
       elapsedMs: Math.round(performance.now() - start),
-      lookup: { elapsedMs: lookupMs, kind: matched?.kind ?? 'miss', id: matched?.id, vocabularyId: matched?.vocabularyId },
-      check: { status: matched ? 'stored match' : translation ? 'pending' : 'unavailable', errors: [] },
+      lookup: { elapsedMs: lookupMs, kind: lookupHit?.kind ?? 'miss', id: matched?.id, vocabularyId: matched?.vocabularyId },
+      check: { status: matched ? 'stored match' : translation ? 'pending' : 'unavailable', errors: [], note: matched?.kind === 'personal' ? 'User-enabled personal card; unreviewed.' : undefined },
     })
   }
 
   if (match) {
-    const source = approvedLabels[match.kind]
-    record(match.text, source, undefined, match)
+    const source = match.kind === 'personal' ? t('Personal card · unreviewed') : approvedLabels[match.kind]
+    record(match.text, approvedLabels[match.kind], undefined, match)
     const card = match.kind === 'card' ? cards?.find(entry => entry.id === match.id) : undefined
-    return { text: match.text, source, reviewWarning: card ? needsHumanReviewWarning(card) : false }
+    return { text: match.text, source, personal: match.kind === 'personal', reviewWarning: card ? needsHumanReviewWarning(card) : false }
   }
 
   onStatus?.(t("Preparing translation…"))
@@ -480,10 +495,10 @@ async function runPhraseTranslation(options: {
   }
 }
 
-function VoiceConversation({ near, far, cards, engine, log }: {
-  near: PhraseLanguage; far: PhraseLanguage; cards: Phrase[]; engine: Engine; log: (entry: LogEntry) => void
+function VoiceConversation({ near, far, cards, personalCards, engine, log }: {
+  near: PhraseLanguage; far: PhraseLanguage; cards: Phrase[]; personalCards: PersonalCard[]; engine: Engine; log: (entry: LogEntry) => void
 }) {
-  const lookup = useMemo(() => buildApprovedIndex(cards), [cards])
+  const lookup = useMemo(() => buildTranslationLookup(cards, personalCards), [cards, personalCards])
   const [style, setStyle] = usePreference<'chat' | 'face'>('conversation-style', 'chat', (value): value is 'chat' | 'face' => value === 'chat' || value === 'face')
   const [turns, setTurns] = useState<ChatTurn[]>([])
   const [flipped, setFlipped] = useState(false)
@@ -503,7 +518,7 @@ function VoiceConversation({ near, far, cards, engine, log }: {
     try {
       const result = await runPhraseTranslation({ input: text, from, to, engine, lookup, log, cards, signal: controller.signal, onStatus: message => { if (!controller.signal.aborted) setStatus(message) }, inputMethod: 'speech' })
       if (controller.signal.aborted) return
-      setTurns(previous => [...previous, { id: crypto.randomUUID(), speaker: from === near ? 'near' : 'far', from, to, original: text, translation: result.text, source: result.source, reviewWarning: result.reviewWarning }]); setStatus('')
+      setTurns(previous => [...previous, { id: crypto.randomUUID(), speaker: from === near ? 'near' : 'far', from, to, original: text, translation: result.text, source: result.source, reviewWarning: result.reviewWarning, personal: result.personal }]); setStatus('')
     } catch (error) { if (!controller.signal.aborted) setStatus(String(error)) }
     finally { if (request.current === controller) { request.current = null; setTranslating(false) } }
   }
@@ -524,6 +539,7 @@ function VoiceConversation({ near, far, cards, engine, log }: {
           <div className="flex items-start justify-between gap-3"><p className="pt-2 text-xs text-muted" lang={turn.from}>{turn.original}</p><ReadAloud text={turn.translation} language={turn.to} /></div>
           <p className="mt-1 wrap-anywhere text-xl font-semibold leading-snug" lang={turn.to}>{turn.translation}</p>
           <p className="mt-2 text-[0.65rem] text-muted">{languageName(turn.from)} → {languageName(turn.to)}</p>
+          {turn.personal && <p className="mt-2 text-xs text-muted">{t('Personal card · unreviewed')}</p>}
           {turn.reviewWarning && <p className="mt-2 text-xs text-warning">{t('High risk · pending human review')}</p>}
         </article>)}
         {([leftCode, rightCode] as const).map(code => previews[code] != null && <p key={code} className={`max-w-[92%] rounded-2xl bg-panel p-3 text-base text-interim ${code === rightCode ? 'self-end' : 'self-start'}`} lang={code} aria-live="polite">{previews[code] || t('Listening…')}</p>)}
@@ -543,6 +559,7 @@ function VoiceConversation({ near, far, cards, engine, log }: {
         return <section key={code} className={`flex min-h-0 flex-1 flex-col justify-between gap-2 p-4 ${index === 0 ? 'rotate-180 bg-panel text-ink' : 'bg-accent-soft text-ink'}`} aria-label={languageName(code)}>
           <div className="flex items-center justify-between gap-2"><p className="min-w-0 text-sm font-semibold">{languageName(code)}</p><div className="flex shrink-0 items-center">{output && <><ReadAloud text={output.translation} language={code} /><button type="button" className="min-h-11 px-2 text-xs text-accent" onClick={() => copy(output.translation)}>{t('Copy')}</button></>}</div></div>
           <p className="min-h-0 flex-1 overflow-y-auto wrap-anywhere text-2xl font-semibold leading-snug sm:text-3xl" lang={code}>{output?.translation || t('Translation will appear here')}</p>
+          {output?.personal && <p className="text-xs text-muted">{t('Personal card · unreviewed')}</p>}
           {output?.reviewWarning && <p className="text-xs text-warning">{t('High risk · pending human review')}</p>}
           <div className="flex items-end justify-between gap-3"><p className={`max-h-16 min-w-0 flex-1 overflow-y-auto wrap-anywhere text-sm ${previews[code] != null ? 'text-interim' : 'text-ink'}`} lang={code} aria-live="polite">{previews[code] ?? heard[code] ?? t('Tap to speak')}</p><div className="max-w-36">{microphone(code)}</div></div>
         </section>
@@ -565,7 +582,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
   showTitle?: boolean
   result?: TranslationResult
   onResult: (result: TranslationResult | undefined) => void
-  lookup: ReturnType<typeof buildApprovedIndex>
+  lookup: ReturnType<typeof buildTranslationLookup>
 }) {
   const [draft, setDraft] = useState(initialText ?? '')
   const [inputMethod, setInputMethod] = useState<'text' | 'speech' | 'camera'>(initialMethod ?? 'text')

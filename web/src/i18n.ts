@@ -18,6 +18,134 @@ export function useLocale() {
   return useSyncExternalStore(callback => { listeners.add(callback); return () => { listeners.delete(callback) } }, () => locale)
 }
 const messages: Record<string, Partial<Record<Locale, string>>> = {
+"My cards": {
+    "vi": "Thẻ của tôi",
+    "zh": "我的卡片"
+  },
+  "New card": {
+    "vi": "Tạo thẻ",
+    "zh": "新建卡片"
+  },
+  "Card collections": {
+    "vi": "Bộ sưu tập thẻ",
+    "zh": "卡片集合"
+  },
+  "Shared cards": {
+    "vi": "Thẻ chung",
+    "zh": "共用卡片"
+  },
+  "Saved results": {
+    "vi": "Bản dịch đã lưu",
+    "zh": "已保存译文"
+  },
+  "Original language": {
+    "vi": "Ngôn ngữ gốc",
+    "zh": "原文语言"
+  },
+  "Original phrase": {
+    "vi": "Câu gốc",
+    "zh": "原文短语"
+  },
+  "Translate into": {
+    "vi": "Dịch sang",
+    "zh": "翻译成"
+  },
+  "Generate translations": {
+    "vi": "Tạo bản dịch",
+    "zh": "生成译文"
+  },
+  "Save personal card": {
+    "vi": "Lưu thẻ cá nhân",
+    "zh": "保存个人卡片"
+  },
+  "Search my cards": {
+    "vi": "Tìm thẻ của tôi",
+    "zh": "搜索我的卡片"
+  },
+  "AI translated · unreviewed": {
+    "vi": "AI dịch · chưa được duyệt",
+    "zh": "AI 翻译 · 未审核"
+  },
+  "User written · unreviewed": {
+    "vi": "Người dùng viết · chưa được duyệt",
+    "zh": "用户编写 · 未审核"
+  },
+  "Edited by you": {
+    "vi": "Bạn đã chỉnh sửa",
+    "zh": "您已编辑"
+  },
+  "Use this card in Translate": {
+    "vi": "Dùng thẻ này khi dịch",
+    "zh": "在翻译中使用此卡片"
+  },
+  "Personal card · unreviewed": {
+    "vi": "Thẻ cá nhân · chưa được duyệt",
+    "zh": "个人卡片 · 未审核"
+  },
+  "Exact matching enabled": {
+    "vi": "Đã bật khớp chính xác",
+    "zh": "已启用精确匹配"
+  },
+  "Not used for automatic matching": {
+    "vi": "Không dùng để tự động khớp",
+    "zh": "不用于自动匹配"
+  },
+  "Personal card saved.": {
+    "vi": "Đã lưu thẻ cá nhân.",
+    "zh": "个人卡片已保存。"
+  },
+  "Personal card removed.": {
+    "vi": "Đã xóa thẻ cá nhân.",
+    "zh": "个人卡片已移除。"
+  },
+  "Personal card restored.": {
+    "vi": "Đã khôi phục thẻ cá nhân.",
+    "zh": "个人卡片已恢复。"
+  },
+  "Undo remove": {
+    "vi": "Hoàn tác xóa",
+    "zh": "撤销移除"
+  },
+  "Export personal cards JSON": {
+    "vi": "Xuất thẻ cá nhân JSON",
+    "zh": "导出个人卡片 JSON"
+  },
+  "Could not export personal cards.": {
+    "vi": "Không xuất được thẻ cá nhân.",
+    "zh": "无法导出个人卡片。"
+  },
+  "Personal cards stay in this browser. AI drafts are unreviewed; saving or editing does not verify their accuracy.": {
+    "vi": "Thẻ cá nhân được lưu trong trình duyệt này. Bản nháp AI chưa được duyệt; lưu hay chỉnh sửa không xác nhận độ chính xác.",
+    "zh": "个人卡片保留在此浏览器中。AI 草稿未经审核，保存或编辑不代表准确性已验证。"
+  },
+  "Source changed. Generate or enter translations again.": {
+    "vi": "Câu gốc đã thay đổi. Hãy tạo hoặc nhập lại bản dịch.",
+    "zh": "原文已更改，请重新生成或输入译文。"
+  },
+  "Review and edit the drafts before saving.": {
+    "vi": "Kiểm tra và chỉnh sửa bản nháp trước khi lưu.",
+    "zh": "保存前请检查并编辑草稿。"
+  },
+  "Drafts are generated on this device. First use may download the selected model; prepare it in Packs for offline use. You can also enter translations yourself.": {
+    "vi": "Bản nháp được tạo trên thiết bị này. Lần đầu có thể cần tải mô hình; hãy chuẩn bị trong Gói tải xuống để dùng ngoại tuyến. Bạn cũng có thể tự nhập bản dịch.",
+    "zh": "草稿在此设备上生成。首次使用可能下载所选模型，请在下载包中提前准备以便离线使用。您也可以自行输入译文。"
+  },
+  "Keep each version within 500 characters.": {
+    "vi": "Mỗi phiên bản cần tối đa 500 ký tự.",
+    "zh": "每个版本请控制在500个字符以内。"
+  },
+  "Only exact matches use your saved wording. This does not mark the translation as reviewed.": {
+    "vi": "Chỉ câu khớp chính xác mới dùng bản dịch đã lưu. Điều này không đánh dấu bản dịch là đã được duyệt.",
+    "zh": "只有精确匹配才会使用您保存的措辞，这不会将译文标记为已审核。"
+  },
+  "Create a personal card for a phrase you often need.": {
+    "vi": "Tạo thẻ cá nhân cho câu bạn thường cần.",
+    "zh": "为您经常需要的短语创建个人卡片。"
+  },
+  "Could not save personal cards. Browser storage is full, unavailable or contains invalid data. Export a backup before clearing site data.": {
+    "vi": "Không lưu được thẻ cá nhân. Bộ nhớ trình duyệt đã đầy, không khả dụng hoặc dữ liệu không hợp lệ. Hãy xuất bản sao lưu trước khi xóa dữ liệu trang.",
+    "zh": "无法保存个人卡片。浏览器存储已满、不可用或数据无效。清除网站数据前请先导出备份。"
+  },
   "1 package selected": { vi: "Đã chọn 1 gói", zh: "已选 1 个包" },
 "Recommended package": {
     "vi": "Gói đề xuất",

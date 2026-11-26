@@ -43,17 +43,17 @@ const patterns: readonly Pattern[] = [{
 }]
 
 export type ApprovedMatch = {
-  kind: 'card' | 'vocabulary' | 'pattern'
+  kind: 'card' | 'vocabulary' | 'pattern' | 'personal' | 'personal-conflict'
   id: string
   vocabularyId?: string
   text: string
 }
 
-export const approvedLabels = { card: 'Phrase card', vocabulary: 'Vocabulary', pattern: 'Phrase pattern' } as const
+export const approvedLabels = { card: 'Phrase card', vocabulary: 'Vocabulary', pattern: 'Phrase pattern', personal: 'Personal card', 'personal-conflict': 'Personal card conflict' } as const
 
 const languageCodes: readonly Language[] = ['en', 'vi', 'zh']
 
-function matchKey(text: string) {
+export function matchKey(text: string) {
   return text.normalize('NFC').trim().toLowerCase().replace(/[‘’]/g, "'")
     .replace(/[.!?。！？]+$/, '').trimEnd().replace(/\s+/g, ' ')
 }
