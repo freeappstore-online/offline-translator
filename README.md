@@ -83,3 +83,5 @@ Packs has two keyboard-accessible language comboboxes. Native names appear with 
 Model observations and deferred architecture options: see [MODEL_EXPERIMENTS.md](MODEL_EXPERIMENTS.md).
 
 Chat input shows From and To language fields for the selected conversation pair. The middle arrow indicates left-to-right translation; Reverse exchanges the languages. Selecting either language also reverses the pair. Controls are disabled while sending.
+
+Language labels use native names with English in parentheses, for example Tiếng Việt (Vietnamese). English remains English.

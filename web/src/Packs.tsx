@@ -9,7 +9,7 @@ function LanguageLabel({ code }: { code: Language }) {
   const language = languageLabels[code]
   return <span className="inline-flex items-center gap-2">
     <span aria-hidden="true" className="text-xl">{language.flag}</span>
-    <span lang={language.lang}>{language.name}</span>
+    <span lang={language.lang}>{language.name}{language.name !== language.translatedName && ` (${language.translatedName})`}</span>
   </span>
 }
 

@@ -679,7 +679,7 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
             <select aria-label="Chat source language" value={composer.from} disabled={composer.busy}
               className={control + ' mt-1 w-full min-w-0 px-2 text-sm font-semibold'}
               onChange={event => { if (event.target.value !== composer.from) composer.toggleSpeaker() }}>
-              {[near, far].map(code => <option key={code} value={code}>{code === 'vi' ? 'Tiếng Việt' : code === 'zh' ? '简体中文' : 'English'}</option>)}
+              {[near, far].map(code => <option key={code} value={code}>{languageNames[code]}</option>)}
             </select>
           </label>
           <button type="button" disabled={composer.busy}
@@ -694,7 +694,7 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
             <select aria-label="Chat target language" value={composer.to} disabled={composer.busy}
               className={control + ' mt-1 w-full min-w-0 px-2 text-sm font-semibold'}
               onChange={event => { if (event.target.value !== composer.to) composer.toggleSpeaker() }}>
-              {[near, far].map(code => <option key={code} value={code}>{code === 'vi' ? 'Tiếng Việt' : code === 'zh' ? '简体中文' : 'English'}</option>)}
+              {[near, far].map(code => <option key={code} value={code}>{languageNames[code]}</option>)}
             </select>
           </label>
         </div>

@@ -1,6 +1,6 @@
 import { phraseCache, phraseUrl } from './pack-storage'
 import { scenarios, tasks, type Scenario, type Task } from './card-scenarios'
-export const languages = { vi: 'Vietnamese', zh: 'Chinese (Simplified)' }
+export const languages = { vi: 'Tiếng Việt (Vietnamese)', zh: '简体中文 (Chinese, Simplified)' }
 export type TargetLanguage = keyof typeof languages
 
 export const categories = {

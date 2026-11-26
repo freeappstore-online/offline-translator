@@ -4,7 +4,7 @@ import type { Language } from './model-options'
 export const languageLabels = {
   en: { name: 'English', translatedName: 'English', flag: '🇬🇧', lang: 'en' },
   vi: { name: 'Tiếng Việt', translatedName: 'Vietnamese', flag: '🇻🇳', lang: 'vi' },
-  zh: { name: '简体中文', translatedName: 'Chinese (Simplified)', flag: '🇨🇳', lang: 'zh-Hans' },
+  zh: { name: '简体中文', translatedName: 'Chinese, Simplified', flag: '🇨🇳', lang: 'zh-Hans' },
 }
 
 const codes = Object.keys(languageLabels) as Language[]
@@ -22,7 +22,7 @@ export function LanguagePicker({ label, value, disabled, onChange }: {
   const [highlight, setHighlight] = useState(0)
   const selected = languageLabels[value]
   const options = codes.filter(code => searchable([code, languageLabels[code].name, languageLabels[code].translatedName].join(' ')).includes(searchable(query.trim())))
-  const display = selected.name === selected.translatedName ? selected.name : selected.name + ' · ' + selected.translatedName
+  const display = selected.name === selected.translatedName ? selected.name : selected.name + ' (' + selected.translatedName + ')'
 
   function choose(code: Language) {
     onChange(code)
@@ -66,7 +66,7 @@ export function LanguagePicker({ label, value, disabled, onChange }: {
           onClick={() => choose(code)}>
           <span aria-hidden="true" className="text-xl">{language.flag}</span>
           <span><span className="block font-semibold" lang={language.lang}>{language.name}</span>
-            {language.name !== language.translatedName && <span className="text-muted">{language.translatedName}</span>}
+            {language.name !== language.translatedName && <span className="text-muted">({language.translatedName})</span>}
           </span>
           {code === value && <span aria-hidden="true" className="ml-auto">✓</span>}
         </div>
