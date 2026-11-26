@@ -364,14 +364,8 @@ function Translate({ cards, engine, from, to, log, mode }: {
 
 type PhraseLanguage = Locale
 
-const typePrompts: Record<PhraseLanguage, string> = {
-  en: 'Type in English',
-  vi: 'Nhập câu tiếng Việt',
-  zh: '用简体中文输入',
-}
-
 function typePrompt(language: PhraseLanguage) {
-  return typePrompts[language]
+  return t({ en: 'Type in English', vi: 'Type in Vietnamese', zh: 'Type in Simplified Chinese' }[language])
 }
 
 type TranslationResult = { text: string; source: string; reviewWarning?: boolean }
@@ -470,7 +464,6 @@ function useTurnSender(options: {
 
   const from = speaker === 'near' ? near : far
   const to = speaker === 'near' ? far : near
-  const example = cards.find(card => card.id === 'train') ?? cards[0]
   const suggestions = useMemo(() => {
     const ranked = rankSuggestions(draft, cards, from)
     const current = draft.trim()
@@ -568,7 +561,7 @@ function useTurnSender(options: {
   }
 
   return {
-    speaker, from, to, example, draft, status, busy, suggestions, showSuggestions, activeSuggest,
+    speaker, from, to, draft, status, busy, suggestions, showSuggestions, activeSuggest,
     setSuggestOpen, setActiveSuggest, send, acceptSuggestion, onDraftKeyDown, toggleSpeaker, onDraftChange,
   }
 }
@@ -714,7 +707,7 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
         <label htmlFor={inputId} className="mb-2 block text-sm font-semibold" lang={composer.from}>{typePrompt(composer.from)}</label>
         <div className={`mb-3 overflow-hidden rounded-xl border bg-accent-soft ${composer.showSuggestions ? 'border-line-strong' : 'border-line'}`}>
           <textarea id={inputId} lang={composer.from} className="block w-full resize-y border-0 bg-transparent p-3 text-base text-ink outline-none" rows={2}
-            required maxLength={500} placeholder={composer.example?.[composer.from] ?? typePrompt(composer.from)} value={composer.draft}
+            required maxLength={500} placeholder={typePrompt(composer.from)} value={composer.draft}
             role="combobox" aria-autocomplete="list" aria-expanded={composer.showSuggestions} aria-controls={suggestionsId}
             aria-activedescendant={activeOptionId}
             onFocus={() => composer.setSuggestOpen(true)}
@@ -775,7 +768,7 @@ function FaceToFaceSplit({ cards, engine, near, far, log, lookup }: {
       </label>
       <div className={`mb-3 overflow-hidden rounded-xl border bg-accent-soft ${composer.showSuggestions ? 'border-line-strong' : 'border-line'}`}>
         <textarea id={inputId} lang={composer.from} className="block w-full resize-y border-0 bg-transparent p-3 text-base text-ink outline-none" rows={2}
-          required maxLength={500} placeholder={composer.example?.[composer.from] ?? typePrompt(composer.from)} value={composer.draft}
+          required maxLength={500} placeholder={typePrompt(composer.from)} value={composer.draft}
           role="combobox" aria-autocomplete="list" aria-expanded={composer.showSuggestions} aria-controls={suggestionsId}
           aria-activedescendant={activeOptionId}
           onFocus={() => composer.setSuggestOpen(true)}
@@ -850,7 +843,6 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
   const [activeSuggest, setActiveSuggest] = useState(0)
   const request = useRef<AbortController | null>(null)
   useEffect(() => () => request.current?.abort(), [])
-  const example = cards.find(card => card.id === 'train') ?? cards[0]
   const headingId = `direction-${from}`
   const inputId = `draft-${from}`
   const suggestionsId = `suggestions-${from}`
@@ -943,7 +935,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
       <label htmlFor={inputId} className="sr-only">{t('Write in {language}', { language: languageName(from) })}</label>
       <div className="px-6 pb-6 pt-3">
         <textarea id={inputId} lang={from} className="block min-h-52 w-full resize-none border-0 bg-transparent py-3 text-lg text-on-accent outline-none placeholder:text-on-accent/65" rows={6}
-          required maxLength={500} placeholder={example?.[from] ?? t("Enter a word or phrase")} value={draft}
+          required maxLength={500} placeholder={typePrompt(from)} value={draft}
           role="combobox" aria-autocomplete="list" aria-expanded={showSuggestions} aria-controls={suggestionsId}
           aria-activedescendant={activeOptionId}
           onFocus={() => setSuggestOpen(true)}
