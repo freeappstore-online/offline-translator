@@ -18,6 +18,123 @@ export function useLocale() {
   return useSyncExternalStore(callback => { listeners.add(callback); return () => { listeners.delete(callback) } }, () => locale)
 }
 const messages: Record<string, Partial<Record<Locale, string>>> = {
+  "1 package selected": { vi: "Đã chọn 1 gói", zh: "已选 1 个包" },
+"Recommended package": {
+    "vi": "Gói đề xuất",
+    "zh": "推荐包"
+  },
+  "Your package": {
+    "vi": "Gói của bạn",
+    "zh": "自定义包"
+  },
+  "Package recommendation": {
+    "vi": "Đề xuất gói",
+    "zh": "推荐依据"
+  },
+  "Text · Voice · Camera · Cards": {
+    "vi": "Văn bản · Giọng nói · Máy ảnh · Thẻ câu",
+    "zh": "文字 · 语音 · 相机 · 短语卡"
+  },
+  "{count} packages selected": {
+    "vi": "Đã chọn {count} gói",
+    "zh": "已选 {count} 个包"
+  },
+  "Estimated package storage": {
+    "vi": "Dung lượng gói ước tính",
+    "zh": "预计包存储空间"
+  },
+  "Additional space needed": {
+    "vi": "Dung lượng cần thêm",
+    "zh": "还需空间"
+  },
+  "Checking…": {
+    "vi": "Đang kiểm tra…",
+    "zh": "正在检查…"
+  },
+  "Translation will use {model}.": {
+    "vi": "Bản dịch sẽ dùng {model}.",
+    "zh": "翻译将使用 {model}。"
+  },
+  "Use installed package": {
+    "vi": "Dùng gói đã tải",
+    "zh": "使用已安装的包"
+  },
+  "Install selected packages": {
+    "vi": "Cài các gói đã chọn",
+    "zh": "安装所选包"
+  },
+  "Install recommended package": {
+    "vi": "Cài gói đề xuất",
+    "zh": "安装推荐包"
+  },
+  "Back to recommended package": {
+    "vi": "Về gói đề xuất",
+    "zh": "返回推荐包"
+  },
+  "Customise packages": {
+    "vi": "Tùy chỉnh gói",
+    "zh": "自定义包"
+  },
+  "Installing {current} of {total}": {
+    "vi": "Đang cài {current}/{total}",
+    "zh": "正在安装 {current}/{total}"
+  },
+  "Selected packages are ready.": {
+    "vi": "Các gói đã chọn đã sẵn sàng.",
+    "zh": "所选包已准备就绪。"
+  },
+  "Unticking excludes a package from this installation. Saved packages are kept.": {
+    "vi": "Bỏ chọn để không cài gói trong lần này. Các gói đã lưu vẫn được giữ.",
+    "zh": "取消勾选仅将该包排除在本次安装之外，已保存的包会保留。"
+  },
+  "Estimates include shared runtimes once.": {
+    "vi": "Bộ chạy dùng chung chỉ được tính một lần.",
+    "zh": "共用运行时仅计算一次。"
+  },
+  "Storage estimate": {
+    "vi": "Ước tính dung lượng",
+    "zh": "存储空间估算"
+  },
+  "Estimated free browser storage is below this selection.": {
+    "vi": "Dung lượng trống ước tính không đủ cho lựa chọn này.",
+    "zh": "预计浏览器剩余空间小于当前选择所需空间。"
+  },
+  "Manage saved packages": {
+    "vi": "Quản lý gói đã lưu",
+    "zh": "管理已保存的包"
+  },
+  "About {name}": {
+    "vi": "Thông tin về {name}",
+    "zh": "关于 {name}"
+  },
+  "Saves the shared card library for offline lookup. Pending cards still require review.": {
+    "vi": "Lưu thư viện thẻ câu dùng chung để tra cứu ngoại tuyến. Các thẻ đang chờ vẫn cần được duyệt.",
+    "zh": "保存共用短语卡库以供离线查找。待审核卡片仍需审核。"
+  },
+  "One shared translation model covers both directions and all three app languages. This starter choice is provisional, not a proven accuracy winner.": {
+    "vi": "Một mô hình dùng chung hỗ trợ hai chiều và cả ba ngôn ngữ của ứng dụng. Đây là lựa chọn khởi đầu tạm thời, chưa được chứng minh là chính xác nhất.",
+    "zh": "一个共用翻译模型支持双向及应用中的三种语言。这是暂定的初始选择，并非已证实的准确率最优模型。"
+  },
+  "Whisper Tiny turns speech into text locally. Shared across all three languages; live text may be revised. Recognition errors are possible.": {
+    "vi": "Whisper Tiny chuyển giọng nói thành văn bản trên thiết bị. Dùng chung cho cả ba ngôn ngữ; chữ trực tiếp có thể được chỉnh lại. Nhận dạng có thể sai.",
+    "zh": "Whisper Tiny 在本地将语音转为文字，三种语言共用。实时文字可能会修订，识别可能出错。"
+  },
+  "Recognizes text in photos on this device. Each language needs its own data; the camera runtime is shared.": {
+    "vi": "Nhận dạng chữ trong ảnh trên thiết bị. Mỗi ngôn ngữ cần dữ liệu riêng; bộ chạy máy ảnh được dùng chung.",
+    "zh": "在此设备上识别照片中的文字。每种语言需要各自的数据，相机运行时共用。"
+  },
+  "A smaller, direction-specific translation model. The reverse direction needs a separate package. Optional alternative; quality must be tested for each direction.": {
+    "vi": "Mô hình dịch nhỏ hơn cho một chiều. Chiều ngược lại cần gói riêng. Đây là lựa chọn thay thế; chất lượng cần được kiểm thử theo từng chiều.",
+    "zh": "体积更小的单向翻译模型，反向需要另一个包。这是可选替代方案，质量需按方向分别测试。"
+  },
+  "This is a provisional starter bundle for text, voice, camera and cards. M2M100 is selected to share one model across both directions. Model recommendations will be revised after further testing of capabilities, translation accuracy, speed, storage, memory and failures on real devices. This is not a proven accuracy ranking.": {
+    "vi": "Đây là gói khởi đầu tạm thời cho văn bản, giọng nói, máy ảnh và thẻ câu. M2M100 được chọn để dùng chung một mô hình cho hai chiều. Đề xuất sẽ được điều chỉnh sau khi kiểm thử thêm về khả năng, độ chính xác, tốc độ, dung lượng, bộ nhớ và lỗi trên thiết bị thật. Đây không phải bảng xếp hạng độ chính xác đã được xác nhận.",
+    "zh": "这是文字、语音、相机和短语卡的暂定初始包。选择 M2M100 是为了双向共用一个模型。后续将根据真实设备上的能力、翻译准确率、速度、存储、内存和故障测试调整推荐。这不是已经验证的准确率排名。"
+  },
+  "Estimates use pinned model file sizes and decompressed camera data, counting shared runtimes once. Additional space excludes complete saved packages. Browser overhead, partial downloads and temporary installation files may need more room. Storage is not runtime memory. Unticking does not delete saved packages.": {
+    "vi": "Ước tính dựa trên kích thước tệp mô hình đã cố định và dữ liệu máy ảnh sau giải nén, chỉ tính bộ chạy dùng chung một lần. Dung lượng cần thêm không tính các gói đã lưu đầy đủ. Trình duyệt, tệp tải dở và tệp cài đặt tạm có thể cần thêm chỗ. Dung lượng lưu trữ không phải bộ nhớ khi chạy. Bỏ chọn không xóa gói đã lưu.",
+    "zh": "估算基于固定版本的模型文件和解压后的相机数据，共用运行时仅计算一次。额外空间不包括完整保存的包。浏览器开销、部分下载和临时安装文件可能需要更多空间。存储空间不等于运行内存，取消勾选不会删除已保存的包。"
+  },
   "Talk": { vi: "Trò chuyện", zh: "对话" },
   "Listening… Tap to stop.": { vi: "Đang nghe… Chạm để dừng.", zh: "正在聆听…点按停止。" },
   "Conversation style": { vi: "Kiểu hội thoại", zh: "对话样式" },

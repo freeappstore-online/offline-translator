@@ -253,7 +253,12 @@ export default function App() {
         {path === '/camera' && <Suspense fallback={<p className="rounded-2xl bg-panel p-4">{t('Loading camera…')}</p>}><CameraTranslation onUse={useRecognizedText} /></Suspense>}
         {path === '/' && <SavedTranslations onUse={(text, from, to) => useRecognizedText(text, from, to, 'text')} />}
         {path === '/packs' && <>
-          <Packs cards={cards} />
+          <Packs cards={cards} onReady={(nextEngine, from, to) => {
+            setEngine(nextEngine)
+            if (from === 'zh' || to === 'zh') { setPair((from === 'zh' ? to : from) as 'en' | 'vi'); setLanguage('zh') }
+            else { setPair('en'); setLanguage('vi') }
+            setIncoming({ id: Date.now(), text: '', from, to, method: 'text' })
+          }} />
           <details className="mx-auto mt-3 max-w-2xl rounded-2xl bg-panel px-4 text-sm"><summary className="min-h-11 cursor-pointer py-3 text-muted">{t('Export test records')}</summary><div className="flex flex-wrap gap-2 pb-4">
           <button type="button" className={control} disabled={!history.length}
             onClick={() => exportLog(history)}>{t("Export translation JSON")}</button>

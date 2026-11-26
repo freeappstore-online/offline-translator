@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto'
+import { createRequire } from 'node:module'
+import { dirname } from 'node:path'
 import { readdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
@@ -9,6 +11,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { ocrRuntimePlugin } from './ocr-runtime-plugin.mjs'
 // @ts-expect-error JS plugin loaded from Vite config
 import { reviewDevPlugin } from './review-dev-plugin.mjs'
+
+const require = createRequire(import.meta.url)
+const inferenceWasm = require.resolve('onnxruntime-web/ort-wasm-simd-threaded.wasm', { paths: [dirname(require.resolve('@huggingface/transformers'))] })
 
 const webRoot = fileURLToPath(new URL('.', import.meta.url))
 const trackedFiles = [
@@ -26,7 +31,7 @@ const build = fingerprint.digest('hex').slice(0, 16)
 
 export default defineConfig({
   define: { __TRANSLATOR_BUILD__: JSON.stringify(build) },
-  resolve: { alias: { 'onnxruntime-web/webgpu': 'onnxruntime-web/wasm' } },
+  resolve: { alias: { 'onnxruntime-web/webgpu': 'onnxruntime-web/wasm', '@app-inference-wasm?url': inferenceWasm + '?url' } },
   worker: { format: 'es' },
   plugins: [
     reviewDevPlugin(),

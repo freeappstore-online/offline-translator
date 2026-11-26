@@ -1,0 +1,54 @@
+{
+  "verifiedDate": "2026-11-26",
+  "unit": "bytes; UI uses decimal MB",
+  "models": {
+    "Xenova/opus-mt-en-vi": {
+      "revision": "30bcd461c0d7338ad106b36314d3eedc2d4e998c",
+      "bytes": 106645206,
+      "metadataSource": "https://huggingface.co/api/models/Xenova/opus-mt-en-vi/tree/30bcd461c0d7338ad106b36314d3eedc2d4e998c",
+      "onnxMetadataSource": "https://huggingface.co/api/models/Xenova/opus-mt-en-vi/tree/30bcd461c0d7338ad106b36314d3eedc2d4e998c/onnx"
+    },
+    "Xenova/opus-mt-vi-en": {
+      "revision": "541dfd72ec07e8f1563795e0224408ad8d729e80",
+      "bytes": 106706880,
+      "metadataSource": "https://huggingface.co/api/models/Xenova/opus-mt-vi-en/tree/541dfd72ec07e8f1563795e0224408ad8d729e80",
+      "onnxMetadataSource": "https://huggingface.co/api/models/Xenova/opus-mt-vi-en/tree/541dfd72ec07e8f1563795e0224408ad8d729e80/onnx"
+    },
+    "Xenova/m2m100_418M": {
+      "revision": "9c374f0b7aca709787cea97b047bfbbd1559d177",
+      "bytes": 639976029,
+      "metadataSource": "https://huggingface.co/api/models/Xenova/m2m100_418M/tree/9c374f0b7aca709787cea97b047bfbbd1559d177",
+      "onnxMetadataSource": "https://huggingface.co/api/models/Xenova/m2m100_418M/tree/9c374f0b7aca709787cea97b047bfbbd1559d177/onnx"
+    },
+    "Xenova/whisper-tiny": {
+      "revision": "5332fcc35e32a33b86612b9a57a89be7906102b1",
+      "bytes": 43622127,
+      "metadataSource": "https://huggingface.co/api/models/Xenova/whisper-tiny/tree/5332fcc35e32a33b86612b9a57a89be7906102b1",
+      "onnxMetadataSource": "https://huggingface.co/api/models/Xenova/whisper-tiny/tree/5332fcc35e32a33b86612b9a57a89be7906102b1/onnx"
+    }
+  },
+  "cameraLanguages": {
+    "eng": {
+      "downloadGzipBytes": 2952873,
+      "storedDecompressedBytes": 5199098,
+      "source": "https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz"
+    },
+    "vie": {
+      "downloadGzipBytes": 1423003,
+      "storedDecompressedBytes": 1667949,
+      "source": "https://cdn.jsdelivr.net/npm/@tesseract.js-data/vie/4.0.0_best_int/vie.traineddata.gz"
+    },
+    "chi_sim": {
+      "downloadGzipBytes": 1718768,
+      "storedDecompressedBytes": 2471033,
+      "source": "https://cdn.jsdelivr.net/npm/@tesseract.js-data/chi_sim/4.0.0_best_int/chi_sim.traineddata.gz"
+    }
+  },
+  "sharedRuntimes": {
+    "onnxWasmBytes": 14264830,
+    "ocrBytes": 6936428
+  },
+  "phrases": "Calculated from actual UTF-8 JSON.stringify(cards) size at runtime.",
+  "exclusions": "App shell, browser overhead, partial files, temporary installation space and runtime RAM.",
+  "recommendation": "starter-v1-provisional; future changes require further actual capability/quality tests."
+}

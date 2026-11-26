@@ -93,3 +93,7 @@ Basic Translate and Chat display revisable grey recognition in their existing in
 ## Dedicated Conversation route — 26 November 2026
 
 Conversation moved out of Translate to `/conversation`, shown as Talk in the bottom menu. Its Chat style follows the reference with one original-plus-translation bubble per spoken turn, playback, two labeled microphones and a position swap. Face to face uses opposing reader panels with an inverted upper half, copy/playback and separate microphones. Both share current session turns across style changes; style changes and the other microphone are disabled during capture/translation. Partial text stays grey; only finalized recognition activates stored lookup/AI translation. The basic Translate page keeps its own voice input. The former hidden text-chat mode was removed. Settings stays in the header to keep five bottom-menu items.
+
+## Recommended package setup — 26 November 2026
+
+Preserve the two searchable language inputs. First offer a full recommended installation with its storage estimate, then Customise to expand grouped package checkboxes. Opening customisation resets checks to the displayed recommendation. Recompute total/additional space immediately for every change; show info buttons for package and storage explanations. Full recommendations remain provisional and must be updated through further model-capability testing, per PACKAGE_RECOMMENDATIONS.md.

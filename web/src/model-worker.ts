@@ -1,3 +1,4 @@
+import { prepareInferenceRuntime } from './inference-runtime'
 import { modelCache, packSaved } from './pack-storage'
 import { env, pipeline } from '@huggingface/transformers'
 import type { TranslationPipeline } from '@huggingface/transformers'
@@ -18,6 +19,7 @@ self.addEventListener('message', ({ data }: MessageEvent<{
     const started = performance.now()
     try {
       if (active?.model !== model || active?.revision !== revision) {
+        if (env.backends.onnx.wasm) env.backends.onnx.wasm.wasmBinary = await prepareInferenceRuntime()
         const saved = await packSaved({ id: model, revision })
         self.postMessage({ id, status: saved ? 'Preparing saved model…' : 'Downloading model…' })
         // Transformers.js requires local access enabled for cache-only loading.

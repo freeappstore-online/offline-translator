@@ -1,3 +1,4 @@
+import { prepareInferenceRuntime } from './inference-runtime'
 import { env, pipeline, WhisperTextStreamer, type WhisperTokenizer, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers'
 import { speechCache, speechModel } from './speech-model'
 import { speechSaved } from './model-resources'
@@ -15,6 +16,7 @@ self.onmessage = ({ data }: MessageEvent<{ id: number; samples?: Float32Array; l
   try {
     if (!recognizer) {
       self.postMessage({ id: data.id, status: 'Preparing speech model…' })
+      if (env.backends.onnx.wasm) env.backends.onnx.wasm.wasmBinary = await prepareInferenceRuntime()
       const saved = await speechSaved()
       env.allowLocalModels = saved
       recognizer = await pipeline('automatic-speech-recognition', speechModel.id, {
