@@ -1,3 +1,4 @@
+import { scorePhrase } from './suggest-phrases'
 import type { Language } from './model-options'
 export type TemplateField = { id: string; label: string; kind: 'name' | 'identifier' | 'date' | 'text' }
 export type CardTemplate = { id: string; revision: number; title: string; fields: readonly string[]; wording: Record<Language, string> }
@@ -27,4 +28,14 @@ export function renderTemplate(template: CardTemplate, source: Language, values:
   const text = template.wording[source].replace(/\{(\w+)\}/g, (_, id: string) => values[id].trim())
   if (text.length > 500) throw new Error('Keep the completed phrase within 500 characters.')
   return text
+}
+
+function recommendationText(text: string, source: Language) {
+  const plain = text.replace(/\{\w+\}/g, '')
+  return source === 'en' ? plain.toLowerCase().replace(/[’']/g, '').replace(/\b(i|im|id|am|my|the|a|an|to|at|is|and|of|for|with)\b/g, ' ').replace(/\s+/g, ' ').trim() : plain
+}
+export function recommendTemplates(query: string, source: Language) {
+  if (!query.trim()) return cardTemplates.slice(0, 3)
+  return cardTemplates.map(template => ({ template, score: scorePhrase(recommendationText(query, source), recommendationText(template.wording[source], source), source) }))
+    .filter(item => item.score >= 0.25).sort((a, b) => b.score - a.score).slice(0, 3).map(item => item.template)
 }

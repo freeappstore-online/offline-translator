@@ -18,6 +18,14 @@ export function useLocale() {
   return useSyncExternalStore(callback => { listeners.add(callback); return () => { listeners.delete(callback) } }, () => locale)
 }
 const messages: Record<string, Partial<Record<Locale, string>>> = {
+  "What would you like to say?": {"vi": "Bạn muốn nói gì?", "zh": "您想说什么？"},
+  "Type a phrase or full sentence": {"vi": "Nhập cụm từ hoặc câu đầy đủ", "zh": "输入短语或完整句子"},
+  "Choose a suggested structure, or continue with your own sentence.": {"vi": "Chọn mẫu câu được gợi ý, hoặc tiếp tục với câu của bạn.", "zh": "选择推荐句型，或继续使用自己的句子。"},
+  "Recommended structures": {"vi": "Mẫu câu được gợi ý", "zh": "推荐句型"},
+  "No matching structure. You can still create this sentence.": {"vi": "Không có mẫu phù hợp. Bạn vẫn có thể tạo thẻ từ câu này.", "zh": "没有匹配的句型。您仍可用这句话创建卡片。"},
+  "Use my full sentence": {"vi": "Dùng câu đầy đủ của tôi", "zh": "使用我的完整句子"},
+  "Back to my sentence": {"vi": "Quay lại câu của tôi", "zh": "返回我的句子"},
+
   "Save phrase": {"vi": "Lưu câu", "zh": "收藏短语"},
   "Save phrase: {phrase}": {"vi": "Lưu câu: {phrase}", "zh": "收藏短语：{phrase}"},
   "Tap the heart on a phrase to save it here.": {"vi": "Chạm vào trái tim trên câu để lưu ở đây.", "zh": "点击短语旁的爱心，即可收藏到这里。"},

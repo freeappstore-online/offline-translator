@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { cardTemplates, templateFields, renderTemplate } from '../src/card-templates'
+import { cardTemplates, templateFields, renderTemplate, recommendTemplates } from '../src/card-templates'
 import { parsePersonalCards } from '../src/personal-cards'
 test('templates declare reusable fields and render each original language without altering literals', () => {
   for (const template of cardTemplates) for (const source of ['en', 'vi', 'zh'] as const) {
@@ -20,4 +20,12 @@ test('personal template provenance round-trips, old free-form cards remain valid
   assert.deepEqual(parsePersonalCards(JSON.stringify([{...card,template}]))[0].template,template)
   assert.throws(() => parsePersonalCards(JSON.stringify([{...card,template:{...template,source:'vi'}}])))
   assert.throws(() => parsePersonalCards(JSON.stringify([{...card,template:{...template,revision:0}}])))
+})
+
+test('typed sentences recommend relevant structures without replacing arbitrary free text', () => {
+  assert.equal(recommendTemplates('i am allergic to glutinous', 'en')[0]?.id, 'allergy')
+  assert.equal(recommendTemplates('my reservation number', 'en')[0]?.id, 'reservation_number')
+  assert.equal(recommendTemplates('我的预订编号', 'zh')[0]?.id, 'reservation_number')
+  assert.equal(recommendTemplates('the purple telescope sparkles', 'en').length, 0)
+  assert.equal(recommendTemplates('', 'vi').length, 3)
 })

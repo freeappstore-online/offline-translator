@@ -13,7 +13,7 @@ const field = 'min-h-11 w-full rounded-xl border border-line bg-paper p-3 text-b
 const button = 'min-h-11 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-on-accent disabled:opacity-50'
 const codes: Language[] = ['en', 'vi', 'zh']
 export function PersonalCards({ cards, engine, target, onUse, onLog }: { cards: PersonalCard[]; engine: Engine; target: Language; onUse: (text: string, from: Language, to: Language) => void; onLog: (entry: LogEntry) => void }) {
-  const [createMode, setCreateMode] = useState<'choose' | 'template' | null>(null), [template, setTemplate] = useState<TemplateReference>()
+  const [createMode, setCreateMode] = useState<'template' | null>(null), [template, setTemplate] = useState<TemplateReference>()
   const [editing, setEditing] = useState(false), [id, setId] = useState<string>(), [source, setSource] = useState<Language>('en'), [original, setOriginal] = useState('')
   const [targets, setTargets] = useState<Language[]>([target]), [versions, setVersions] = useState<Partial<Record<Language, PersonalVersion>>>({}), [enabled, setEnabled] = useState(false)
   const [modelChoice, setModelChoice] = useState<Engine>(engine), [busy, setBusy] = useState(false), [status, setStatus] = useState(''), [query, setQuery] = useState('')
@@ -60,13 +60,9 @@ export function PersonalCards({ cards, engine, target, onUse, onLog }: { cards: 
   }
   const matches = cards.filter(card => !query.trim() || [card.original, ...Object.values(card.translations).map(version => version.text)].some(text => text.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())))
   return <section className="space-y-4 rounded-3xl bg-panel p-4 text-ink sm:p-5" aria-label={t('My cards')}>
-    <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-bold">{t('My cards')}</h2><button type="button" className={button} disabled={busy} onClick={() => { setEditing(false); setCreateMode('choose'); setStatus('') }}>{t('New card')}</button></div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-bold">{t('My cards')}</h2><button type="button" className={button} disabled={busy} onClick={() => { setEditing(false); setCreateMode('template'); setStatus('') }}>{t('New card')}</button></div>
     <p className="text-xs text-muted">{t('Personal cards stay in this browser. AI drafts are unreviewed; saving or editing does not verify their accuracy.')}</p>
-    {createMode === 'choose' && <div className="grid gap-3 sm:grid-cols-2" aria-label={t('Create card')}>
-      <button type="button" className="min-h-24 rounded-2xl border border-line bg-paper p-4 text-left" onClick={() => open()}><strong className="block text-accent">{t('Write your own')}</strong><span className="mt-1 block text-sm text-muted">{t('Start with any sentence and add translations.')}</span></button>
-      <button type="button" className="min-h-24 rounded-2xl border border-line bg-paper p-4 text-left" onClick={() => setCreateMode('template')}><strong className="block text-accent">{t('Use a template')}</strong><span className="mt-1 block text-sm text-muted">{t('Fill in a destination, hotel or booking number.')}</span></button>
-    </div>}
-    {createMode === 'template' && <TemplateBuilder onCancel={() => setCreateMode('choose')} onApply={(text, code, reference) => { open(); setSource(code); setOriginal(text); setTargets([code === target ? (code === 'en' ? 'vi' : 'en') : target]); setTemplate(reference) }} />}
+    {createMode === 'template' && <TemplateBuilder initialText={query} onCancel={() => setCreateMode(null)} onApply={(text, code, reference) => { open(); setSource(code); setOriginal(text); setTargets([code === target ? (code === 'en' ? 'vi' : 'en') : target]); setTemplate(reference); setQuery('') }} />}
     {editing && <div ref={editor} className="scroll-mt-16 rounded-2xl border border-line p-3 sm:p-4">
       {template && <p className="mb-3 text-xs text-muted">{t('Created from a template. Editing the original detaches it from the template.')}</p>}
       <form className="space-y-4" onSubmit={event => { event.preventDefault(); if (valid && !busy) save() }}>
@@ -84,6 +80,7 @@ export function PersonalCards({ cards, engine, target, onUse, onLog }: { cards: 
       </form>
     </div>}
     {status && <p role="status" className="text-sm text-muted">{t(status)}</p>}
+    {!createMode && !editing && <>
     <label className="sr-only" htmlFor="personal-card-search">{t('Search my cards')}</label><input id="personal-card-search" type="search" className={field} placeholder={t('Search my cards')} value={query} onChange={event => setQuery(event.target.value)} />
     {!matches.length && <p className="py-4 text-sm text-muted">{t(cards.length ? 'No matching cards.' : 'Create a personal card for a phrase you often need.')}</p>}
     <div className="space-y-3">{matches.map(card => <article key={card.id} className="rounded-2xl border border-line p-3">
@@ -94,5 +91,6 @@ export function PersonalCards({ cards, engine, target, onUse, onLog }: { cards: 
     </article>)}</div>
     {removed && <button type="button" className="min-h-11 text-sm text-accent underline" onClick={() => { try { savePersonalCard(removed); setRemoved(undefined); setStatus('Personal card restored.') } catch { setStatus('Could not save personal cards. Browser storage is full, unavailable or contains invalid data. Export a backup before clearing site data.') } }}>{t('Undo remove')}</button>}
     <button type="button" className="min-h-11 text-sm text-muted underline" onClick={() => { try { exportPersonalCards() } catch { setStatus('Could not export personal cards.') } }}>{t('Export personal cards JSON')}</button>
+    </>}
   </section>
 }
