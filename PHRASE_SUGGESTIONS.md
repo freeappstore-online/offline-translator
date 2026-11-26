@@ -89,3 +89,7 @@ Basic microphone input now transcribes into the current editable field. Conversa
 ## Progressive speech — 26 November 2026
 
 Basic Translate and Chat display revisable grey recognition in their existing input fields. Conversation shows the provisional transcript on the speaking person's panel and translates only the final transcript onto the other reader's side. Provisional text is never silently treated as a final card match or translated. Final text uses the regular ink color and remains editable in basic Translate/Chat.
+
+## Dedicated Conversation route — 26 November 2026
+
+Conversation moved out of Translate to `/conversation`, shown as Talk in the bottom menu. Its Chat style follows the reference with one original-plus-translation bubble per spoken turn, playback, two labeled microphones and a position swap. Face to face uses opposing reader panels with an inverted upper half, copy/playback and separate microphones. Both share current session turns across style changes; style changes and the other microphone are disabled during capture/translation. Partial text stays grey; only finalized recognition activates stored lookup/AI translation. The basic Translate page keeps its own voice input. The former hidden text-chat mode was removed. Settings stays in the header to keep five bottom-menu items.

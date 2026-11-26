@@ -8,9 +8,9 @@ import { logSpeech } from './speech-log'
 
 type Phase = 'idle' | 'permission' | 'recording' | 'processing'
 type Session = { id: number; mounted: boolean; preparing?: boolean; controller?: AbortController; cleanup?: () => void; stop?: () => Promise<void> }
-export function SpeechInput({ language, onText, onPreview, onBusyChange, completionMessage = 'Check the recognized text, then tap Translate.', disabled = false }: {
+export function SpeechInput({ language, onText, onPreview, onBusyChange, completionMessage = 'Check the recognized text, then tap Translate.', disabled = false, compact = false }: {
   language: Language; onText: (text: string) => void; onPreview?: (text: string | null) => void
-  onBusyChange: (busy: boolean) => void; completionMessage?: string; disabled?: boolean
+  onBusyChange: (busy: boolean) => void; completionMessage?: string; disabled?: boolean; compact?: boolean
 }) {
   const [phase, setPhase] = useState<Phase>('idle'), [status, setStatus] = useState(''), [progress, setProgress] = useState<number>()
   const [preview, setPreview] = useState('')
@@ -85,7 +85,7 @@ export function SpeechInput({ language, onText, onPreview, onBusyChange, complet
       state.stop = stop
       interval = window.setInterval(() => { if (recording && current() && audio!.duration >= 1) { const samples = audio!.samples(); if (hasSpeech(samples)) live!.update(samples) } }, 700)
       timer = window.setTimeout(() => void stop(), 20000)
-      setPhase('recording'); setStatus('Listening… Words may change until you stop. Maximum 20 seconds.')
+      setPhase('recording'); setStatus(compact ? 'Listening… Tap to stop.' : 'Listening… Words may change until you stop. Maximum 20 seconds.')
     } catch (error) {
       cleanup()
       if (!current()) return

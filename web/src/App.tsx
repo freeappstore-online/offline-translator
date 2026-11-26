@@ -28,6 +28,7 @@ const fas = initApp({ appId: 'offline-translator' })
 const nav: NavItem[] = [
   { label: 'Cards', href: '/', title: 'Offline Translator' },
   { label: 'Translate', href: '/translate', title: 'Translate · Offline Translator' },
+  { label: 'Conversation', href: '/conversation', title: 'Conversation · Offline Translator' },
   { label: 'Packs', href: '/packs', title: 'Packs · Offline Translator' },
 ]
 const storageKey = 'wayword-saved-v1'
@@ -54,6 +55,7 @@ function currentPath() {
 function NavigationIcon({ kind }: { kind: string }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="size-6">
     {kind === 'camera' ? <><path d="M3 7h5l2-3h4l2 3h5v13H3z"/><circle cx="12" cy="13" r="3"/></>
+      : kind === 'conversation' ? <><path d="M3 4h13v10H8l-4 4v-4H3zM18 8h3v12l-4-3h-5"/></>
       : kind === 'cards' ? <><rect x="5" y="3" width="15" height="17" rx="2"/><path d="M2 7v14h14M8 8h9M8 12h7"/></>
       : kind === 'packs' ? <><path d="M4 15v6h16v-6M12 3v12m-5-5 5 5 5-5"/></>
       : kind === 'settings' ? <><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3z"/><circle cx="12" cy="12" r="3"/></>
@@ -72,7 +74,6 @@ export default function App() {
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const [saved, setSaved] = useState(readFavorites)
-  const [translateMode, setTranslateMode] = useState<'one-way' | 'chat' | 'voice'>('one-way')
   const [history, setHistory] = useState(readLog)
   const logRef = useRef(history)
   const [storageError, setStorageError] = useState(false)
@@ -82,7 +83,7 @@ export default function App() {
     setIncoming({ id: Date.now(), text: text.slice(0, 500), from, to, method })
     if (from === 'zh' || to === 'zh') { setEngine('multilingual'); setPair(from === 'zh' ? to as 'en' | 'vi' : from); setLanguage('zh') }
     else { setPair('en'); setLanguage('vi') }
-    setTranslateMode('one-way'); navigate('/translate')
+    navigate('/translate')
   }
 
 
@@ -138,6 +139,7 @@ export default function App() {
   function navigate(href: string) {
     window.history.pushState(null, '', href)
     setPath(href)
+    window.scrollTo({ top: 0 })
   }
 
   function openSettings() {
@@ -150,7 +152,8 @@ export default function App() {
     preferences.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }
 
-  const title = path === '/translate' ? t("Translate") : path === '/packs' ? t("Language Packs") : path === '/review' ? 'Review workstation' : t("Quick Cards")
+  const title = path === '/camera' ? t('Camera translation') : path === '/conversation' ? t('Conversation') : path === '/translate' ? t("Translate") : path === '/packs' ? t("Language Packs") : path === '/review' ? 'Review workstation' : t("Quick Cards")
+  useEffect(() => { document.title = title + ' · Offline Translator' }, [title])
   if (path === '/review') {
     return (
       <Shell app={fas} appName="Offline Translator" nav={nav} renderNav={() => null} onNavigate={navigate}>
@@ -185,84 +188,51 @@ export default function App() {
           </select>
         </label>
         </details>
-        <nav aria-label={t('Main')} className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 z-40 grid w-[min(calc(100%-1.5rem),40rem)] -translate-x-1/2 grid-cols-5 gap-0.5 rounded-3xl border border-line bg-panel p-2 text-ink shadow-navigation">
+        <nav aria-label={t('Main')} className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 z-40 grid w-[min(calc(100%-1.5rem),40rem)] -translate-x-1/2 grid-cols-5 gap-0.5 rounded-3xl border border-line bg-panel px-1 py-2 text-ink shadow-navigation">
           {[
             { href: '/translate', label: 'Translate', icon: 'translate' },
+            { href: '/conversation', label: 'Conversation', icon: 'conversation' },
             { href: '/', label: 'Cards', icon: 'cards' },
             { href: '/camera', label: 'Camera', icon: 'camera' },
             { href: '/packs', label: 'Packs', icon: 'packs' },
-          ].map(item => <a key={item.href} href={item.href} aria-current={path === item.href ? 'page' : undefined}
+          ].map(item => <a key={item.href} href={item.href} aria-label={t(item.label)} aria-current={path === item.href ? 'page' : undefined}
             className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[0.65rem] font-semibold ${path === item.href ? 'bg-accent-soft text-accent' : 'text-muted'}`}
             onClick={event => { if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) { event.preventDefault(); navigate(item.href) } }}>
-            <NavigationIcon kind={item.icon} />{t(item.label)}</a>)}
-          <button type="button" className="flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[0.65rem] font-semibold text-muted"
-            onClick={openSettings}><NavigationIcon kind="settings" />{t('Settings')}</button>
+            <NavigationIcon kind={item.icon} /><span className="max-w-full text-center text-[0.65rem] leading-tight">{t(item.icon === 'conversation' ? 'Talk' : item.label)}</span></a>)}
         </nav>
-        {path !== '/translate' && path !== '/camera' && <div className="text-canvas-ink [&_h1]:text-canvas-ink"><PageHeader title={title} /></div>}
-        {path !== '/packs' && path !== '/translate' && path !== '/camera' && (
+        {path !== '/translate' && path !== '/camera' && path !== '/conversation' && <div className="text-canvas-ink [&_h1]:text-canvas-ink"><PageHeader title={title} /></div>}
+        {path !== '/packs' && path !== '/translate' && path !== '/camera' && path !== '/conversation' && (
           <label className="mb-4 flex flex-wrap items-center gap-2 text-canvas-ink">{t("Language")}<select className={control} value={language} onChange={event => setLanguage(event.target.value as TargetLanguage)}>
               {Object.keys(languages).map(id => <option key={id} value={id}>{languageName(id as Locale)}</option>)}
             </select>
           </label>
         )}
-        {!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' && (
+        {!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' && path !== '/conversation' && (
           <div className={panel}>
             <p role="status">{!configured ? t("The phrase deck is being set up.") : failed ? t("Couldn’t load phrases. Check your connection and try again.") : t("Loading phrases…")}</p>
             {failed && <button className={control + ' mt-3'} onClick={() => { setFailed(false); setAttempt(attempt + 1) }}>{t("Try again")}</button>}
           </div>
         )}
-        {path === '/translate' && (
+        {(path === '/translate' || path === '/conversation') && (
           <>
-            <div className="mx-auto mb-4 grid max-w-xl grid-cols-2 gap-1 rounded-2xl bg-panel p-1" role="tablist" aria-label={t('Translation layout')}>
-              {([['one-way', 'Translate'], ['voice', 'Conversation']] as const).map(([mode, label]) => <button key={mode} type="button" role="tab" aria-selected={translateMode === mode}
-                className={`min-h-11 rounded-xl px-3 text-sm font-semibold ${translateMode === mode ? 'bg-accent text-on-accent' : 'text-muted'}`}
-                onClick={() => setTranslateMode(mode)}>{t(label)}</button>)}
-            </div>
-            <details id="translator-menu" className="not-open:hidden mx-auto mb-3 max-w-xl rounded-2xl bg-panel px-4 py-2">
-              <summary className="flex min-h-11 cursor-pointer items-center justify-between text-sm font-semibold"><span>{t('Translation settings')}</span><span aria-hidden="true">≡</span></summary>
-              <div className="pt-2">            <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl bg-paper-deep p-1 sm:max-w-lg" role="tablist" aria-label="Translate mode">
-              {([
-                ['one-way', t("One way")],
-                ['chat', t("Chat")],
-              ] as const).map(([id, label]) => {
-                const active = translateMode === id
-                return (
-                  <button key={id} type="button" role="tab" aria-selected={active}
-                    className={`flex min-h-11 items-center justify-center rounded-xl px-2 text-sm font-semibold ${active ? 'bg-panel text-accent' : 'text-muted hover:text-ink'}`}
-                    onClick={() => setTranslateMode(id)}>{label}</button>
-                )
-              })}
-            </div>
-            <p className="mb-4 text-sm text-muted">
-              {translateMode === 'one-way'
-                ? t("Translate in one direction. Swap languages to go the other way.")
-                : translateMode === 'chat'
-                  ? t("Message-style conversation. English on one side, the other language on the other.")
-                  : t('Place the phone between you. Each person uses the microphone facing them.')}
-            </p>
-            <label className="mb-4 grid min-w-0 gap-1 text-sm font-semibold sm:max-w-md">{t("Languages")}<select className={control + ' w-full bg-panel'} value={engine === 'opus' ? 'en-vi' : pair + '-' + language}
-                onChange={event => {
-                  const [first, second] = event.target.value.split('-')
-                  setIncoming(undefined)
-                  setPair(first as 'en' | 'vi')
-                  setLanguage(second as TargetLanguage)
-                }}>
-                <option value="en-vi">{languageName('en')} ↔ {languageName('vi')}</option>
-                {engine !== 'opus' && <option value="en-zh">{languageName('en')} ↔ {languageName('zh')}</option>}
-                {engine === 'multilingual' && <option value="vi-zh">{languageName('vi')} ↔ {languageName('zh')}</option>}
-              </select>
-            </label>
-              </div>
-            </details>
-            {translateMode !== 'one-way' && <button type="button" className={control + ' mb-3'} onClick={() => { const menu = document.getElementById('translator-menu') as HTMLDetailsElement; menu.open = !menu.open }}>{t('Translation settings')} ≡</button>}
-            <Translate mode={translateMode} key={engine + pair + language + translateMode + (incoming?.id ?? 0)} cards={cards} engine={engine}
-              incoming={incoming} from={engine === 'multilingual' ? pair : 'en'} to={engine === 'opus' ? 'vi' : language} log={logTranslation} />
+            {path === '/translate'
+              ? <Translate key={engine + pair + language + (incoming?.id ?? 0)} cards={cards} engine={engine} incoming={incoming}
+                  from={engine === 'multilingual' ? pair : 'en'} to={engine === 'opus' ? 'vi' : language} log={logTranslation} />
+              : <VoiceConversation key={engine + pair + language} cards={cards} engine={engine}
+                  near={engine === 'multilingual' ? pair : 'en'} far={engine === 'opus' ? 'vi' : language}
+                  log={logTranslation} />}
             <details className="mt-5 rounded-2xl bg-panel px-4 py-1">
               <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm font-semibold">
                 <span>{t("Translation settings")}</span>
                 <span className="text-right text-muted">{engines[engine].split(' · ')[0]} <span aria-hidden="true">⌄</span></span>
               </summary>
               <div className="space-y-3 pb-3">
+              <label className="grid gap-1 text-sm font-semibold">{t('Languages')}<select className={control} value={engine === 'opus' ? 'en-vi' : pair + '-' + language} onChange={event => {
+                const [first, second] = event.target.value.split('-'); setIncoming(undefined); setPair(first as 'en' | 'vi'); setLanguage(second as TargetLanguage)
+              }}>
+                <option value="en-vi">{languageName('en')} ↔ {languageName('vi')}</option>
+                {engine === 'multilingual' && <><option value="en-zh">{languageName('en')} ↔ {languageName('zh')}</option><option value="vi-zh">{languageName('vi')} ↔ {languageName('zh')}</option></>}
+              </select></label>
               <label className="grid min-w-0 gap-1 text-sm font-semibold">{t("Translation model")}<select className={control + ' w-full'} value={engine} onChange={event => {
                   const next = event.target.value as Engine
                   setIncoming(undefined)
@@ -292,7 +262,7 @@ export default function App() {
           </div></details>
         </>}
         {storageError && <p role="status" className="mt-3 text-sm text-muted">{t("Browser storage is full or unavailable. Export translation JSON from Packs before closing this page.")}</p>}
-        {!!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' &&
+        {!!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' && path !== '/conversation' &&
           <Cards cards={cards} language={language} saved={saved} onFavorite={toggleFavorite} />}
       </div>
     </Shell>
@@ -400,27 +370,19 @@ function Cards({ cards, language, saved, onFavorite }: {
   )
 }
 
-function Translate({ cards, engine, from, to, log, mode, incoming }: {
+function Translate({ cards, engine, from, to, log, incoming }: {
   cards: Phrase[]
   engine: Engine
   from: PhraseLanguage
   to: PhraseLanguage
   log: (entry: LogEntry) => void
   incoming?: { text: string; from: Locale; to: Locale; method: 'text' | 'camera' }
-  mode: 'one-way' | 'chat' | 'voice'
 }) {
   const lookup = useMemo(() => buildApprovedIndex(cards), [cards])
   const [outgoing, setOutgoing] = useState<TranslationResult>()
   const [swapped, setSwapped] = useState(incoming?.from === to)
   const source = swapped ? to : from
   const target = swapped ? from : to
-
-  if (mode === 'chat') {
-    return <ConversationChat cards={cards} engine={engine} near={from} far={to} log={log} lookup={lookup} />
-  }
-  if (mode === 'voice') {
-    return <VoiceConversation cards={cards} engine={engine} lookup={lookup} log={log} near={from} far={to} />
-  }
 
   return (
     <div className="mx-auto grid max-w-xl gap-3">
@@ -513,314 +475,76 @@ async function runPhraseTranslation(options: {
   }
 }
 
-function useTurnSender(options: {
-  cards: Phrase[]
-  engine: Engine
-  near: PhraseLanguage
-  far: PhraseLanguage
-  log: (entry: LogEntry) => void
-  lookup: ReturnType<typeof buildApprovedIndex>
-  onTurn: (turn: ChatTurn) => void
+function VoiceConversation({ near, far, cards, engine, log }: {
+  near: PhraseLanguage; far: PhraseLanguage; cards: Phrase[]; engine: Engine; log: (entry: LogEntry) => void
 }) {
-  const { cards, engine, near, far, log, lookup, onTurn } = options
-  const [speaker, setSpeaker] = useState<'near' | 'far'>('near')
-  const [draft, setDraft] = useState('')
-  const [status, setStatus] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [suggestOpen, setSuggestOpen] = useState(false)
-  const [activeSuggest, setActiveSuggest] = useState(0)
-  const request = useRef<AbortController | null>(null)
-  useEffect(() => () => request.current?.abort(), [])
-
-  const from = speaker === 'near' ? near : far
-  const to = speaker === 'near' ? far : near
-  const suggestions = useMemo(() => {
-    const ranked = rankSuggestions(draft, cards, from)
-    const current = draft.trim()
-    return ranked.filter(({ card }) => card[from] !== current)
-  }, [draft, cards, from])
-  const showSuggestions = suggestOpen && suggestions.length > 0
-
-  useEffect(() => {
-    setActiveSuggest(0)
-  }, [draft, from])
-
-  async function send(override?: string) {
-    const input = (override ?? draft).trim()
-    if (!input || request.current) return
-    const controller = new AbortController()
-    request.current = controller
-    setBusy(true)
-    setSuggestOpen(false)
-    setStatus(t("Preparing translation…"))
-    try {
-      const result = await runPhraseTranslation({
-        input, from, to, engine, lookup, log, cards, signal: controller.signal,
-        onStatus: message => { if (!controller.signal.aborted) setStatus(message) },
-      })
-      controller.signal.throwIfAborted()
-      onTurn({
-        id: crypto.randomUUID(),
-        speaker,
-        from,
-        to,
-        original: input,
-        translation: result.text,
-        source: result.source,
-        reviewWarning: result.reviewWarning,
-      })
-      setDraft('')
-      setStatus('')
-      setSpeaker(speaker === 'near' ? 'far' : 'near')
-    } catch {
-      if (!controller.signal.aborted) setStatus(t("Couldn’t translate. Connect to the internet if the language pack needs downloading, then try again."))
-    } finally {
-      if (request.current === controller) request.current = null
-      setBusy(false)
-    }
-  }
-
-  function acceptSuggestion(card: Phrase) {
-    const text = card[from]
-    request.current?.abort()
-    request.current = null
-    setSuggestOpen(false)
-    setDraft(text)
-    setStatus('')
-    void send(text)
-  }
-
-  function onDraftKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (!showSuggestions) {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault()
-        void send()
-      }
-      return
-    }
-    if (event.key === 'ArrowDown') {
-      event.preventDefault()
-      setActiveSuggest(index => (index + 1) % suggestions.length)
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault()
-      setActiveSuggest(index => (index - 1 + suggestions.length) % suggestions.length)
-    } else if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault()
-      const pick = suggestions[activeSuggest]
-      if (pick) acceptSuggestion(pick.card)
-    } else if (event.key === 'Escape') {
-      event.preventDefault()
-      setSuggestOpen(false)
-    }
-  }
-
-  function toggleSpeaker() {
-    setSpeaker(value => value === 'near' ? 'far' : 'near')
-    setDraft('')
-    setStatus('')
-    setSuggestOpen(false)
-  }
-
-  function onDraftChange(value: string) {
-    request.current?.abort()
-    request.current = null
-    setBusy(false)
-    setDraft(value)
-    setSuggestOpen(true)
-    setStatus('')
-  }
-
-  return {
-    speaker, from, to, draft, status, busy, suggestions, showSuggestions, activeSuggest,
-    setSuggestOpen, setActiveSuggest, send, acceptSuggestion, onDraftKeyDown, toggleSpeaker, onDraftChange,
-  }
-}
-
-function ComposerSuggestions({ id, from, to, suggestions, activeSuggest, showSuggestions, onHover, onPick }: {
-  id: string
-  from: PhraseLanguage
-  to: PhraseLanguage
-  suggestions: ReturnType<typeof rankSuggestions>
-  activeSuggest: number
-  showSuggestions: boolean
-  onHover: (index: number) => void
-  onPick: (card: Phrase) => void
-}) {
-  if (!showSuggestions) return null
-  return (
-    <div className="border-t border-line bg-panel">
-      <p className="px-3 pt-2 text-[0.7rem] font-semibold tracking-wide text-muted uppercase">{t("Suggested cards · tap to use")}</p>
-      <ul id={id} role="listbox" aria-label={t("Suggested phrases")} className="max-h-40 overflow-auto py-1">
-        {suggestions.map(({ card }, index) => {
-          const optionId = `${id}-option-${card.id}`
-          const active = index === activeSuggest
-          return (
-            <li key={card.id} id={optionId} role="option" aria-selected={active}>
-              <button type="button"
-                className={`flex w-full items-start gap-2 px-3 py-2 text-left ${active ? 'bg-paper-deep' : 'hover:bg-paper'}`}
-                onMouseDown={event => event.preventDefault()}
-                onMouseEnter={() => onHover(index)}
-                onClick={() => onPick(card)}>
-                <span className="min-w-0 flex-1">
-                  <span className="block wrap-anywhere text-sm font-medium" lang={from}>{card[from]}</span>
-                  <span className="mt-0.5 block wrap-anywhere text-xs text-muted" lang={to}>{card[to]}</span>
-                </span>
-                <span className="shrink-0 pt-0.5 text-xs font-semibold text-accent">{t("Use")}</span>
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-    </div>
-  )
-}
-
-function ConversationChat({ cards, engine, near, far, log, lookup }: {
-  cards: Phrase[]
-  engine: Engine
-  near: PhraseLanguage
-  far: PhraseLanguage
-  log: (entry: LogEntry) => void
-  lookup: ReturnType<typeof buildApprovedIndex>
-}) {
-  const [speechBusy, setSpeechBusy] = useState(false)
-  const [speechPreview, setSpeechPreview] = useState<string | null>(null)
+  const lookup = useMemo(() => buildApprovedIndex(cards), [cards])
+  const [style, setStyle] = usePreference<'chat' | 'face'>('conversation-style', 'chat', (value): value is 'chat' | 'face' => value === 'chat' || value === 'face')
   const [turns, setTurns] = useState<ChatTurn[]>([])
-  const threadEnd = useRef<HTMLDivElement>(null)
-  const composer = useTurnSender({
-    cards, engine, near, far, log, lookup,
-    onTurn: turn => setTurns(entries => [...entries, turn]),
-  })
-  useEffect(() => {
-    threadEnd.current?.scrollIntoView({ block: 'end' })
-  }, [turns])
-
-  const inputId = 'chat-draft'
-  const suggestionsId = 'chat-suggestions'
-  const activeOptionId = composer.showSuggestions
-    ? `${suggestionsId}-option-${composer.suggestions[composer.activeSuggest]?.card.id}`
-    : undefined
-
-  return (
-    <div className="mx-auto flex max-w-xl flex-col gap-3">
-      <section className="flex min-h-72 flex-col gap-2 overflow-y-auto rounded-[1.25rem] border border-line bg-panel p-3 sm:min-h-80" aria-label={t("Chat")}>
-        {!turns.length && <p className="m-auto text-center text-sm text-muted">{t("Start the conversation below.")}</p>}
-        {turns.map(turn => {
-          const nearSide = turn.speaker === 'near'
-          return (
-            <article key={turn.id} className={`flex max-w-[85%] flex-col gap-1 ${nearSide ? 'self-end items-end' : 'self-start items-start'}`}>
-              <p className="text-[0.7rem] font-semibold text-muted">{languageName(turn.from)}</p>
-              <div className={`rounded-2xl px-3 py-2 ${nearSide ? 'rounded-br-md bg-accent text-on-accent' : 'rounded-bl-md bg-paper text-ink'}`}>
-                <p className="wrap-anywhere text-sm leading-snug" lang={turn.from}>{turn.original}</p>
-              </div>
-              <div className={`rounded-2xl px-3 py-2 ${nearSide ? 'rounded-br-md bg-secondary-soft text-ink' : 'rounded-bl-md border border-line bg-panel text-ink'}`}>
-                <p className="wrap-anywhere text-sm font-semibold leading-snug" lang={turn.to}>{turn.translation}</p>
-                <p className="mt-1 text-[0.65rem] text-muted">{turn.source}</p>
-                {turn.reviewWarning && (
-                  <p className="mt-1 text-[0.65rem] font-semibold text-warning">{t("High risk · pending human review")}</p>
-                )}
-              </div>
-            </article>
-          )
-        })}
-        <div ref={threadEnd} />
-      </section>
-
-      <form className="rounded-[1.25rem] bg-panel p-4 sm:p-5" onSubmit={event => {
-        event.preventDefault()
-        void composer.send()
-      }}>
-        <div className="mb-8 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2" aria-label={t("Translation direction")}>
-          <label className="min-w-0 text-xs font-semibold text-muted">{t("From")}<select aria-label={t("Chat source language")} value={composer.from} disabled={composer.busy || speechBusy}
-              className={control + ' mt-1 w-full min-w-0 px-2 text-sm font-semibold'}
-              onChange={event => { if (event.target.value !== composer.from) composer.toggleSpeaker() }}>
-              {[near, far].map(code => <option key={code} value={code}>{languageName(code)}</option>)}
-            </select>
-          </label>
-          <div className="relative flex flex-col items-center">
-            <button type="button" disabled={composer.busy || speechBusy}
-              className="flex size-12 shrink-0 items-center justify-center rounded-full border border-secondary bg-secondary-soft text-secondary-ink disabled:opacity-50"
-              aria-label={t("Reverse translation direction") + `: ${languageName(composer.from)} → ${languageName(composer.to)}`}
-              aria-describedby="chat-swap-hint"
-              title={t("Reverse translation direction")} onClick={composer.toggleSpeaker}>
-              <span aria-hidden="true" className="text-2xl leading-none">→</span>
-            </button>
-            <span id="chat-swap-hint" className="absolute top-full mt-1 whitespace-nowrap text-[0.65rem] text-muted">{t('Tap to swap')}</span>
-          </div>
-          <label className="min-w-0 text-xs font-semibold text-muted">{t("To")}<select aria-label={t("Chat target language")} value={composer.to} disabled={composer.busy || speechBusy}
-              className={control + ' mt-1 w-full min-w-0 px-2 text-sm font-semibold'}
-              onChange={event => { if (event.target.value !== composer.to) composer.toggleSpeaker() }}>
-              {[near, far].map(code => <option key={code} value={code}>{languageName(code)}</option>)}
-            </select>
-          </label>
-        </div>
-        <label htmlFor={inputId} className="mb-2 block text-sm font-semibold" lang={composer.from}>{typePrompt(composer.from)}</label>
-        <div className={`mb-3 overflow-hidden rounded-xl border bg-accent-soft ${composer.showSuggestions ? 'border-line-strong' : 'border-line'}`}>
-          <textarea id={inputId} lang={composer.from} className={`block w-full resize-y border-0 bg-transparent p-3 text-base outline-none ${speechPreview !== null ? 'text-interim' : 'text-ink'}`} rows={2}
-            disabled={speechBusy} required maxLength={500} placeholder={typePrompt(composer.from)} value={speechPreview ?? composer.draft}
-            role="combobox" aria-autocomplete="list" aria-expanded={composer.showSuggestions} aria-controls={suggestionsId}
-            aria-activedescendant={activeOptionId}
-            onFocus={() => composer.setSuggestOpen(true)}
-            onBlur={() => composer.setSuggestOpen(false)}
-            onKeyDown={event => composer.onDraftKeyDown(event)}
-            onChange={event => composer.onDraftChange(event.target.value)} />
-          <SpeechInput key={composer.from} language={composer.from} completionMessage="Check the recognized text, then tap Send." onPreview={setSpeechPreview} disabled={composer.busy} onBusyChange={setSpeechBusy} onText={composer.onDraftChange} />
-          <ComposerSuggestions id={suggestionsId} from={composer.from} to={composer.to}
-            suggestions={composer.suggestions} activeSuggest={composer.activeSuggest}
-            showSuggestions={composer.showSuggestions}
-            onHover={composer.setActiveSuggest} onPick={composer.acceptSuggestion} />
-        </div>
-        <button disabled={composer.busy || speechBusy} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 sm:w-auto font-bold text-on-accent disabled:opacity-60">{t("Send")}</button>
-        {composer.status && <p role="status" className="mt-2 text-sm text-muted">{t(composer.status)}</p>}
-      </form>
-    </div>
-  )
-}
-
-function VoiceConversation({ near, far, cards, engine, lookup, log }: {
-  near: PhraseLanguage; far: PhraseLanguage; cards: Phrase[]; engine: Engine
-  lookup: ReturnType<typeof buildApprovedIndex>; log: (entry: LogEntry) => void
-}) {
+  const [flipped, setFlipped] = useState(false)
+  const leftCode = flipped ? near : far, rightCode = flipped ? far : near
+  const [pendingFrom, setPendingFrom] = useState<PhraseLanguage>(near)
   const [heard, setHeard] = useState<Partial<Record<PhraseLanguage, string>>>({})
-  const [outputs, setOutputs] = useState<Partial<Record<PhraseLanguage, TranslationResult>>>({})
-  const [voiceBusy, setVoiceBusy] = useState(false)
   const [previews, setPreviews] = useState<Partial<Record<PhraseLanguage, string | null>>>({})
-  const [translating, setTranslating] = useState(false)
+  const [voiceBusy, setVoiceBusy] = useState(false), [translating, setTranslating] = useState(false)
   const [status, setStatus] = useState('')
-  const request = useRef<AbortController | null>(null)
+  const request = useRef<AbortController | null>(null), thread = useRef<HTMLDivElement>(null)
   useEffect(() => () => request.current?.abort(), [])
+  useEffect(() => { if (style === 'chat' && thread.current) thread.current.scrollTop = thread.current.scrollHeight }, [turns, previews, status, style])
   async function translateTurn(text: string, from: PhraseLanguage) {
     const to = from === near ? far : near
     const controller = new AbortController(); request.current?.abort(); request.current = controller
-    setHeard(previous => ({ ...previous, [from]: text })); setTranslating(true); setStatus('Preparing translation…')
+    setHeard(previous => ({ ...previous, [from]: text })); setPendingFrom(from); setTranslating(true); setStatus('Preparing translation…')
     try {
-      const result = await runPhraseTranslation({ input: text, from, to, engine, lookup, log, cards, signal: controller.signal, onStatus: setStatus, inputMethod: 'speech' })
+      const result = await runPhraseTranslation({ input: text, from, to, engine, lookup, log, cards, signal: controller.signal, onStatus: message => { if (!controller.signal.aborted) setStatus(message) }, inputMethod: 'speech' })
       if (controller.signal.aborted) return
-      setOutputs(previous => ({ ...previous, [to]: result })); setStatus('')
+      setTurns(previous => [...previous, { id: crypto.randomUUID(), speaker: from === near ? 'near' : 'far', from, to, original: text, translation: result.text, source: result.source, reviewWarning: result.reviewWarning }]); setStatus('')
     } catch (error) { if (!controller.signal.aborted) setStatus(String(error)) }
-    finally { if (!controller.signal.aborted) { request.current = null; setTranslating(false) } }
+    finally { if (request.current === controller) { request.current = null; setTranslating(false) } }
   }
-  return <div className="mx-auto max-w-xl rounded-3xl bg-panel p-3 text-ink">
-    <p className="mb-3 text-center text-xs text-muted">{t('Place the phone between you. Each person uses the microphone facing them.')}</p>
-    <div className="overflow-hidden rounded-[1.75rem] border border-line bg-panel">
-      {([far, near] as const).map((code, index) => <section key={code}
-        className={`flex min-h-64 flex-col items-center justify-between gap-4 px-5 py-6 ${index === 0 ? 'rotate-180 bg-accent-soft text-ink' : 'bg-panel text-ink'}`}
-        aria-label={languageName(code)}>
-        <p className="text-sm font-semibold">{languageName(code)}</p>
-        <div className="flex min-h-16 flex-col items-center justify-center gap-2 text-center">
-          <p className="text-xl font-semibold" lang={code}>{outputs[code]?.text || t('Translation will appear here')}</p>
-          {outputs[code] && <><ReadAloud text={outputs[code]!.text} language={code} /><p className="text-xs text-muted">{outputs[code]!.source}</p></>}
-          {outputs[code]?.reviewWarning && <p className="text-xs text-warning">{t('High risk · pending human review')}</p>}
-          {(previews[code] != null || heard[code]) && <p className={previews[code] != null ? 'text-base text-interim' : 'text-base text-ink'} lang={code} aria-live="polite">{t('Recognized speech')}: {previews[code] ?? heard[code]}</p>}
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <SpeechInput language={code} completionMessage="Speech recognized." onPreview={text => setPreviews(previous => ({ ...previous, [code]: text }))} disabled={voiceBusy || translating} onBusyChange={setVoiceBusy} onText={text => void translateTurn(text, code)} />
-          <p className="text-xs font-semibold">{t('Tap to speak')}</p>
-        </div>
-      </section>)}
+  function microphone(code: PhraseLanguage) {
+    return <SpeechInput language={code} compact completionMessage="" onPreview={text => setPreviews(previous => ({ ...previous, [code]: text }))}
+      disabled={voiceBusy || translating} onBusyChange={setVoiceBusy} onText={text => void translateTurn(text, code)} />
+  }
+  function copy(text: string) { void navigator.clipboard.writeText(text).then(() => setStatus('Copied'), () => setStatus('Could not copy. Select the translation to copy it.')) }
+  return <div className="mx-auto max-w-xl space-y-3">
+    <div className="grid grid-cols-2 gap-1 rounded-2xl bg-panel p-1" role="tablist" aria-label={t('Conversation style')}>
+      {([['chat', 'Chat'], ['face', 'Face to face']] as const).map(([id, label]) => <button key={id} type="button" role="tab" aria-selected={style === id} disabled={voiceBusy || translating}
+        className={`min-h-11 rounded-xl px-3 text-sm font-semibold disabled:opacity-50 ${style === id ? 'bg-accent text-on-accent' : 'text-muted'}`} onClick={() => setStyle(id)}>{t(label)}</button>)}
     </div>
-    {status && <p role="status" className="mt-3 text-center text-xs text-muted">{t(status)}</p>}
-    {translating && <button type="button" className={control + ' mt-3'} onClick={() => { request.current?.abort(); request.current = null; setTranslating(false); setStatus('Translation canceled.') }}>{t('Cancel')}</button>}
+    {style === 'chat' ? <section className="overflow-hidden rounded-3xl bg-paper" aria-label={t('Chat conversation')}>
+      <div ref={thread} className="flex h-[min(48svh,28rem)] min-h-56 flex-col gap-4 overflow-y-auto p-3 sm:p-4" aria-label={t('Conversation messages')}>
+        {!turns.length && !voiceBusy && !translating && <p className="m-auto px-4 text-center text-sm text-muted">{t('Tap either microphone to start a conversation.')}</p>}
+        {turns.map(turn => <article key={turn.id} className={`w-fit max-w-[92%] rounded-3xl p-4 ${turn.from === rightCode ? 'self-end rounded-br-md bg-accent-soft text-ink' : 'self-start rounded-bl-md bg-panel text-ink'}`}>
+          <div className="flex items-start justify-between gap-3"><p className="pt-2 text-xs text-muted" lang={turn.from}>{turn.original}</p><ReadAloud text={turn.translation} language={turn.to} /></div>
+          <p className="mt-1 wrap-anywhere text-xl font-semibold leading-snug" lang={turn.to}>{turn.translation}</p>
+          <p className="mt-2 text-[0.65rem] text-muted">{languageName(turn.from)} → {languageName(turn.to)}</p>
+          {turn.reviewWarning && <p className="mt-2 text-xs text-warning">{t('High risk · pending human review')}</p>}
+        </article>)}
+        {([leftCode, rightCode] as const).map(code => previews[code] != null && <p key={code} className={`max-w-[92%] rounded-2xl bg-panel p-3 text-base text-interim ${code === rightCode ? 'self-end' : 'self-start'}`} lang={code} aria-live="polite">{previews[code] || t('Listening…')}</p>)}
+        {translating && <p className="rounded-2xl bg-panel p-3 text-sm text-ink">{heard[pendingFrom]}<span className="mt-1 block text-xs text-muted">{t(status)}</span></p>}
+      </div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 border-t border-line bg-panel p-3">
+        {([leftCode, rightCode] as const).map((code, index) => <div key={code} className={index === 0 ? 'col-start-1 row-start-1' : 'col-start-3 row-start-1'}>
+          <div className="flex min-w-0 flex-col items-center gap-2 [&>div]:w-full [&>div]:min-w-0 [&>div]:items-center" aria-label={t('Speak in {language}', { language: languageName(code) })}>
+            <p className="min-h-8 text-center text-xs font-semibold">{languageName(code)}</p>{microphone(code)}
+          </div>
+        </div>)}
+        <button type="button" aria-label={t('Swap languages')} disabled={voiceBusy || translating} onClick={() => setFlipped(value => !value)} className="col-start-2 row-start-1 mt-10 flex size-11 items-center justify-center rounded-full border border-line bg-paper text-xl text-accent disabled:opacity-50">⇄</button>
+      </div>
+    </section> : <section className="flex h-[calc(100svh-20rem)] min-h-[28rem] flex-col overflow-hidden rounded-3xl border border-line" aria-label={t('Face-to-face conversation')}>
+      {([leftCode, rightCode] as const).map((code, index) => {
+        const output = turns.findLast(turn => turn.to === code)
+        return <section key={code} className={`flex min-h-0 flex-1 flex-col justify-between gap-2 p-4 ${index === 0 ? 'rotate-180 bg-panel text-ink' : 'bg-accent-soft text-ink'}`} aria-label={languageName(code)}>
+          <div className="flex items-center justify-between gap-2"><p className="min-w-0 text-sm font-semibold">{languageName(code)}</p><div className="flex shrink-0 items-center">{output && <><ReadAloud text={output.translation} language={code} /><button type="button" className="min-h-11 px-2 text-xs text-accent" onClick={() => copy(output.translation)}>{t('Copy')}</button></>}</div></div>
+          <p className="min-h-0 flex-1 overflow-y-auto wrap-anywhere text-2xl font-semibold leading-snug sm:text-3xl" lang={code}>{output?.translation || t('Translation will appear here')}</p>
+          {output?.reviewWarning && <p className="text-xs text-warning">{t('High risk · pending human review')}</p>}
+          <div className="flex items-end justify-between gap-3"><p className={`max-h-16 min-w-0 flex-1 overflow-y-auto wrap-anywhere text-sm ${previews[code] != null ? 'text-interim' : 'text-ink'}`} lang={code} aria-live="polite">{previews[code] ?? heard[code] ?? t('Tap to speak')}</p><div className="max-w-36">{microphone(code)}</div></div>
+        </section>
+      })}
+    </section>}
+    {status && <p role="status" className="rounded-xl bg-panel p-3 text-center text-xs text-muted">{t(status)}</p>}
+    {translating && <button type="button" className={control} onClick={() => { request.current?.abort(); request.current = null; setTranslating(false); setStatus('Translation canceled.') }}>{t('Cancel')}</button>}
   </div>
 }
 

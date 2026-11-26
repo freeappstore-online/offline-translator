@@ -18,6 +18,14 @@ export function useLocale() {
   return useSyncExternalStore(callback => { listeners.add(callback); return () => { listeners.delete(callback) } }, () => locale)
 }
 const messages: Record<string, Partial<Record<Locale, string>>> = {
+  "Talk": { vi: "Trò chuyện", zh: "对话" },
+  "Listening… Tap to stop.": { vi: "Đang nghe… Chạm để dừng.", zh: "正在聆听…点按停止。" },
+  "Conversation style": { vi: "Kiểu hội thoại", zh: "对话样式" },
+  "Chat conversation": { vi: "Hội thoại dạng tin nhắn", zh: "聊天式对话" },
+  "Conversation messages": { vi: "Tin nhắn hội thoại", zh: "对话消息" },
+  "Face-to-face conversation": { vi: "Hội thoại đối diện", zh: "面对面对话" },
+  "Tap either microphone to start a conversation.": { vi: "Chạm vào một trong hai micro để bắt đầu hội thoại.", zh: "点按任一麦克风开始对话。" },
+  "Listening…": { vi: "Đang nghe…", zh: "正在聆听…" },
   "Download": { vi: "Tải xuống", zh: "下载" },
   "Manage": { vi: "Quản lý", zh: "管理" },
   "Not downloaded": { vi: "Chưa tải", zh: "未下载" },
