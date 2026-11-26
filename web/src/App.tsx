@@ -668,20 +668,23 @@ function ConversationChat({ cards, engine, near, far, log, lookup }: {
         event.preventDefault()
         void composer.send()
       }}>
-        <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2" aria-label={t("Translation direction")}>
+        <div className="mb-8 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2" aria-label={t("Translation direction")}>
           <label className="min-w-0 text-xs font-semibold text-muted">{t("From")}<select aria-label={t("Chat source language")} value={composer.from} disabled={composer.busy}
               className={control + ' mt-1 w-full min-w-0 px-2 text-sm font-semibold'}
               onChange={event => { if (event.target.value !== composer.from) composer.toggleSpeaker() }}>
               {[near, far].map(code => <option key={code} value={code}>{languageName(code)}</option>)}
             </select>
           </label>
-          <button type="button" disabled={composer.busy}
-            className={control + ' flex flex-col items-center justify-center px-3 text-xs disabled:opacity-50'}
-            aria-label={t("Reverse translation direction") + `: ${languageName(composer.from)} → ${languageName(composer.to)}`}
-            title={t("Reverse translation direction")} onClick={composer.toggleSpeaker}>
-            <span aria-hidden="true" className="text-xl leading-5">→</span>
-            <span>{t("Reverse")}</span>
-          </button>
+          <div className="relative flex flex-col items-center">
+            <button type="button" disabled={composer.busy}
+              className="flex size-12 shrink-0 items-center justify-center rounded-full border border-line bg-paper text-ink disabled:opacity-50"
+              aria-label={t("Reverse translation direction") + `: ${languageName(composer.from)} → ${languageName(composer.to)}`}
+              aria-describedby="chat-swap-hint"
+              title={t("Reverse translation direction")} onClick={composer.toggleSpeaker}>
+              <span aria-hidden="true" className="text-2xl leading-none">→</span>
+            </button>
+            <span id="chat-swap-hint" className="absolute top-full mt-1 whitespace-nowrap text-[0.65rem] text-muted">{t('Tap to swap')}</span>
+          </div>
           <label className="min-w-0 text-xs font-semibold text-muted">{t("To")}<select aria-label={t("Chat target language")} value={composer.to} disabled={composer.busy}
               className={control + ' mt-1 w-full min-w-0 px-2 text-sm font-semibold'}
               onChange={event => { if (event.target.value !== composer.to) composer.toggleSpeaker() }}>
