@@ -45,13 +45,16 @@ export function SpeechInput({ language, onText, onBusyChange, disabled = false }
       recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data) }
       recorder.onerror = () => { if (!current()) return; state.id++; release(); setPhase('idle'); setStatus('Recording failed. Please try again.'); logSpeech({ language, error: 'MediaRecorder error' }) }
       recorder.onstop = async () => {
+        state.recorder = null
         clearTimeout(state.timer)
         stream.getTracks().forEach(track => track.stop()); state.stream = null
         if (!current()) return
         const durationMs = performance.now() - started
         setPhase('processing'); setStatus('Preparing speech model…')
         try {
-          const audio = await context.decodeAudioData(await new Blob(chunks, { type: recorder.mimeType }).arrayBuffer())
+          const encoded = await new Blob(chunks, { type: recorder.mimeType }).arrayBuffer()
+          chunks.length = 0
+          const audio = await context.decodeAudioData(encoded)
           const offline = new OfflineAudioContext(1, Math.ceil(audio.duration * 16000), 16000)
           const source = offline.createBufferSource(); source.buffer = audio; source.connect(offline.destination); source.start()
           const resampled = await offline.startRendering()
