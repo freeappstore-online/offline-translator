@@ -147,7 +147,7 @@ export default function App() {
               }}>{t(item.label)}</a>
           })}
         </nav>
-        <PageHeader title={title} />
+        {path !== '/translate' && <PageHeader title={title} />}
         {path !== '/packs' && path !== '/translate' && (
           <label className="mb-4 flex flex-wrap items-center gap-2">{t("Language")}<select className={control} value={language} onChange={event => setLanguage(event.target.value as TargetLanguage)}>
               {Object.keys(languages).map(id => <option key={id} value={id}>{languageName(id as Locale)}</option>)}
@@ -162,7 +162,9 @@ export default function App() {
         )}
         {path === '/translate' && (
           <>
-            <div className="mb-4 grid grid-cols-3 gap-1 rounded-2xl bg-paper-deep p-1 sm:max-w-lg" role="tablist" aria-label="Translate mode">
+            <details id="translator-menu" className="mx-auto mb-3 max-w-xl rounded-2xl bg-panel px-4 py-2">
+              <summary className="flex min-h-11 cursor-pointer items-center justify-between text-sm font-semibold"><span>{t('Translation settings')}</span><span aria-hidden="true">≡</span></summary>
+              <div className="pt-2">            <div className="mb-4 grid grid-cols-3 gap-1 rounded-2xl bg-paper-deep p-1 sm:max-w-lg" role="tablist" aria-label="Translate mode">
               {([
                 ['one-way', t("One way")],
                 ['chat', t("Chat")],
@@ -194,6 +196,9 @@ export default function App() {
                 {engine === 'multilingual' && <option value="vi-zh">{languageName('vi')} ↔ {languageName('zh')}</option>}
               </select>
             </label>
+              </div>
+            </details>
+            {translateMode !== 'one-way' && <button type="button" className={control + ' mb-3'} onClick={() => { const menu = document.getElementById('translator-menu') as HTMLDetailsElement; menu.open = !menu.open }}>{t('Translation settings')} ≡</button>}
             <Translate mode={translateMode} key={engine + pair + language + translateMode} cards={cards} engine={engine}
               from={engine === 'multilingual' ? pair : 'en'} to={engine === 'opus' ? 'vi' : language} log={logTranslation} />
             <details className="mt-5 rounded-2xl bg-panel px-4 py-1">
@@ -351,16 +356,8 @@ function Translate({ cards, engine, from, to, log, mode }: {
 
   return (
     <div className="mx-auto grid max-w-xl gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-muted">{languageName(source)} → {languageName(target)}</p>
-        <button type="button" className={control + ' text-sm font-semibold'}
-          onClick={() => {
-            setSwapped(value => !value)
-            setOutgoing(undefined)
-          }}>{t("Swap languages")}</button>
-      </div>
       <TranslationPanel cards={cards} engine={engine} log={log} lookup={lookup}
-        from={source} to={target} showTitle={false} result={outgoing} onResult={setOutgoing} />
+        from={source} to={target} onSwap={() => { setSwapped(value => !value); setOutgoing(undefined) }} showTitle={false} result={outgoing} onResult={setOutgoing} />
     </div>
   )
 }
@@ -834,12 +831,13 @@ function FaceToFaceSplit({ cards, engine, near, far, log, lookup }: {
   )
 }
 
-function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = true, result, onResult }: {
+function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = true, result, onResult, onSwap }: {
   cards: Phrase[]
   engine: Engine
   from: PhraseLanguage
   to: PhraseLanguage
   log: (entry: LogEntry) => void
+  onSwap?: () => void
   showTitle?: boolean
   result?: TranslationResult
   onResult: (result: TranslationResult | undefined) => void
@@ -923,16 +921,28 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
   const activeOptionId = showSuggestions ? `${suggestionsId}-option-${suggestions[activeSuggest]?.card.id}` : undefined
 
   return (
-    <form className="flex min-w-0 flex-col rounded-[1.25rem] bg-panel p-4 sm:p-6" aria-labelledby={headingId} onSubmit={event => {
+    <form className="reference-translator flex min-w-0 flex-col overflow-hidden rounded-[1.75rem] bg-accent text-on-accent" aria-labelledby={headingId} onSubmit={event => {
       event.preventDefault()
       setSuggestOpen(false)
       void findTranslation()
     }}>
-      {showTitle ? <h2 id={headingId} className="mb-3 text-xl font-bold">{languageName(from)} → {languageName(to)}</h2>
-        : <h2 id={headingId} className="sr-only">{languageName(from)} → {languageName(to)}</h2>}
-      <label htmlFor={inputId} className="text-sm font-semibold">{t('Write in {language}', { language: languageName(from) })}</label>
-      <div className={`mb-3 mt-1 overflow-hidden rounded-xl border bg-accent-soft ${showSuggestions ? 'border-line-strong' : 'border-line'}`}>
-        <textarea id={inputId} lang={from} className="block w-full resize-y border-0 bg-transparent p-3 text-base text-ink outline-none" rows={3}
+      <div className="flex items-center justify-between gap-3 px-6 pt-5">
+        <label className="min-w-0 flex-1">
+          <span className="sr-only">{t('From')}</span>
+          <select aria-label={t('From')} value={from} disabled={busy} onChange={event => { if (event.target.value !== from) onSwap?.() }}
+            className="min-h-11 max-w-full bg-transparent text-base font-bold text-on-accent">
+            <option className="text-ink" value={from}>{languageName(from)}</option>
+            {onSwap && <option className="text-ink" value={to}>{languageName(to)}</option>}
+          </select>
+        </label>
+        <button type="button" className="flex size-11 items-center justify-center text-2xl" aria-label={t('Translation settings')}
+          onClick={() => { const menu = document.getElementById('translator-menu') as HTMLDetailsElement | null; if (menu) { menu.open = !menu.open; menu.scrollIntoView({ block: 'nearest', behavior: 'smooth' }) } }}>≡</button>
+      </div>
+      <h2 id={headingId} className="sr-only">{languageName(from)} → {languageName(to)}</h2>
+      {showTitle && <p className="sr-only">{languageName(from)} → {languageName(to)}</p>}
+      <label htmlFor={inputId} className="sr-only">{t('Write in {language}', { language: languageName(from) })}</label>
+      <div className="px-6 pb-6 pt-3">
+        <textarea id={inputId} lang={from} className="block min-h-52 w-full resize-none border-0 bg-transparent py-3 text-lg text-on-accent outline-none placeholder:text-on-accent/65" rows={6}
           required maxLength={500} placeholder={example?.[from] ?? t("Enter a word or phrase")} value={draft}
           role="combobox" aria-autocomplete="list" aria-expanded={showSuggestions} aria-controls={suggestionsId}
           aria-activedescendant={activeOptionId}
@@ -948,9 +958,15 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
             onResult(undefined)
             setStatus('')
           }} />
-          <InputToolbar inputId={inputId} />
+          <div className="mt-4 flex items-center justify-center gap-10" role="group" aria-label={t('Input method')}>
+            {(['Camera', 'Voice'] as const).map(method => <button key={method} type="button" disabled className="flex min-h-11 min-w-16 flex-col items-center gap-1 text-on-accent/65" aria-label={t(method) + ' · ' + t('Coming soon')}>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-7">
+                {method === 'Voice' ? <><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></> : <><path d="M4 7h4l2-3h4l2 3h4v13H4z"/><circle cx="12" cy="13" r="3"/></>}
+              </svg><span className="text-[0.6rem]">{t('Coming soon')}</span>
+            </button>)}
+          </div>
         {showSuggestions && (
-          <div className="border-t border-line bg-panel">
+          <div className="rounded-xl border-t border-line bg-panel text-ink">
             <p className="px-3 pt-2 text-[0.7rem] font-semibold tracking-wide text-muted uppercase">{t("Suggested cards · tap to use")}</p>
             <ul id={suggestionsId} role="listbox" aria-label={t("Suggested phrases")} className="max-h-40 overflow-auto py-1">
               {suggestions.map(({ card }, index) => {
@@ -979,11 +995,8 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
           </div>
         )}
       </div>
-      {/* Keep focus in the textarea: blurring it closes the suggestions and moves this button before the click lands */}
-      <button disabled={busy} onMouseDown={event => event.preventDefault()} className="min-h-11 w-full rounded-full bg-accent px-5 py-2 sm:w-auto sm:self-start font-bold text-on-accent disabled:opacity-60">{t("Translate")}</button>
-      {status && <p role="status" className="mt-2 text-sm text-muted">{t(status)}</p>}
-      <div className="mt-4 flex-1 rounded-2xl bg-secondary-soft p-4" role="status">
-        <p className="text-sm font-semibold">{t('{language} translation', { language: languageName(to) })}</p>
+      <div className="relative flex min-h-60 flex-1 flex-col rounded-t-[2rem] bg-panel px-6 pb-6 pt-7 text-ink" role="status">
+        <p className="text-sm font-semibold text-accent">{t('{language} translation', { language: languageName(to) })}</p>
         {result ? <>
           <p className="mt-1 wrap-anywhere text-xl font-semibold leading-snug sm:text-2xl" lang={to}>{result.text}</p>
           <p className="mt-1 text-xs text-muted">{result.source}</p>
@@ -991,6 +1004,10 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
             <p className="mt-2 text-xs font-semibold text-warning">{t("High risk · pending human review")}</p>
           )}
         </> : <p className="mt-1 text-sm text-muted">{t("Your translation will appear here.")}</p>}
+        <div className="mt-auto pt-6">
+          <button disabled={busy} onMouseDown={event => event.preventDefault()} className="mx-auto flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-6 py-2 text-sm font-bold text-on-accent disabled:opacity-60"><span aria-hidden="true">→</span>{t('Translate')}</button>
+          {status && <p role="status" className="mt-3 text-center text-xs text-muted">{t(status)}</p>}
+        </div>
       </div>
     </form>
   )

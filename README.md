@@ -93,3 +93,5 @@ The App language selector supports English, Vietnamese and Simplified Chinese. I
 Visual palette: purple primary controls, orange secondary accents, pale lavender surfaces and warm translation results. Dark mode uses matching purple and amber tones.
 
 Translation input methods stay beside the text input in One way, Chat and Face to face. Text focuses the current field; Voice and Camera are disabled, labeled Coming soon, and request no permissions. Layout modes remain separate from input methods. Translation logs remain outside the interface.
+
+The default translation screen follows reference picture 2: a full purple input surface, source-language selector and menu at the top, camera/microphone placeholders below the input, and a white curved result panel. Layout and pair controls are behind the menu. Existing chat and face-to-face modes remain available.

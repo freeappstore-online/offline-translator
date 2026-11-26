@@ -89,3 +89,7 @@
 @layer components {
   #root > div > header > div > a[href="https://freeappstore.online"] { display: none; }
 }
+
+/* The reference layout keeps modes and pair selection behind its menu. */
+#translator-menu:not([open]) { display: none; }
+.reference-translator select option { background: var(--panel); color: var(--ink); }
