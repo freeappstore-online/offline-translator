@@ -93,3 +93,14 @@
 /* The reference layout keeps modes and pair selection behind its menu. */
 #translator-menu:not([open]) { display: none; }
 .reference-translator select option { background: var(--panel); color: var(--ink); }
+
+.bottom-navigation { position: fixed; z-index: 40; bottom: max(.75rem, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(calc(100% - 1.5rem), 40rem); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .125rem; padding: .5rem; border: 1px solid var(--line); border-radius: 1.5rem; background: var(--panel); box-shadow: 0 8px 32px #25133322; }
+#app-preferences:not([open]) { display: none; }
+
+body { background: #061841; }
+.app-workspace { background: radial-gradient(ellipse at 5% 55%, #8224b544, transparent 50%), radial-gradient(ellipse at 95% 70%, #ff8a0033, transparent 45%), #061841; }
+.app-workspace > header h1 { color: #fff; }
+.app-workspace > header h1 span { color: #d4a1f2; }
+.app-workspace > header button { background: transparent; border-color: transparent; color: #fff; }
+.app-workspace .bg-panel { color: var(--ink); }
+.app-workspace > h1, .app-workspace > p, .app-workspace > label { color: #f8f3ff; }

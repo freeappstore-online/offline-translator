@@ -40,6 +40,16 @@ function currentPath() {
   return location.pathname
 }
 
+function NavigationIcon({ kind }: { kind: string }) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="size-6">
+    {kind === 'camera' ? <><path d="M3 7h5l2-3h4l2 3h5v13H3z"/><circle cx="12" cy="13" r="3"/></>
+      : kind === 'cards' ? <><rect x="5" y="3" width="15" height="17" rx="2"/><path d="M2 7v14h14M8 8h9M8 12h7"/></>
+      : kind === 'packs' ? <><path d="M4 15v6h16v-6M12 3v12m-5-5 5 5 5-5"/></>
+      : kind === 'settings' ? <><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3z"/><circle cx="12" cy="12" r="3"/></>
+      : <><path d="M3 4h18v13H9l-5 4v-4H3zM7 8h10M7 12h7"/></>}
+  </svg>
+}
+
 function openTranslationMode(mode: 'one-way' | 'voice') {
   window.dispatchEvent(new CustomEvent('translator-input-mode', { detail: mode }))
 }
@@ -122,6 +132,16 @@ export default function App() {
     setPath(href)
   }
 
+  function openSettings() {
+    const preferences = document.getElementById('app-preferences') as HTMLDetailsElement | null
+    const menu = document.getElementById('translator-menu') as HTMLDetailsElement | null
+    if (!preferences) return
+    const open = !preferences.open
+    preferences.open = open
+    if (menu) menu.open = open
+    preferences.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }
+
   const title = path === '/translate' ? t("Translate") : path === '/packs' ? t("Language Packs") : path === '/review' ? 'Review workstation' : t("Quick Cards")
   if (path === '/review') {
     return (
@@ -140,7 +160,14 @@ export default function App() {
   }
   return (
     <Shell app={fas} appName="Offline Translator" nav={nav} renderNav={() => null} onNavigate={navigate}>
-      <div className="mx-auto w-full max-w-5xl px-4 pb-12 pt-4 sm:px-6">
+      <div className="app-workspace mx-auto min-h-screen w-full max-w-2xl px-4 pb-32 pt-4 sm:px-6">
+        <header className="mb-5 flex items-center justify-between gap-3">
+          <button type="button" className={control} aria-label={t('Settings')} onClick={openSettings}>☰</button>
+          <h1 className="text-center font-sans text-xl font-bold">🌐 Offline <span className="text-accent">Translator</span></h1>
+          <span aria-hidden="true" className="size-11" />
+        </header>
+        <details id="app-preferences" className="mb-4 rounded-2xl bg-panel p-4">
+          <summary className="cursor-pointer text-sm font-semibold">{t('Settings')}</summary>
         <label className="mb-4 flex flex-wrap items-center justify-end gap-2 text-sm">
           {t('App language')}
           <select aria-label={t('App language')} value={uiLocale} className={control + ' max-w-full'}
@@ -148,26 +175,28 @@ export default function App() {
             {(['en', 'vi', 'zh'] as const).map(code => <option key={code} value={code}>{languageName(code)}</option>)}
           </select>
         </label>
-        <nav aria-label={t("Main")} className="mb-5 grid grid-cols-3 gap-1 rounded-2xl bg-paper-deep p-1 sm:max-w-sm">
-          {nav.map(item => {
-            const active = item.href === path
-            return <a key={item.href} href={item.href} aria-current={active ? 'page' : undefined}
-              className={`flex min-h-11 items-center justify-center rounded-xl px-2 text-sm font-semibold ${active ? 'bg-panel text-accent' : 'text-muted hover:text-ink'}`}
-              onClick={event => {
-                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-                event.preventDefault()
-                if (!active) navigate(item.href)
-              }}>{t(item.label)}</a>
-          })}
+        </details>
+        <nav aria-label={t('Main')} className="bottom-navigation">
+          {[
+            { href: '/translate', label: 'Translate', icon: 'translate' },
+            { href: '/', label: 'Cards', icon: 'cards' },
+            { href: '/camera', label: 'Camera', icon: 'camera' },
+            { href: '/packs', label: 'Packs', icon: 'packs' },
+          ].map(item => <a key={item.href} href={item.href} aria-current={path === item.href ? 'page' : undefined}
+            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[0.65rem] font-semibold ${path === item.href ? 'bg-accent-soft text-accent' : 'text-muted'}`}
+            onClick={event => { if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) { event.preventDefault(); navigate(item.href) } }}>
+            <NavigationIcon kind={item.icon} />{t(item.label)}</a>)}
+          <button type="button" className="flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[0.65rem] font-semibold text-muted"
+            onClick={openSettings}><NavigationIcon kind="settings" />{t('Settings')}</button>
         </nav>
-        {path !== '/translate' && <PageHeader title={title} />}
-        {path !== '/packs' && path !== '/translate' && (
+        {path !== '/translate' && path !== '/camera' && <PageHeader title={title} />}
+        {path !== '/packs' && path !== '/translate' && path !== '/camera' && (
           <label className="mb-4 flex flex-wrap items-center gap-2">{t("Language")}<select className={control} value={language} onChange={event => setLanguage(event.target.value as TargetLanguage)}>
               {Object.keys(languages).map(id => <option key={id} value={id}>{languageName(id as Locale)}</option>)}
             </select>
           </label>
         )}
-        {!cards.length && path !== '/translate' && path !== '/packs' && (
+        {!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' && (
           <div className={panel}>
             <p role="status">{!configured ? t("The phrase deck is being set up.") : failed ? t("Couldn’t load phrases. Check your connection and try again.") : t("Loading phrases…")}</p>
             {failed && <button className={control + ' mt-3'} onClick={() => { setFailed(false); setAttempt(attempt + 1) }}>{t("Try again")}</button>}
@@ -235,13 +264,19 @@ export default function App() {
 
           </>
         )}
+        {path === '/camera' && <section className="rounded-3xl bg-panel p-6 text-center">
+          <div className="mx-auto mb-5 flex size-20 items-center justify-center rounded-full bg-accent-soft text-accent"><NavigationIcon kind="camera" /></div>
+          <h2 className="text-xl font-bold">{t('Camera translation')}</h2>
+          <p className="mt-3 text-muted">{t('Coming soon')}</p>
+          <p className="mt-3 text-sm text-muted">{t('Camera translation is not connected yet. Your camera is off.')}</p>
+        </section>}
         {path === '/packs' && <>
           <Packs cards={cards} />
           <button type="button" className={control + ' mt-4'} disabled={!history.length}
             onClick={() => exportLog(history)}>{t("Export translation JSON")}</button>
         </>}
         {storageError && <p role="status" className="mt-3 text-sm text-muted">{t("Browser storage is full or unavailable. Export translation JSON from Packs before closing this page.")}</p>}
-        {!!cards.length && path !== '/translate' && path !== '/packs' &&
+        {!!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' &&
           <Cards cards={cards} language={language} saved={saved} onFavorite={toggleFavorite} />}
       </div>
     </Shell>
@@ -624,7 +659,7 @@ function InputToolbar({ inputId }: { inputId: string }) {
       className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-accent-soft px-3 text-sm font-semibold text-accent">
       <span aria-hidden="true" className="text-xl font-bold">T</span>{t('Text')}
     </button>
-    {(['Voice', 'Camera'] as const).map(method => <button key={method} type="button" disabled={method === 'Camera'} onClick={() => openTranslationMode('voice')}
+    {(['Voice'] as string[]).map(method => <button key={method} type="button" disabled={method === 'Camera'} onClick={() => openTranslationMode('voice')}
       className="flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1 text-muted disabled:cursor-default"
       aria-label={method === 'Voice' ? t('Voice translation') : t(method) + ' · ' + t('Coming soon')}>
       <span className="flex items-center gap-1.5 text-sm font-semibold">
@@ -861,28 +896,30 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
   const activeOptionId = showSuggestions ? `${suggestionsId}-option-${suggestions[activeSuggest]?.card.id}` : undefined
 
   return (
-    <form className="reference-translator flex min-w-0 flex-col overflow-hidden rounded-[1.75rem] bg-accent text-on-accent" aria-labelledby={headingId} onSubmit={event => {
+    <form className="reference-translator flex min-w-0 flex-col gap-4 text-ink" aria-labelledby={headingId} onSubmit={event => {
       event.preventDefault()
       setSuggestOpen(false)
       void findTranslation()
     }}>
-      <div className="flex items-center justify-between gap-3 px-6 pt-5">
-        <label className="min-w-0 flex-1">
-          <span className="sr-only">{t('From')}</span>
-          <select aria-label={t('From')} value={from} disabled={busy} onChange={event => { if (event.target.value !== from) onSwap?.() }}
-            className="min-h-11 max-w-full bg-transparent text-base font-bold text-on-accent">
-            <option className="text-ink" value={from}>{languageName(from)}</option>
-            {onSwap && <option className="text-ink" value={to}>{languageName(to)}</option>}
+      <div className="rounded-[1.5rem] bg-panel p-4 sm:p-5">
+      <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2">
+        <label className="min-w-0 text-xs font-semibold text-accent">{t('Translate from')}
+          <select aria-label={t('From')} value={from} disabled={busy} onChange={event => { if (event.target.value !== from) onSwap?.() }} className={control + ' mt-2 w-full min-w-0 bg-panel px-2 text-sm'}>
+            {[from, ...(onSwap ? [to] : [])].map(code => <option key={code} value={code}>{code === 'en' ? '🇬🇧' : code === 'vi' ? '🇻🇳' : '🇨🇳'} {languageName(code)}</option>)}
           </select>
         </label>
-        <button type="button" className="flex size-11 items-center justify-center text-2xl" aria-label={t('Translation settings')}
-          onClick={() => { const menu = document.getElementById('translator-menu') as HTMLDetailsElement | null; if (menu) { menu.open = !menu.open; menu.scrollIntoView({ block: 'nearest', behavior: 'smooth' }) } }}>≡</button>
+        <button type="button" disabled={!onSwap || busy} onClick={onSwap} aria-label={t('Swap languages')} className="flex size-12 items-center justify-center rounded-full bg-accent text-2xl text-on-accent disabled:opacity-50">⇄</button>
+        <label className="min-w-0 text-xs font-semibold text-accent">{t('Translate to')}
+          <select aria-label={t('To')} value={to} disabled={busy} onChange={event => { if (event.target.value !== to) onSwap?.() }} className={control + ' mt-2 w-full min-w-0 bg-panel px-2 text-sm'}>
+            {[to, ...(onSwap ? [from] : [])].map(code => <option key={code} value={code}>{code === 'en' ? '🇬🇧' : code === 'vi' ? '🇻🇳' : '🇨🇳'} {languageName(code)}</option>)}
+          </select>
+        </label>
       </div>
       <h2 id={headingId} className="sr-only">{languageName(from)} → {languageName(to)}</h2>
       {showTitle && <p className="sr-only">{languageName(from)} → {languageName(to)}</p>}
       <label htmlFor={inputId} className="sr-only">{t('Write in {language}', { language: languageName(from) })}</label>
-      <div className="px-6 pb-6 pt-3">
-        <textarea id={inputId} lang={from} className="block min-h-52 w-full resize-none border-0 bg-transparent py-3 text-lg text-on-accent outline-none placeholder:text-on-accent/65" rows={6}
+      <div className="rounded-2xl border border-line bg-panel p-3 shadow-sm">
+        <textarea id={inputId} lang={from} className="block min-h-36 w-full resize-none border-0 bg-transparent py-2 text-lg text-ink outline-none placeholder:text-muted" rows={4}
           required maxLength={500} placeholder={typePrompt(from)} value={draft}
           role="combobox" aria-autocomplete="list" aria-expanded={showSuggestions} aria-controls={suggestionsId}
           aria-activedescendant={activeOptionId}
@@ -898,12 +935,14 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
             onResult(undefined)
             setStatus('')
           }} />
-          <div className="mt-4 flex items-center justify-center gap-10" role="group" aria-label={t('Input method')}>
-            {(['Camera', 'Voice'] as const).map(method => <button key={method} type="button" disabled={method === 'Camera'} onClick={() => openTranslationMode('voice')} className="flex min-h-11 min-w-16 flex-col items-center gap-1 text-on-accent/65" aria-label={method === 'Voice' ? t('Voice translation') : t(method) + ' · ' + t('Coming soon')}>
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-7">
-                {method === 'Voice' ? <><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></> : <><path d="M4 7h4l2-3h4l2 3h4v13H4z"/><circle cx="12" cy="13" r="3"/></>}
-              </svg><span className="text-[0.6rem]">{method === 'Voice' ? t('Preview') : t('Coming soon')}</span>
-            </button>)}
+          <div className="mt-2 flex items-end justify-between gap-3">
+            <span className="text-xs text-muted" aria-live="off">{draft.length} / 500</span>
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={() => document.getElementById(inputId)?.focus()} className={control} aria-label={t('Text')}><span aria-hidden="true">⌨</span></button>
+              <button type="button" onClick={() => openTranslationMode('voice')} aria-label={t('Voice translation')} className="flex size-14 items-center justify-center rounded-full bg-accent text-on-accent">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-7"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg>
+              </button>
+            </div>
           </div>
         {showSuggestions && (
           <div className="rounded-xl border-t border-line bg-panel text-ink">
@@ -935,15 +974,19 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
           </div>
         )}
       </div>
-      <div className="relative flex min-h-60 flex-1 flex-col rounded-t-[2rem] bg-panel px-6 pb-6 pt-7 text-ink" role="status">
+      </div>
+      <div className="relative flex min-h-48 flex-1 flex-col rounded-[1.5rem] bg-panel p-5 text-ink" role="status">
         <p className="text-sm font-semibold text-accent">{t('{language} translation', { language: languageName(to) })}</p>
         {result ? <>
           <p className="mt-1 wrap-anywhere text-xl font-semibold leading-snug sm:text-2xl" lang={to}>{result.text}</p>
-          <p className="mt-1 text-xs text-muted">{result.source}</p>
+          <p className="mt-2 text-sm text-muted" lang={from}>{draft}</p><p className="mt-1 text-xs text-muted">{result.source}</p>
           {result.reviewWarning && (
             <p className="mt-2 text-xs font-semibold text-warning">{t("High risk · pending human review")}</p>
           )}
         </> : <p className="mt-1 text-sm text-muted">{t("Your translation will appear here.")}</p>}
+        {result && <div className="mt-4 flex justify-end border-t border-line pt-3">
+          <button type="button" className={control + ' text-sm'} onClick={async () => { try { await navigator.clipboard.writeText(result.text); setStatus(t('Copied')) } catch { setStatus(t('Could not copy. Select the translation to copy it.')) } }}>{t('Copy')}</button>
+        </div>}
         <div className="mt-auto pt-6">
           <button disabled={busy} onMouseDown={event => event.preventDefault()} className="mx-auto flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-6 py-2 text-sm font-bold text-on-accent disabled:opacity-60"><span aria-hidden="true">→</span>{t('Translate')}</button>
           {status && <p role="status" className="mt-3 text-center text-xs text-muted">{t(status)}</p>}

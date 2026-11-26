@@ -99,3 +99,5 @@ The default translation screen follows reference picture 2: a full purple input 
 Face to face is now a voice-interface preview with two opposing microphone controls and reader-facing translation placeholders. No keyboard is shown. Tapping a microphone explains that the voice stack is not connected; it does not record, request microphone permission, run a model or create a translation log.
 
 Voice translation opens directly from the microphone input control in Text or Chat. The separate Face to face tab is removed; its opposing-reader layout is now the Voice translation preview. A Text back button returns to typing.
+
+The mobile home layout uses paired source/target fields and a circular swap button above a white input card, keyboard and microphone controls, a separate result card, and fixed bottom navigation. Camera has a dedicated preview tab; it requests no camera access. Bottom tabs are Translate, Cards, Camera, Packs and Settings. Copy works on translation results. History remains export-only.
