@@ -101,3 +101,5 @@ Face to face is now a voice-interface preview with two opposing microphone contr
 Voice translation opens directly from the microphone input control in Text or Chat. The separate Face to face tab is removed; its opposing-reader layout is now the Voice translation preview. A Text back button returns to typing.
 
 The mobile home layout uses paired source/target fields and a circular swap button above a white input card, keyboard and microphone controls, a separate result card, and fixed bottom navigation. Camera has a dedicated preview tab; it requests no camera access. Bottom tabs are Translate, Cards, Camera, Packs and Settings. Copy works on translation results. History remains export-only.
+
+Translate now exposes a Translate / Conversation layout switch. The basic translator microphone stays in the current layout and displays a truthful voice-input-coming-soon message. Conversation contains the opposing-reader voice preview. Neither preview records audio.

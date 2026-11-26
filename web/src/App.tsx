@@ -204,6 +204,11 @@ export default function App() {
         )}
         {path === '/translate' && (
           <>
+            <div className="mx-auto mb-4 grid max-w-xl grid-cols-2 gap-1 rounded-2xl bg-panel p-1" role="tablist" aria-label={t('Translation layout')}>
+              {([['one-way', 'Translate'], ['voice', 'Conversation']] as const).map(([mode, label]) => <button key={mode} type="button" role="tab" aria-selected={translateMode === mode}
+                className={`min-h-11 rounded-xl px-3 text-sm font-semibold ${translateMode === mode ? 'bg-accent text-on-accent' : 'text-muted'}`}
+                onClick={() => setTranslateMode(mode)}>{t(label)}</button>)}
+            </div>
             <details id="translator-menu" className="mx-auto mb-3 max-w-xl rounded-2xl bg-panel px-4 py-2">
               <summary className="flex min-h-11 cursor-pointer items-center justify-between text-sm font-semibold"><span>{t('Translation settings')}</span><span aria-hidden="true">≡</span></summary>
               <div className="pt-2">            <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl bg-paper-deep p-1 sm:max-w-lg" role="tablist" aria-label="Translate mode">
@@ -778,9 +783,9 @@ function VoiceConversation({ near, far }: { near: PhraseLanguage; far: PhraseLan
   return <div className="mx-auto max-w-xl">
     <div className="mb-4 flex items-center justify-between gap-3">
       <button type="button" className={control + ' text-sm'} onClick={() => openTranslationMode('one-way')}>← {t('Text')}</button>
-      <h2 className="text-base font-semibold">{t('Voice translation')}</h2>
+      <h2 className="text-base font-semibold">{t('Conversation')}</h2>
     </div>
-    <p className="mb-3 text-center text-xs text-muted">{t('Voice preview · microphone is off')}</p>
+    <p className="mb-1 text-center text-sm text-muted">{t('Face-to-face layout')}</p><p className="mb-3 text-center text-xs text-muted">{t('Voice preview · microphone is off')}</p>
     <div className="overflow-hidden rounded-[1.75rem] border border-line bg-panel">
       {([far, near] as const).map((code, index) => <section key={index}
         className={`flex min-h-64 flex-col items-center justify-between gap-4 px-5 py-6 ${index === 0 ? 'rotate-180 bg-accent text-on-accent' : 'bg-panel text-ink'}`}
@@ -939,7 +944,7 @@ function TranslationPanel({ cards, engine, from, to, log, lookup, showTitle = tr
             <span className="text-xs text-muted" aria-live="off">{draft.length} / 500</span>
             <div className="flex items-center gap-3">
               <button type="button" onClick={() => document.getElementById(inputId)?.focus()} className={control} aria-label={t('Text')}><span aria-hidden="true">⌨</span></button>
-              <button type="button" onClick={() => openTranslationMode('voice')} aria-label={t('Voice translation')} className="flex size-14 items-center justify-center rounded-full bg-accent text-on-accent">
+              <button type="button" onClick={() => setStatus(t('Voice input is coming soon. Your microphone is off. Type here to translate for now.'))} aria-label={t('Voice translation')} className="flex size-14 items-center justify-center rounded-full bg-accent text-on-accent">
                 <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-7"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg>
               </button>
             </div>
