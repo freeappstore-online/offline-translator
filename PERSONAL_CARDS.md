@@ -25,3 +25,11 @@ The initial template set covers destinations, accommodation/booking numbers, hot
 ## Creation flow correction — 2026-11-27
 
 Supersedes the up-front Write your own / Use a template choice. New card opens one sentence input and recommends up to three structures as the user types. Empty input shows starter structures. Ranking uses the existing lightweight offline text scorer against the selected source-language skeleton, with no automatic template selection, slot extraction or replacement. Choosing a structure opens its fields; Back to my sentence retains typed wording. Use my full sentence continues with the exact trimmed input, with no template metadata. The saved-card search is hidden during creation/editing to avoid mistaking library filtering for sentence entry. Existing search text seeds the creation input. Translation review and explicit save/lookup opt-in are unchanged.
+
+## Playlist collections — 2026-11-27
+
+Supersedes the three top-level card collection tabs. Cards has one search, one Add card action and a collection grid. Built-in scenarios and user-named playlists combine shared and personal cards. All phrases, Saved phrases and My cards are quick filters; Saved results remains a secondary link. Creating inside a collection preselects membership. Typing a search then Add card carries the draft into sentence-first creation.
+
+Personal cards store optional `collectionIds`; existing cards remain visible in All phrases/My cards without migration. Shared cards are referenced by ID in private `offline-translator-collections-v1` records; no shared text is copied or modified. Cards can belong to multiple collections. Shared phrases retain their built-in scenario memberships (locked in the picker); additional memberships are editable. Personal memberships are fully editable. A collection is private organization, not review approval or an exact-lookup opt-in. Collection changes do not initialize models.
+
+The row + button opens collection assignment directly. The collection picker supports creating a named playlist inline. Exports keep personal cards and collections as separate JSON backups. Removing a personal card supports session Undo. Deleting/renaming playlists and merging exports across devices remain future work.

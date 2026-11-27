@@ -18,6 +18,22 @@ export function useLocale() {
   return useSyncExternalStore(callback => { listeners.add(callback); return () => { listeners.delete(callback) } }, () => locale)
 }
 const messages: Record<string, Partial<Record<Locale, string>>> = {
+  "Collections": {"vi": "Bộ sưu tập", "zh": "收藏集"},
+  "Add card": {"vi": "Thêm thẻ", "zh": "添加卡片"},
+  "Search cards": {"vi": "Tìm thẻ", "zh": "搜索卡片"},
+  "Add to collection": {"vi": "Thêm vào bộ sưu tập", "zh": "添加到收藏集"},
+  "New collection": {"vi": "Bộ sưu tập mới", "zh": "新建收藏集"},
+  "Collection name": {"vi": "Tên bộ sưu tập", "zh": "收藏集名称"},
+  "Create collection": {"vi": "Tạo bộ sưu tập", "zh": "创建收藏集"},
+  "Save collections": {"vi": "Lưu bộ sưu tập", "zh": "保存收藏集"},
+  "Choose one or more. Your additions stay private.": {"vi": "Chọn một hoặc nhiều bộ sưu tập. Nội dung bạn thêm chỉ lưu riêng.", "zh": "可选择多个。您添加的内容保持私密。"},
+  "Could not save collection. Browser storage may be unavailable.": {"vi": "Không thể lưu bộ sưu tập. Bộ nhớ trình duyệt có thể không khả dụng.", "zh": "无法保存收藏集。浏览器存储可能不可用。"},
+  "No cards here yet. Add a card above.": {"vi": "Chưa có thẻ ở đây. Thêm thẻ bằng nút phía trên.", "zh": "这里还没有卡片。请使用上方按钮添加。"},
+  "Built-in phrases keep their original scenarios.": {"vi": "Câu có sẵn vẫn thuộc các tình huống ban đầu.", "zh": "内置短语会保留其原有场景。"},
+  "Back up my cards": {"vi": "Sao lưu thẻ của tôi", "zh": "备份我的卡片"},
+  "Export collections JSON": {"vi": "Xuất JSON bộ sưu tập", "zh": "导出收藏集JSON"},
+  "Show more": {"vi": "Xem thêm", "zh": "显示更多"},
+
   "What would you like to say?": {"vi": "Bạn muốn nói gì?", "zh": "您想说什么？"},
   "Type a phrase or full sentence": {"vi": "Nhập cụm từ hoặc câu đầy đủ", "zh": "输入短语或完整句子"},
   "Choose a suggested structure, or continue with your own sentence.": {"vi": "Chọn mẫu câu được gợi ý, hoặc tiếp tục với câu của bạn.", "zh": "选择推荐句型，或继续使用自己的句子。"},
