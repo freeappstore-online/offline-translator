@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { LanguagePicker } from './LanguagePicker'
 import { recommendTemplates, templateFields, renderTemplate, type CardTemplate, type TemplateReference } from './card-templates'
 import type { Language } from './model-options'
@@ -7,24 +7,30 @@ export function TemplateBuilder({ onApply, onCancel, initialText = '', initialTa
   const [target, setTarget] = useState<Language>(initialTarget === 'en' ? 'vi' : initialTarget)
   const [query, setQuery] = useState(initialText)
   const [source, setSource] = useState<Language>('en'), [selected, setSelected] = useState<CardTemplate>(), [values, setValues] = useState<Record<string, string>>({})
+  const panelId = useId()
+  const recommended = recommendTemplates(query, source)
+  const visible = selected && !recommended.some(item => item.id === selected.id) ? [selected, ...recommended].slice(0, 3) : recommended
   let preview = '', error = ''
   if (selected) { try { preview = renderTemplate(selected, source, values) } catch (issue) { error = (issue as Error).message } }
   const button = 'min-h-11 rounded-full px-4 py-2 text-sm font-semibold'
   return <section className="space-y-4 rounded-2xl border border-line p-3 sm:p-4" aria-label={t('Create card')}>
     <div className="flex items-center justify-between gap-3"><h3 className="font-semibold">{t('Create card')}</h3><button type="button" className={button + ' text-muted'} onClick={onCancel}>{t('Cancel')}</button></div>
     <div className="grid grid-cols-2 items-end gap-3"><LanguagePicker label="Original language" disabled={false} value={source} onChange={code => { if (code === target) setTarget(source); setSource(code); setValues({}) }} /><LanguagePicker label="Translate to" disabled={false} value={target} onChange={code => { if (code === source) { setSource(target); setValues({}) } setTarget(code) }} /></div>
-    {!selected && <><label className="block text-sm font-semibold">{t('What would you like to say?')}<textarea autoFocus maxLength={500} lang={source} className="mt-2 min-h-24 w-full rounded-xl border border-line bg-paper p-3 text-base text-ink" placeholder={t('Type a phrase or full sentence')} value={query} onChange={event => setQuery(event.target.value)} /></label><p className="text-xs text-muted">{t('Choose a suggested structure, or continue with your own sentence.')}</p><h4 className="text-sm font-semibold">{t('Recommended structures')}</h4></>}
-    {!selected ? <><div className="divide-y divide-line overflow-hidden rounded-xl border border-line">{recommendTemplates(query, source).map(template => <button key={template.id} type="button" className="flex min-h-16 w-full items-center justify-between gap-3 bg-paper p-3 text-left text-sm hover:bg-accent-soft" onClick={() => { setSelected(template); setValues({}) }}><span><span className="mb-1 block text-xs text-muted">{t(template.title)}</span>{template.wording[source].split(/(\{\w+\})/g).map((part, index) => /^\{/.test(part) ? <mark key={index} className="mx-0.5 inline-block rounded-md bg-secondary-soft px-1.5 py-1 text-xs text-secondary-ink">{t(templateFields[part.slice(1, -1)].label)}</mark> : <span key={index}>{part}</span>)}</span><span aria-hidden="true">›</span></button>)}</div>
-      {!recommendTemplates(query, source).length && <p role="status" className="text-sm text-muted">{t('No matching structure. You can still create this sentence.')}</p>}
-      <button type="button" disabled={!query.trim()} className={button + ' bg-accent text-on-accent disabled:opacity-50'} onClick={() => onApply(query.trim(), source, undefined, target)}>{t('Use my full sentence')}</button>
-    </> : <>
-      <button type="button" className="min-h-11 text-sm text-accent underline" onClick={() => setSelected(undefined)}>← {t('Back to my sentence')}</button>
-      <h4 className="font-semibold">{t(selected.title)}</h4>
+    <label className="block text-sm font-semibold">{t('What would you like to say?')}<textarea autoFocus maxLength={500} lang={source} className="mt-2 min-h-24 w-full rounded-xl border border-line bg-paper p-3 text-base text-ink" placeholder={t('Type a phrase or full sentence')} value={query} onChange={event => { setQuery(event.target.value); setSelected(undefined) }} /></label>
+    <p className="text-xs text-muted">{t('Choose a suggested structure, or continue with your own sentence.')}</p>
+    <h4 className="text-sm font-semibold">{t('Recommended structures')}</h4>
+    <div className="divide-y divide-line overflow-hidden rounded-xl border border-line">{visible.map(template => <div key={template.id}>
+      <button type="button" aria-expanded={selected?.id === template.id} aria-controls={selected?.id === template.id ? panelId : undefined} className="flex min-h-16 w-full items-center justify-between gap-3 bg-paper p-3 text-left text-sm hover:bg-accent-soft" onClick={() => { if (selected?.id === template.id) setSelected(undefined); else { setSelected(template); setValues({}) } }}><span><span className="mb-1 block text-xs text-muted">{t(template.title)}</span>{template.wording[source].split(/(\{\w+\})/g).map((part, index) => /^\{/.test(part) ? <mark key={index} className="mx-0.5 inline-block rounded-md bg-secondary-soft px-1.5 py-1 text-xs text-secondary-ink">{t(templateFields[part.slice(1, -1)].label)}</mark> : <span key={index}>{part}</span>)}</span><span aria-hidden="true">{selected?.id === template.id ? '⌃' : '⌄'}</span></button>
+      {selected?.id === template.id && <div id={panelId} role="region" aria-label={t(template.title)} className="space-y-4 border-t border-line p-3 sm:p-4">
+      
       {selected.fields.map(id => <label key={id} className="block text-sm font-semibold">{t(templateFields[id].label)}<input type="text" dir="auto" autoComplete="off" maxLength={120} className="mt-1 min-h-11 w-full rounded-xl border border-line bg-paper p-3 text-base text-ink" value={values[id] ?? ''} onChange={event => setValues(previous => ({ ...previous, [id]: event.target.value }))} />{templateFields[id].kind === 'date' && <span className="mt-1 block text-xs font-normal text-muted">{t('Write the month in words to avoid ambiguous dates.')}</span>}</label>)}
       {selected.id === 'allergy' && <p className="rounded-xl bg-warning/15 p-3 text-xs text-warning">{t('Allergy wording needs careful review. A template does not verify medical translations.')}</p>}
       <div className="rounded-xl bg-paper p-3"><p className="text-xs text-muted">{t('Completed phrase')}</p><p className="mt-2 wrap-anywhere" lang={source}>{preview || t(error)}</p></div>
       <p className="text-xs text-muted">{t('Check names, numbers and dates in the translation. AI may change them; nothing is marked reviewed automatically.')}</p>
       <button type="button" disabled={!preview} className={button + ' bg-accent text-on-accent disabled:opacity-50'} onClick={() => onApply(preview, source, { id: selected.id, revision: selected.revision, source, values: Object.fromEntries(selected.fields.map(id => [id, values[id].trim()])) }, target)}>{t('Continue to translations')}</button>
-    </>}
+      </div>}
+    </div>)}</div>
+    {!visible.length && <p role="status" className="text-sm text-muted">{t('No matching structure. You can still create this sentence.')}</p>}
+    <button type="button" disabled={!query.trim()} className={button + (selected ? ' text-accent underline disabled:opacity-50' : ' bg-accent text-on-accent disabled:opacity-50')} onClick={() => onApply(query.trim(), source, undefined, target)}>{t('Use my full sentence')}</button>
   </section>
 }

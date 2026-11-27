@@ -37,3 +37,7 @@ The row + button opens collection assignment directly. The collection picker sup
 ## Card language fields
 
 Original language and Translate to are adjacent searchable fields in sentence-first creation and the translation editor. The chosen target carries through both template and free-sentence paths. Choosing the same language swaps the other side, keeping the pair distinct. Additional target versions remain available under Additional translations. The library language selector is rendered only while browsing, not above the Add card editor.
+
+## Inline template expansion
+
+Template selection now expands fields and the completed-phrase preview directly below the selected recommendation. The sentence, language pair and other recommendations remain visible. Selecting another structure switches the expanded region; selecting the same one collapses it. Editing the sentence collapses the region and recalculates recommendations. The typed sentence is never replaced by choosing a template. There is no Back to my sentence screen.
