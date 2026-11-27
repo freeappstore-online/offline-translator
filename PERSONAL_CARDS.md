@@ -33,3 +33,7 @@ Supersedes the three top-level card collection tabs. Cards has one search, one A
 Personal cards store optional `collectionIds`; existing cards remain visible in All phrases/My cards without migration. Shared cards are referenced by ID in private `offline-translator-collections-v1` records; no shared text is copied or modified. Cards can belong to multiple collections. Shared phrases retain their built-in scenario memberships (locked in the picker); additional memberships are editable. Personal memberships are fully editable. A collection is private organization, not review approval or an exact-lookup opt-in. Collection changes do not initialize models.
 
 The row + button opens collection assignment directly. The collection picker supports creating a named playlist inline. Exports keep personal cards and collections as separate JSON backups. Removing a personal card supports session Undo. Deleting/renaming playlists and merging exports across devices remain future work.
+
+## Card language fields
+
+Original language and Translate to are adjacent searchable fields in sentence-first creation and the translation editor. The chosen target carries through both template and free-sentence paths. Choosing the same language swaps the other side, keeping the pair distinct. Additional target versions remain available under Additional translations. The library language selector is rendered only while browsing, not above the Add card editor.

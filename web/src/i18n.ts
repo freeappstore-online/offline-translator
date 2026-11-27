@@ -18,6 +18,7 @@ export function useLocale() {
   return useSyncExternalStore(callback => { listeners.add(callback); return () => { listeners.delete(callback) } }, () => locale)
 }
 const messages: Record<string, Partial<Record<Locale, string>>> = {
+  "Additional translations": {"vi":"Bản dịch bổ sung","zh":"其他译文"},
   "Collections": {"vi": "Bộ sưu tập", "zh": "收藏集"},
   "Add card": {"vi": "Thêm thẻ", "zh": "添加卡片"},
   "Search cards": {"vi": "Tìm thẻ", "zh": "搜索卡片"},

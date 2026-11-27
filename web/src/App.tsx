@@ -20,7 +20,7 @@ import { engines, modelFor, type Engine } from './model-options'
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { initApp } from '@freeappstore/sdk'
 import { PageHeader, Shell, type NavItem } from '@freeappstore/sdk/ui'
-import { datasetId, languages, loadPhrases, needsHumanReviewWarning, type Phrase, type TargetLanguage } from './phrases'
+import { datasetId, loadPhrases, needsHumanReviewWarning, type Phrase, type TargetLanguage } from './phrases'
 import { rankSuggestions } from './suggest-phrases'
 import ReviewWorkstation from './ReviewWorkstation'
 
@@ -206,12 +206,6 @@ export default function App() {
             <NavigationIcon kind={item.icon} /><span className="max-w-full text-center text-[0.65rem] leading-tight">{t(item.icon === 'conversation' ? 'Talk' : item.label)}</span></a>)}
         </nav>
         {path !== '/translate' && path !== '/camera' && path !== '/conversation' && <div className="text-canvas-ink [&_h1]:text-canvas-ink"><PageHeader title={title} /></div>}
-        {path !== '/packs' && path !== '/translate' && path !== '/camera' && path !== '/conversation' && collection === 'shared' && (
-          <label className="mb-4 flex flex-wrap items-center gap-2 text-canvas-ink">{t("Language")}<select className={control} value={language} onChange={event => setLanguage(event.target.value as TargetLanguage)}>
-              {Object.keys(languages).map(id => <option key={id} value={id}>{languageName(id as Locale)}</option>)}
-            </select>
-          </label>
-        )}
         {!cards.length && path !== '/translate' && path !== '/packs' && path !== '/camera' && path !== '/conversation' && collection === 'shared' && (
           <div className={panel}>
             <p role="status">{!configured ? t("The phrase deck is being set up.") : failed ? t("Couldn’t load phrases. Check your connection and try again.") : t("Loading phrases…")}</p>
@@ -257,7 +251,7 @@ export default function App() {
         )}
         {path === '/camera' && <Suspense fallback={<p className="rounded-2xl bg-panel p-4">{t('Loading camera…')}</p>}><CameraTranslation onUse={useRecognizedText} /></Suspense>}
         {path === '/' && <>
-          {collection === 'results' ? <><button className={control} onClick={() => setCollection('shared')}>← {t('Cards')}</button><SavedTranslations onUse={(text, from, to) => useRecognizedText(text, from, to, 'text')} /></> : <CardLibrary cards={cards} personalCards={personalCards} language={language} engine={engine} saved={saved} onFavorite={toggleFavorite} onResults={() => setCollection('results')} onLog={logTranslation} onUse={(text,from,to) => useRecognizedText(text,from,to,'text')} />}
+          {collection === 'results' ? <><button className={control} onClick={() => setCollection('shared')}>← {t('Cards')}</button><SavedTranslations onUse={(text, from, to) => useRecognizedText(text, from, to, 'text')} /></> : <CardLibrary onLanguageChange={setLanguage} cards={cards} personalCards={personalCards} language={language} engine={engine} saved={saved} onFavorite={toggleFavorite} onResults={() => setCollection('results')} onLog={logTranslation} onUse={(text,from,to) => useRecognizedText(text,from,to,'text')} />}
         </>}
         {path === '/packs' && <>
           <Packs cards={cards} onReady={(nextEngine, from, to) => {
