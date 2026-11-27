@@ -41,3 +41,5 @@ Original language and Translate to are adjacent searchable fields in sentence-fi
 ## Inline template expansion
 
 Template selection now expands fields and the completed-phrase preview directly below the selected recommendation. The sentence, language pair and other recommendations remain visible. Selecting another structure switches the expanded region; selecting the same one collapses it. Editing the sentence collapses the region and recalculates recommendations. The typed sentence is never replaced by choosing a template. There is no Back to my sentence screen.
+
+When a structure is selected, only that recommendation is shown. Collapsing it or editing the sentence restores the ranked choices in place.

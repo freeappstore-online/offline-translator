@@ -9,7 +9,7 @@ export function TemplateBuilder({ onApply, onCancel, initialText = '', initialTa
   const [source, setSource] = useState<Language>('en'), [selected, setSelected] = useState<CardTemplate>(), [values, setValues] = useState<Record<string, string>>({})
   const panelId = useId()
   const recommended = recommendTemplates(query, source)
-  const visible = selected && !recommended.some(item => item.id === selected.id) ? [selected, ...recommended].slice(0, 3) : recommended
+  const visible = selected ? [selected] : recommended
   let preview = '', error = ''
   if (selected) { try { preview = renderTemplate(selected, source, values) } catch (issue) { error = (issue as Error).message } }
   const button = 'min-h-11 rounded-full px-4 py-2 text-sm font-semibold'
